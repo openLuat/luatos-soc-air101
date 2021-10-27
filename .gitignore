@@ -1,0 +1,6 @@
+.vscode
+.xmake
+bin/
+build/
+lib/build/
+lib/bin/
