@@ -1,5 +1,6 @@
 #include "luat_base.h"
 #include "luat_nimble.h"
+#include "luat_msgbus.h"
 
 #include <string.h>
 #include <stdint.h>
@@ -18,13 +19,18 @@
 
 #include "wm_ble_gap.h"
 #include "wm_ble_uart_if.h"
-// #include "wm_ble_server_wifi_app.h"
-#include "wm_ble_server_api_demo.h"
-// #include "wm_ble_client_api_demo.h"
-// #include "wm_ble_client_api_multi_conn_demo.h"
+
+#define LUAT_LOG_TAG "ble"
+#include "luat_log.h"
+
+int tls_ble_server_api_init(tls_ble_output_func_ptr output_func_ptr);
+int tls_ble_server_api_deinit();
+uint32_t tls_ble_server_api_get_mtu();
+int tls_ble_server_api_send_msg(uint8_t *data, int data_len);
+
 
 static bool ble_system_state_on = false;
-static volatile tls_bt_state_t bt_adapter_state = WM_BT_STATE_OFF;
+extern volatile tls_bt_state_t bt_adapter_state;
 
 extern tls_bt_log_level_t tls_appl_trace_level;
 
@@ -46,42 +52,67 @@ static void xxx_ble_income(uint8_t *p_data, uint32_t length) {
     printf("\n");
 }
 
+static int luat_ble_state_changed_handler(lua_State* L, void* ptr) {
+    rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
+    lua_getglobal(L, "sys_pub");
+    if (lua_isfunction(L, -1)) {
+        lua_pushstring(L, "BLE_STATE_INC");
+        lua_pushinteger(L, msg->arg1);
+        lua_call(L, 2, 0);
+    }
+    return 0;
+}
+
+void test_server_api_init() {
+    tls_ble_server_api_init(xxx_ble_income);
+}
+
+void test_server_api_deinit() {
+    tls_ble_server_api_deinit();
+}
+
 static void app_adapter_state_changed_callback(tls_bt_state_t status)
 {
-	TLS_BT_APPL_TRACE_DEBUG("adapter status = %s\r\n", status==WM_BT_STATE_ON?"bt_state_on":"bt_state_off");
+	LLOGD("adapter status = %s\r\n", status==WM_BT_STATE_ON?"bt_state_on":"bt_state_off");
 
     bt_adapter_state = status;
+
+    rtos_msg_t msg = {0};
+    msg.handler = luat_ble_state_changed_handler;
+    msg.arg1 = status;
+    luat_msgbus_put(&msg, 0);
+
     
-	#if (TLS_CONFIG_BLE == CFG_ON)
+	// #if (TLS_CONFIG_BLE == CFG_ON)
 
-    if(status == WM_BT_STATE_ON)
-    {
-    	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
+    // if(status == WM_BT_STATE_ON)
+    // {
+    // 	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
 
-		//at here , user run their own applications;
-        #if 1		
-        //tls_ble_wifi_cfg_init();
-        tls_ble_server_demo_api_init(xxx_ble_income);
-        //tls_ble_client_demo_api_init(NULL);
-        //tls_ble_server_demo_hid_init();
-        //tls_ble_server_hid_uart_init();
-        //tls_ble_client_multi_conn_demo_api_init();
-        #endif        
+	// 	//at here , user run their own applications;
+    //     #if 1		
+    //     //tls_ble_wifi_cfg_init();
+    //     tls_ble_server_demo_api_init(xxx_ble_income);
+    //     //tls_ble_client_demo_api_init(NULL);
+    //     //tls_ble_server_demo_hid_init();
+    //     //tls_ble_server_hid_uart_init();
+    //     //tls_ble_client_multi_conn_demo_api_init();
+    //     #endif        
 
-    }else
-    {
-        TLS_BT_APPL_TRACE_VERBOSE("deinit base application\r\n");
+    // }else
+    // {
+    //     TLS_BT_APPL_TRACE_VERBOSE("deinit base application\r\n");
 
-        //here, user may free their application;
-        #if 1
-        // tls_ble_wifi_cfg_deinit(2);
-        tls_ble_server_demo_api_deinit();
-        // tls_ble_client_demo_api_deinit();
-        // tls_ble_client_multi_conn_demo_api_deinit();
-        #endif
-    }
+    //     //here, user may free their application;
+    //     #if 1
+    //     // tls_ble_wifi_cfg_deinit(2);
+    //     tls_ble_server_demo_api_deinit();
+    //     // tls_ble_client_demo_api_deinit();
+    //     // tls_ble_client_multi_conn_demo_api_deinit();
+    //     #endif
+    // }
 
-    #endif
+    // #endif
 
 }
 

@@ -30,7 +30,6 @@
 static uint8_t __attribute__((aligned(4))) heap_ext[LUAT_HEAP_SIZE - 128*1024] = {0};
 #endif
 
-static unsigned char hexchars[] = "0123456789ABCDEF";
 static void luat_start(void *sdata){
 	bpool((void*)0x20028000, 128*1024);
 	#if (LUAT_HEAP_SIZE > 128*1024)

@@ -46,12 +46,30 @@ static int l_nimble_debug(lua_State* L) {
     return 1;
 }
 
+static int l_nimble_server_init(lua_State* L) {
+    test_server_api_init();
+    return 0;
+}
+
+
+static int l_nimble_server_deinit(lua_State* L) {
+    test_server_api_deinit();
+    return 0;
+}
+
+static int l_nimble_gap_adv(lua_State* L) {
+    return 0;
+}
+
 #include "rotable.h"
 static const rotable_Reg reg_nimble[] =
 {
 	{ "init",           l_nimble_init,      0},
     { "deinit",         l_nimble_deinit,      0},
     { "debug",          l_nimble_debug,     0},
+    { "server_init",    l_nimble_server_init,      0},
+    { "server_deinit",  l_nimble_server_deinit,     0},
+    { "gap_adv",        l_nimble_gap_adv,      0},
 	{ NULL,             NULL ,              0}
 };
 
