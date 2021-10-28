@@ -155,6 +155,9 @@ target("air10x")
     add_includedirs(luatos.."luat/packages/qrcode")
     add_includedirs(luatos.."luat/packages/u8g2")
 
+    -- gtfont
+    add_includedirs(luatos.."components/gtfont",{public = true})
+    add_files(luatos.."components/gtfont/*.c")
 
     -- ble
     add_includedirs("src/app/bleapp", "src/bt/blehost/nimble/include", "src/bt/blehost/nimble/host/include", "include/bt")
