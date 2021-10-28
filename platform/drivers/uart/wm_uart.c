@@ -728,6 +728,10 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
         fifos = port->regs->UR_FIFOS;
         uart_handle_cts_change(port, fifos & UFS_CST_STS);
     }
+    if (intr_src & UIS_RX_FIFO_TIMEOUT)
+    {
+        port->rx_callback(0, (void*)((int)port->priv_data*10));
+    }
     csi_kernel_intrpt_exit();
 }
 
