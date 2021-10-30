@@ -1,7 +1,7 @@
 set_project("AIR101")
 set_xmakever("2.5.8")
 
-set_version("0.0.2", {build = "%Y%m%d%H%M"})
+-- set_version("0.0.2", {build = "%Y%m%d%H%M"})
 add_rules("mode.debug", "mode.release")
 
 local AIR10X_VERSION
@@ -23,7 +23,7 @@ toolchain_end()
 set_toolchains("csky_toolchain")
 --add macro defination
 add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","USE_LUATOS")
--- set warning all as error
+
 set_warnings("all")
 set_optimize("smallest")
 -- set language: c99
