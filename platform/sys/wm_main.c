@@ -174,9 +174,9 @@ int main(void)
     value &= ~(BIT(5));
     tls_reg_write32(HR_PMU_PS_CR, value);
 
-	value = tls_reg_read32(HR_PMU_WLAN_STTS);
-	value &= ~(0xE);
-	tls_reg_write32(HR_PMU_WLAN_STTS, value);
+	//value = tls_reg_read32(HR_PMU_WLAN_STTS);
+	//value &= ~(0xE);
+	//tls_reg_write32(HR_PMU_WLAN_STTS, value);
 
     /*Close those not initialized clk except uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);

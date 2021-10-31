@@ -271,12 +271,12 @@ void tls_pmu_timer1_start(u16 msec)
 		{
 			val = msec;
 		}
-		//Ä¬ÈÏ²ÉÓÃ×îĞ¡µ¥Î»1ms
+		//é»˜è®¤é‡‡ç”¨æœ€å°å•ä½1ms
 		val = (val - 5) | (1<<16) | (0<<17) | (0<<20) | (0<<24);
 	}
 	else
 	{
-		//Ä¬ÈÏ²ÉÓÃ×îĞ¡µ¥Î»1ms
+		//é»˜è®¤é‡‡ç”¨æœ€å°å•ä½1ms
 		val = (msec-1)|(1<<16) | (0<<17) | (0<<20) | (0<<24);
 	}
 	tls_reg_write32(HR_PMU_TIMER1, val);
@@ -316,7 +316,7 @@ void tls_pmu_standby_start(void)
 {
 	u32 val;
 
-	tls_irq_enable(PMU_IRQn);		//Ä¬ÈÏ´ò¿ªÖĞ¶ÏÎªÁËÇå³şIO»½ĞÑµÄÖĞ¶Ï±ê¼Ç
+	tls_irq_enable(PMU_IRQn);		//é»˜è®¤æ‰“å¼€ä¸­æ–­ä¸ºäº†æ¸…æ¥šIOå”¤é†’çš„ä¸­æ–­æ ‡è®°
 
 	/*Clear Sleep status after exit sleep mode and enter standby mode*/
 	val = tls_reg_read32(HR_PMU_INTERRUPT_SRC);
@@ -343,9 +343,9 @@ void tls_pmu_standby_start(void)
 void tls_pmu_sleep_start(void)
 {
 	u32 val;
-	u32 use40M;
+	//u32 use40M;
 
-	tls_irq_enable(PMU_IRQn);		//Ä¬ÈÏ´ò¿ªÖĞ¶ÏÎªÁËÇå³şIO»½ĞÑµÄÖĞ¶Ï±ê¼Ç
+	tls_irq_enable(PMU_IRQn);		//é»˜è®¤æ‰“å¼€ä¸­æ–­ä¸ºäº†æ¸…æ¥šIOå”¤é†’çš„ä¸­æ–­æ ‡è®°
 
 
 	/*Clear Standby status after exit standby mode and enter sleep mode*/
@@ -355,13 +355,13 @@ void tls_pmu_sleep_start(void)
 		tls_reg_write32(HR_PMU_INTERRUPT_SRC,val);
 	}
 	
-	val = tls_reg_read32(HR_PMU_PS_CR);
-	if (val&BIT(4))
-	{
-		use40M	= tls_reg_read32(HR_PMU_WLAN_STTS);
-		use40M |= BIT(8);
-		tls_reg_write32(HR_PMU_WLAN_STTS, use40M);
-	}
+	//val = tls_reg_read32(HR_PMU_PS_CR);
+	//if (val&BIT(4))
+	//{
+		//use40M	= tls_reg_read32(HR_PMU_WLAN_STTS);
+		//use40M |= BIT(8);
+		//tls_reg_write32(HR_PMU_WLAN_STTS, use40M);
+	//}
 	TLS_DBGPRT_INFO("goto sleep here\n");
 	val |= BIT(1);
 	tls_reg_write32(HR_PMU_PS_CR, val);
