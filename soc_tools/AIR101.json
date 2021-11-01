@@ -17,7 +17,7 @@
             }
         },
         "version-core": "v0007",
-        "version-bsp" : "v0001",
+        "version-bsp" : "v0004",
         "mark" : "default",
         "build" : {
             "build_at" : "",
