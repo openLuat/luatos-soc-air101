@@ -4751,13 +4751,13 @@ static int wm_tool_download_firmware(void)
 
 	wm_tool_printf("\r\nserial sync sucess.\r\n");
 
-	ret = wm_tool_query_mac();
-	if (ret)
-    {
-        wm_tool_uart_close();
-        wm_tool_printf("download failed.\r\n");
-        return ret;
-    }
+	// ret = wm_tool_query_mac();
+	// if (ret)
+    // {
+    //     wm_tool_uart_close();
+    //     wm_tool_printf("download failed.\r\n");
+    //     return ret;
+    // }
 
 	if (WM_TOOL_DL_ERASE_ALL == wm_tool_dl_erase)
 	{
