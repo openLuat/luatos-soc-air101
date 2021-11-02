@@ -10,7 +10,7 @@
 #include "wm_gpio_afsel.h"
 #include "stdio.h"
 //串口数量，编号从0开始
-#define MAX_DEVICE_COUNT 5
+#define MAX_DEVICE_COUNT TLS_UART_MAX
 //存放串口设备句柄
 static uint8_t serials_buff_len[MAX_DEVICE_COUNT] ={TLS_UART_RX_BUF_SIZE};
 extern struct tls_uart_port uart_port[TLS_UART_MAX];
@@ -99,10 +99,12 @@ int luat_uart_setup(luat_uart_t *uart)
         wm_uart4_rx_config(WM_IO_PB_05);
         wm_uart4_tx_config(WM_IO_PB_04);
         break;
-    case 5:
+#ifdef AIR103
+    case TLS_UART_5:
         wm_uart5_rx_config(WM_IO_PA_13);
         wm_uart5_tx_config(WM_IO_PA_12);
         break;
+#endif
     default:
         break;
     }
