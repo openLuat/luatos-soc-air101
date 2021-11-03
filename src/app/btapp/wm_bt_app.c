@@ -34,7 +34,7 @@
 
 #if (WM_BTA_HFP_HSP_INCLUDED == CFG_ON)
 	#include "wm_hfp_hsp_client.h"
-#endif 
+#endif
 
 #if (WM_BTA_SPPS_INCLUDED == CFG_ON)
     #include "wm_bt_spp_server.h"
@@ -97,9 +97,9 @@ void app_adapter_state_changed_callback(tls_bt_state_t status)
     {
     	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
         /* those funtions should be called basiclly*/
-    	tls_ble_gap_init();
+    	tls_ble_gap_init(NULL);
 		tls_ble_client_init();
-    	tls_ble_server_init(); 
+    	tls_ble_server_init();
 
 		//at here , user run their own applications;
         //application_run();
@@ -123,15 +123,15 @@ void app_adapter_state_changed_callback(tls_bt_state_t status)
     #if (WM_BT_INCLUDED == CFG_ON)
     if(status == WM_BT_STATE_ON)
     {
-        
+
         /*class bluetooth application will be enabled by user*/
         //demo_bt_app_on();
     }else
     {
-        
+
     }
     #endif
-	
+
 	/*Notify at level application, if registered*/
 	if(tls_bt_host_callback_at_ptr)
 	{
@@ -185,14 +185,14 @@ void app_adapter_properties_callback(tls_bt_status_t status,
             p_value = (uint8_t*)properties[i].val;
             switch(p_value[0])
             {
-            
+
                 case 0x30:TLS_BT_APPL_TRACE_DEBUG("\t\tBT_SCAN_MODE_NONE\r\n");break;
                 case 0x31:TLS_BT_APPL_TRACE_DEBUG("\t\BT_SCAN_MODE_CONNECTABLE\r\n");break;
                 case 0x32:TLS_BT_APPL_TRACE_DEBUG("\t\BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE\r\n");break;
             }
         }
     }
-    
+
 }
 #ifndef MIN
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
@@ -223,14 +223,14 @@ void app_device_found_callback(int num_properties, tls_bt_property_t *properties
     tls_bt_addr_t dev_addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     char dev_name[64] = {0};
     int dev_name_len = 0;
-    
+
     //TLS_BT_APPL_TRACE_DEBUG("app_device_found_callback\r\n");
-    
+
     for(i=0; i<num_properties; i++)
     {
         //TLS_BT_APPL_TRACE_DEBUG("\t%s:", dump_property_type(properties[i].type));
         p_value = (uint8_t*)properties[i].val;
-        
+
         switch(properties[i].type)
         {
             case WM_BT_PROPERTY_BDADDR:
@@ -282,17 +282,17 @@ static void app_flush_bonded_params(uint8_t id)
 void app_acl_state_changed_callback(tls_bt_status_t status, tls_bt_addr_t *remote_bd_addr,
                                     tls_bt_acl_state_t state, uint8_t link_type)
 {
-    TLS_BT_APPL_TRACE_DEBUG("app_acl_state_changed_callback is called,[%02x:%02x:%02x:%02x:%02x:%02x],type=%s, state=(%s)\r\n", 
+    TLS_BT_APPL_TRACE_DEBUG("app_acl_state_changed_callback is called,[%02x:%02x:%02x:%02x:%02x:%02x],type=%s, state=(%s)\r\n",
         remote_bd_addr->address[0],remote_bd_addr->address[1],remote_bd_addr->address[2],remote_bd_addr->address[3],
         remote_bd_addr->address[4],remote_bd_addr->address[5],(link_type==1)?"BR_EDR":"BLE",(state)?"DISCONNECTED":"CONNECTED");
     if((state == WM_BT_ACL_STATE_CONNECTED) && (link_type == 1))
     {
-       //demo_bt_scan_mode(0); 
+       //demo_bt_scan_mode(0);
        //TODO , flush bonding information to flash
        //tls_dm_start_timer(tls_dm_get_timer_id(),3000,app_flush_bonded_params);
     }else
     {
-       //demo_bt_scan_mode(2);  
+       //demo_bt_scan_mode(2);
     }
 }
 void app_dut_mode_recv_callback(uint16_t opcode, uint8_t *buf, uint8_t len)
@@ -312,7 +312,7 @@ void app_ssp_request_callback(tls_bt_addr_t *remote_bd_addr,
                               uint32_t pass_key)
 {
     TLS_BT_APPL_TRACE_DEBUG("app_ssp_request_callback, attention...(%s) cod=0x%08x, ssp_variant=%d, pass_key=0x%08x\r\n", bd_name->name, cod, pairing_variant, pass_key);
-	
+
 	tls_bt_ssp_reply(remote_bd_addr, pairing_variant, 1, pass_key);
 }
 
@@ -337,7 +337,7 @@ static void tls_bt_host_callback_handler(tls_bt_host_evt_t evt, tls_bt_host_msg_
 			app_adapter_properties_callback(msg->adapter_prop.status, msg->adapter_prop.num_properties, msg->adapter_prop.properties);
 			break;
 		case WM_BT_RMT_DEVICE_PROP_EVT:
-			app_remote_device_properties_callback(msg->remote_device_prop.status, msg->remote_device_prop.address, 
+			app_remote_device_properties_callback(msg->remote_device_prop.status, msg->remote_device_prop.address,
 									msg->remote_device_prop.num_properties, msg->remote_device_prop.properties);
 			break;
 	   case WM_BT_DEVICE_FOUND_EVT:
@@ -362,12 +362,12 @@ static void tls_bt_host_callback_handler(tls_bt_host_evt_t evt, tls_bt_host_msg_
 			app_pin_request_callback(msg->pin_request.remote_bd_addr, msg->pin_request.bd_name, msg->pin_request.cod, msg->pin_request.min_16_digit);
 			break;
 	}
-    
+
 #if (WM_BT_INCLUDED == CFG_ON)
     //Notify applications who cares those event;
     wm_bt_notify_evt_report(evt, msg);
 #endif
-	
+
 }
 
 
@@ -387,8 +387,8 @@ int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_call
 	bt_enabled_by_at = 1;
 	tls_appl_trace_level = log_level;
     tls_bt_hci_if_t hci_if;
-	
-	if(host_enabled_by_at) 
+
+	if(host_enabled_by_at)
 	{
 		TLS_BT_APPL_TRACE_WARNING("bt host stack enabled by at+btcfghost=1, please do at+btcfghost=0, then continue...\r\n");
 		return TLS_BT_STATUS_UNSUPPORTED;
@@ -401,7 +401,7 @@ int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_call
 
 
 	tls_bt_host_callback_at_ptr = at_callback_ptr;
-	
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, log_level);
 
 	hci_if.uart_index = uart_no;
@@ -411,7 +411,7 @@ int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level, tls_bt_host_call
 	hci_if.verify_bit = 0;
 #if (WM_BT_INCLUDED == CFG_ON)
     wm_bt_init_evt_report_list();
-#endif	
+#endif
 	status = tls_bt_enable(tls_bt_host_callback_handler, &hci_if, TLS_BT_LOG_NONE);
 	if((status != TLS_BT_STATUS_SUCCESS) &&(status != TLS_BT_STATUS_DONE) )
 	{
@@ -435,7 +435,7 @@ int tls_at_bt_destroy()
 		TLS_BT_APPL_TRACE_WARNING("bt system already destroyed\r\n");
 		return TLS_BT_STATUS_DONE;
 	}
-	
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system destroy\r\n");
 	status = tls_bt_disable();
 	if((status != TLS_BT_STATUS_SUCCESS) && (status != TLS_BT_STATUS_DONE))
@@ -444,7 +444,7 @@ int tls_at_bt_destroy()
 	}
 
 
-	
+
 	return TLS_BT_STATUS_SUCCESS;
 }
 
@@ -458,17 +458,17 @@ int tls_at_bt_cleanup_host()
 	{
 		TLS_BT_APPL_TRACE_ERROR("tls_bt_host_cleanup, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
 	}
-#if (WM_BT_INCLUDED == CFG_ON)    
+#if (WM_BT_INCLUDED == CFG_ON)
     wm_bt_deinit_evt_report_list();
 #endif
-    
+
 	return status;
 }
 
 
 
 /*
-*bluetooth api demo 
+*bluetooth api demo
 */
 int demo_bt_enable()
 {
@@ -479,10 +479,10 @@ int demo_bt_enable()
 
     if(bt_adapter_state == WM_BT_STATE_ON)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bt system enabled already"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bt system enabled already");
        return TLS_BT_STATUS_SUCCESS;
     }
-	
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, tls_appl_trace_level);
 
 	hci_if.uart_index = uart_no;
@@ -492,14 +492,14 @@ int demo_bt_enable()
 	hci_if.verify_bit = 0;
 #if (WM_BT_INCLUDED == CFG_ON)
     wm_bt_init_evt_report_list();
-#endif    
+#endif
 	status = tls_bt_enable(tls_bt_host_callback_handler, &hci_if, TLS_BT_LOG_NONE);
 	if((status != TLS_BT_STATUS_SUCCESS) &&(status != TLS_BT_STATUS_DONE) )
 	{
 		TLS_BT_APPL_TRACE_ERROR("tls_bt_enable, ret:%s,%d\r\n", tls_bt_status_2_str(status),status);
 	}
 
-	return status;   
+	return status;
 
 }
 
@@ -507,14 +507,14 @@ int demo_bt_destroy()
 {
 
 	tls_bt_status_t status;
-	
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system destroy\r\n");
 
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bt system destroyed already"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bt system destroyed already");
        return TLS_BT_STATUS_SUCCESS;
-    }    
+    }
 	status = tls_bt_disable();
 	if((status != TLS_BT_STATUS_SUCCESS) && (status != TLS_BT_STATUS_DONE))
 	{
@@ -537,7 +537,7 @@ int demo_bt_destroy()
 #if (WM_BT_INCLUDED == CFG_ON)
     wm_bt_deinit_evt_report_list();
 #endif
-	return status;  
+	return status;
 }
 
 #if (TLS_CONFIG_BLE == CFG_ON)
@@ -566,14 +566,14 @@ static uint8_t get_valid_adv_length_and_name(uint8_t *ptr, uint8_t *pname)
 		seg_len = ptr[ret];
 		if(ret >=64) break; //sanity check;
 	}
-	
+
 	return ret;
 }
 
 static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_data)
 {
     if((event != WM_BLE_DM_SCAN_RES_EVT) && (event != WM_BLE_DM_SCAN_RES_CMPL_EVT)) return;
-    
+
 #define BLE_SCAN_RESULT_LEN 256
 
     int len = 0, i= 0;
@@ -587,7 +587,7 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
     }
     switch(event)
     {
-       
+
         case WM_BLE_DM_SCAN_RES_EVT:
             {
                 tls_ble_dm_scan_res_msg_t *msg = (tls_ble_dm_scan_res_msg_t *)&p_data->dm_scan_result;
@@ -602,7 +602,7 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
                 	//printf("###warning(%d)###\r\n", valid_len);
                 	valid_len = 62;
                 }
-            	len = sprintf(buf, "%02X%02X%02X%02X%02X%02X,%d,", 
+            	len = sprintf(buf, "%02X%02X%02X%02X%02X%02X,%d,",
                               msg->address[0], msg->address[1], msg->address[2],
                               msg->address[3], msg->address[4], msg->address[5], msg->rssi);
 
@@ -613,7 +613,7 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
                 {
                 	len += sprintf(buf+len, "\"\",");
                 }
-                
+
                 for (i = 0; i < valid_len; i++)
                 {
                     len += sprintf(buf + len, "%02X", msg->value[i]);
@@ -624,22 +624,22 @@ static void demo_ble_scan_report_cb(tls_ble_dm_evt_t event, tls_ble_dm_msg_t *p_
                 TLS_BT_APPL_TRACE_VERBOSE("%s\r\n", buf);
 
             }
-            break;  
+            break;
         case WM_BLE_DM_SCAN_RES_CMPL_EVT:
             {
                 tls_ble_dm_scan_res_cmpl_msg_t *msg = (tls_ble_dm_scan_res_cmpl_msg_t *)&p_data->dm_scan_result_cmpl;
                 TLS_BT_APPL_TRACE_VERBOSE("scan ended, ret=%d\r\n", msg->num_responses);
                 bt_adapter_scaning = 0;
             }
-            break;  
+            break;
         default:
             break;
     }
-   
+
     if (buf)
         tls_mem_free(buf);
-	
-}    
+
+}
 int tls_ble_demo_scan(uint8_t start)
 {
     tls_bt_status_t ret;
@@ -648,7 +648,7 @@ int tls_ble_demo_scan(uint8_t start)
     {
         tls_ble_set_scan_param(0x40, 0x60, 0);
         //tls_ble_set_scan_param(0x100, 0x100, 0);
-        
+
         ret = tls_ble_scan(TRUE);
 
 		if(ret == TLS_BT_STATUS_SUCCESS)
@@ -660,7 +660,7 @@ int tls_ble_demo_scan(uint8_t start)
     else
     {
         ret = tls_ble_scan(FALSE);
-        
+
         if(ret == TLS_BT_STATUS_SUCCESS)
 		{
 		    //wait scan stop;
@@ -668,7 +668,7 @@ int tls_ble_demo_scan(uint8_t start)
             {
                 tls_os_time_delay(500);
             }
-		    //unregister the callback 
+		    //unregister the callback
 			ret = tls_ble_deregister_report_evt(WM_BLE_DM_SCAN_RES_EVT|WM_BLE_DM_SCAN_RES_CMPL_EVT, demo_ble_scan_report_cb);
         }
 
@@ -685,7 +685,7 @@ static void ble_scan_enable_cb(uint8_t triger_id)
 
 int demo_async_ble_scan(uint8_t start)
 {
-    tls_dm_evt_triger(start, ble_scan_enable_cb);      
+    tls_dm_evt_triger(start, ble_scan_enable_cb);
 }
 
 static void ble_adv_enable_cb(uint8_t triger_id)
@@ -724,16 +724,16 @@ int tls_ble_demo_adv(uint8_t type)
         data.pure_data = true;       //only manufacture data is inclucded in the scan response payload
         data.manufacturer_len = 13;   //configure payload length;
         memcpy(data.manufacturer_data, scan_resp_data, 13);//copy payload ;
-        
-    	tls_ble_set_adv_data(&data); //configure advertisement data; 
-#endif        
 
-        tls_ble_dm_adv_param_t adv_param;       
+    	tls_ble_set_adv_data(&data); //configure advertisement data;
+#endif
+
+        tls_ble_dm_adv_param_t adv_param;
         if(type == 1)
         {
             adv_param.adv_int_min = 0x64; //interval min;
             adv_param.adv_int_max = 0x64; //interval max;
-            
+
         }else
         {
             adv_param.adv_int_min = 0xA0; //for nonconnectable advertisement, interval min is 0xA0;
@@ -742,14 +742,14 @@ int tls_ble_demo_adv(uint8_t type)
 
         adv_param.dir_addr = NULL;    //directed address NULL;
         tls_ble_set_adv_param(&adv_param); //configure advertisement parameters;
-        
+
         /*enable advertisement*/
-    	tls_dm_evt_triger(type, ble_adv_enable_cb);        
+    	tls_dm_evt_triger(type, ble_adv_enable_cb);
     }else
     {
         tls_ble_adv(0);
     }
-    
+
     return TLS_BT_STATUS_SUCCESS;
 }
 
@@ -757,9 +757,9 @@ int demo_ble_server_on()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }   
+    }
     tls_ble_server_demo_api_init(NULL);
     return 0;
 }
@@ -767,9 +767,9 @@ int demo_ble_server_off()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n");
        return -1;
-    } 
+    }
 
     tls_ble_server_demo_api_deinit();
 
@@ -779,19 +779,19 @@ int demo_ble_client_on()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }   
-    tls_ble_client_demo_api_init(NULL); 
+    }
+    tls_ble_client_demo_api_init(NULL);
     return 0;
 }
 int demo_ble_client_off()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n");
        return -1;
-    } 
+    }
 
     tls_ble_client_demo_api_deinit();
 
@@ -800,7 +800,7 @@ int demo_ble_client_off()
 
 int demo_ble_uart_server_on(uint8_t uart_no)
 {
-    return tls_ble_uart_init(BLE_UART_SERVER_MODE, uart_no, NULL);    
+    return tls_ble_uart_init(BLE_UART_SERVER_MODE, uart_no, NULL);
 }
 
 int demo_ble_uart_server_off()
@@ -809,12 +809,12 @@ int demo_ble_uart_server_off()
 }
 int demo_ble_uart_client_on(uint8_t uart_no)
 {
-    return tls_ble_uart_init(BLE_UART_CLIENT_MODE, uart_no, NULL); 
+    return tls_ble_uart_init(BLE_UART_CLIENT_MODE, uart_no, NULL);
 }
 
 int demo_ble_uart_client_off()
 {
-    return tls_ble_uart_deinit(BLE_UART_CLIENT_MODE, 0xFF);   
+    return tls_ble_uart_deinit(BLE_UART_CLIENT_MODE, 0xFF);
 }
 int demo_ble_adv(uint8_t type)
 {
@@ -836,9 +836,9 @@ int demo_bt_app_on()
 
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }  
+    }
 #if (WM_BTA_AV_SINK_INCLUDED == CFG_ON)
     tls_bt_enable_a2dp_sink();
 #endif
@@ -850,7 +850,7 @@ int demo_bt_app_on()
 #if (WM_BTA_SPPS_INCLUDED == CFG_ON)
     tls_bt_enable_spp_server();
 #endif
- 
+
 	/*
     	BT_SCAN_MODE_NONE,                     0
     	BT_SCAN_MODE_CONNECTABLE,              1
@@ -872,9 +872,9 @@ int demo_bt_app_off()
 
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }  
+    }
 #if (WM_BTA_AV_SINK_INCLUDED == CFG_ON)
     tls_bt_disable_a2dp_sink();
 #endif
@@ -907,9 +907,9 @@ int demo_bt_scan_mode(int type)
 
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }  
+    }
 
 	/*
     	BT_SCAN_MODE_NONE,                     0
@@ -924,13 +924,13 @@ int demo_bt_scan_mode(int type)
         btp.val = "2";
     }else if(type == 1)
     {
-       btp.val = "1"; 
+       btp.val = "1";
     }else
     {
         btp.val = "0";
     }
-    TLS_BT_APPL_TRACE_DEBUG("bt_scan_mode=%d\r\n", type); 
-	tls_bt_set_adapter_property(&btp, 0);    
+    TLS_BT_APPL_TRACE_DEBUG("bt_scan_mode=%d\r\n", type);
+	tls_bt_set_adapter_property(&btp, 0);
 }
 
 int demo_bt_inquiry(int type)
@@ -944,9 +944,9 @@ int demo_bt_inquiry(int type)
 void wm_bt_init_evt_report_list()
 {
     /*check initialized or not*/
-    if(host_report_evt_list.list.next != NULL) 
+    if(host_report_evt_list.list.next != NULL)
         return;
-    
+
     dl_list_init(&host_report_evt_list.list);
 }
 void wm_bt_deinit_evt_report_list()
@@ -954,15 +954,15 @@ void wm_bt_deinit_evt_report_list()
   	uint32_t cpu_sr;
 
 	host_report_evt_t *evt = NULL;
-	host_report_evt_t *evt_next = NULL;	
+	host_report_evt_t *evt_next = NULL;
 
-    if(host_report_evt_list.list.next == NULL) 
+    if(host_report_evt_list.list.next == NULL)
         return;
-    
+
 	if(dl_list_empty(&host_report_evt_list.list))
 		return ;
-	
-	cpu_sr = tls_os_set_critical();	
+
+	cpu_sr = tls_os_set_critical();
 
 	dl_list_for_each_safe(evt, evt_next,&host_report_evt_list.list, host_report_evt_t, list)
 	{
@@ -970,18 +970,18 @@ void wm_bt_deinit_evt_report_list()
 		tls_mem_free(evt);
 	}
 
-	tls_os_release_critical(cpu_sr);  
+	tls_os_release_critical(cpu_sr);
 }
 void wm_bt_notify_evt_report(tls_bt_host_evt_t evt, tls_bt_host_msg_t *msg)
 {
-    uint32_t cpu_sr;			
+    uint32_t cpu_sr;
     host_report_evt_t *report_evt = NULL;
     host_report_evt_t *report_evt_next = NULL;
 
     if(host_report_evt_list.list.next == NULL)
         return;
-    
-    cpu_sr = tls_os_set_critical();	
+
+    cpu_sr = tls_os_set_critical();
     if(!dl_list_empty(&host_report_evt_list.list))
     {
     	dl_list_for_each_safe(report_evt,report_evt_next, &host_report_evt_list.list, host_report_evt_t, list)
@@ -995,13 +995,13 @@ void wm_bt_notify_evt_report(tls_bt_host_evt_t evt, tls_bt_host_msg_t *msg)
     	}
     }
     tls_os_release_critical(cpu_sr);
-	
+
 }
 tls_bt_status_t wm_bt_register_report_evt(tls_bt_host_evt_t rpt_evt,  tls_bt_host_callback_t rpt_callback)
 {
 	uint32_t cpu_sr;
 	host_report_evt_t *evt = NULL;
-    
+
     if(host_report_evt_list.list.next == NULL)
         return;
     cpu_sr = tls_os_set_critical();
@@ -1038,7 +1038,7 @@ tls_bt_status_t wm_bt_register_report_evt(tls_bt_host_evt_t rpt_evt,  tls_bt_hos
     cpu_sr = tls_os_set_critical();
     dl_list_add_tail(&host_report_evt_list.list, &evt->list);
     tls_os_release_critical(cpu_sr);
-	
+
 	return TLS_BT_STATUS_SUCCESS;
 
 }
@@ -1047,11 +1047,11 @@ tls_bt_status_t wm_bt_deregister_report_evt(tls_bt_host_evt_t rpt_evt,  tls_bt_h
 	uint32_t cpu_sr;
 	host_report_evt_t *evt = NULL;
 	host_report_evt_t *evt_next = NULL;
-    
+
     if(host_report_evt_list.list.next == NULL)
         return;
 
-	cpu_sr = tls_os_set_critical();	
+	cpu_sr = tls_os_set_critical();
     if(!dl_list_empty(&host_report_evt_list.list))
     {
     	dl_list_for_each_safe(evt,evt_next, &host_report_evt_list.list, host_report_evt_t, list)
@@ -1068,11 +1068,11 @@ tls_bt_status_t wm_bt_deregister_report_evt(tls_bt_host_evt_t rpt_evt,  tls_bt_h
                     evt = NULL;
     			}
     		}
-            cpu_sr = tls_os_set_critical();	
+            cpu_sr = tls_os_set_critical();
     	}
     }
 	tls_os_release_critical(cpu_sr);
-	
+
 	return TLS_BT_STATUS_SUCCESS;
 }
 

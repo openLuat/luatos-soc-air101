@@ -66,7 +66,7 @@ static void app_adapter_state_changed_callback(tls_bt_state_t status)
 	TLS_BT_APPL_TRACE_DEBUG("adapter status = %s\r\n", status==WM_BT_STATE_ON?"bt_state_on":"bt_state_off");
 
     bt_adapter_state = status;
-    
+
 	#if (TLS_CONFIG_BLE == CFG_ON)
 
     if(status == WM_BT_STATE_ON)
@@ -74,14 +74,14 @@ static void app_adapter_state_changed_callback(tls_bt_state_t status)
     	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
 
 		//at here , user run their own applications;
-        #if 1		
+        #if 1
         //tls_ble_wifi_cfg_init();
         tls_ble_server_demo_api_init(xxx_ble_income);
         //tls_ble_client_demo_api_init(NULL);
         //tls_ble_server_demo_hid_init();
         //tls_ble_server_hid_uart_init();
         //tls_ble_client_multi_conn_demo_api_init();
-        #endif        
+        #endif
 
     }else
     {
@@ -173,23 +173,23 @@ tls_bt_init(uint8_t uart_idx)
     ble_hs_cfg.reset_cb = on_reset;
     ble_hs_cfg.shutdown_cb = on_reset; /*same callback as on_reset */
     ble_hs_cfg.gatts_register_cb = on_svr_register_cb;
-    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;   
-    
+    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
     /* Initialize all packages. */
     nimble_port_init();
 
 
 
     /*Application levels code entry*/
-    tls_ble_gap_init();
+    tls_ble_gap_init(NULL);
     tls_bt_util_init();
 
     /*Initialize the vuart interface and enable controller*/
     ble_hci_vuart_init(uart_idx);
-    
+
     /* As the last thing, process events from default event queue. */
     tls_nimble_start();
-    
+
     ble_system_state_on = true;
 
     return 0;
@@ -208,21 +208,21 @@ tls_bt_deinit(void)
     /*Stop hs system*/
     rc = nimble_port_stop();
     assert(rc == 0);
-    
+
     /*Stop controller and free vuart resource */
     rc = ble_hci_vuart_deinit();
     assert(rc == 0);
 
     /*Free hs system resource*/
     nimble_port_deinit();
-    
+
     /*Free task stack ptr and free hs task*/
     tls_nimble_stop();
 
     /*Application levels resource cleanup*/
     tls_ble_gap_deinit();
     tls_bt_util_deinit();
-    
+
     ble_system_state_on = false;
 
     return rc;
@@ -251,11 +251,11 @@ int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level)
 	int rc = 0;
 
 	tls_appl_trace_level = log_level;
-    
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, log_level);
 
     rc = tls_bt_init(uart_no);
-    
+
 	if((rc != 0) &&(rc != BLE_HS_EALREADY) )
 	{
 		TLS_BT_APPL_TRACE_ERROR("tls_bt_enable, ret:%s,%d\r\n", tls_bt_rc_2_str(rc),rc);
@@ -267,9 +267,9 @@ int tls_at_bt_enable(int uart_no, tls_bt_log_level_t log_level)
 int tls_at_bt_destroy()
 {
 	int rc = 0;
-	
+
 	TLS_BT_APPL_TRACE_VERBOSE("bt system destroy\r\n");
-    
+
 	rc = tls_bt_deinit();
 
     if((rc != 0) && (rc != BLE_HS_EALREADY))
@@ -285,7 +285,7 @@ int tls_at_bt_destroy()
  * Called                        1) AT cmd; 2)demo show;
  *
  * @param type              0: advertise stop; 1: adv_ind; 2: adv_nonconn_ind;
- *                                  
+ *
  *
  * @return                      0 on success; nonzero on failure.
  */
@@ -294,12 +294,12 @@ int tls_ble_demo_adv(uint8_t type)
 {
     int rc = 0;
     TLS_BT_APPL_TRACE_DEBUG("### %s type=%d\r\n", __FUNCTION__, type);
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
-    }    
+    }
     if(type)
     {
         uint8_t bt_mac[6] = {0};
@@ -308,7 +308,7 @@ int tls_ble_demo_adv(uint8_t type)
                0x02,0x01,0x05,
                0x03,0x19,0xc1, 0x03};
         extern int tls_get_bt_mac_addr(uint8_t *mac);
-        
+
         tls_get_bt_mac_addr(bt_mac);
         sprintf(adv_data+5,"%02X:%02X:%02X",bt_mac[3], bt_mac[4], bt_mac[5]);
         adv_data[13] = 0x02;  //byte 13 was overwritten to zero by sprintf; recover it;
@@ -362,25 +362,25 @@ ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
  * Called                        1) AT cmd; 2)demo show;
  *
  * @param type              0: scan stop; 1: scan start, default passive;
- *                                  
+ *
  *
  * @return                      0 on success; nonzero on failure.
  */
 int tls_ble_demo_scan(uint8_t type)
 {
     int rc;
-    
+
     TLS_BT_APPL_TRACE_DEBUG("### %s type=%d\r\n", __FUNCTION__, type);
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
-    }    
+    }
     if(type)
     {
         tls_ble_register_gap_evt(WM_BLE_GAP_EVENT_DISC|WM_BLE_GAP_EVENT_DISC_COMPLETE, ble_gap_evt_cb);
-        rc = tls_ble_gap_scan(WM_BLE_SCAN_PASSIVE, false);    
+        rc = tls_ble_gap_scan(WM_BLE_SCAN_PASSIVE, false);
     }else
     {
         rc = tls_ble_gap_scan(WM_BLE_SCAN_STOP, false);
@@ -392,45 +392,45 @@ int tls_ble_demo_scan(uint8_t type)
 
 
 /*
-*bluetooth api demo 
+*bluetooth api demo
 */
 int demo_bt_enable()
 {
 	int rc;
     uint8_t uart_no = 0xFF;
-    
+
 	tls_appl_trace_level = TLS_BT_LOG_VERBOSE;
-    
+
     if(bt_adapter_state == WM_BT_STATE_ON)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bt system enable already"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bt system enable already");
        return TLS_BT_STATUS_SUCCESS;
-    }    
-	
+    }
+
 	TLS_BT_APPL_TRACE_DEBUG("bt system running, uart_no=%d, log_level=%d\r\n", uart_no, tls_appl_trace_level);
 
     rc = tls_bt_init(uart_no);
-    
+
 	if((rc != 0) &&(rc != BLE_HS_EALREADY) )
 	{
 		TLS_BT_APPL_TRACE_ERROR("demo_bt_enable, ret:%s,%d\r\n", tls_bt_rc_2_str(rc),rc);
 	}
 
-	return rc;  
+	return rc;
 }
 
 int demo_bt_destroy()
 {
 	int rc;
-	
+
 	TLS_BT_APPL_TRACE_DEBUG("bt system destroy\r\n");
 
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bt system destroyed already"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bt system destroyed already");
        return TLS_BT_STATUS_SUCCESS;
     }
-    
+
 	rc = tls_bt_deinit();
 
     if((rc != 0) && (rc != BLE_HS_EALREADY))
@@ -445,9 +445,9 @@ int demo_ble_server_on()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }   
+    }
     tls_ble_server_demo_api_init(NULL);
     return 0;
 }
@@ -455,9 +455,9 @@ int demo_ble_server_off()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n");
        return -1;
-    } 
+    }
 
     tls_ble_server_demo_api_deinit();
 
@@ -467,19 +467,19 @@ int demo_ble_client_on()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("please enable bluetooth system first\r\n");
        return -1;
-    }   
-    tls_ble_client_demo_api_init(NULL); 
+    }
+    tls_ble_client_demo_api_init(NULL);
     return 0;
 }
 int demo_ble_client_off()
 {
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
-       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n"); 
+       TLS_BT_APPL_TRACE_VERBOSE("bluetooth system stopped\r\n");
        return -1;
-    } 
+    }
 
     tls_ble_client_demo_api_deinit();
 
@@ -488,7 +488,7 @@ int demo_ble_client_off()
 
 int demo_ble_uart_server_on(uint8_t uart_no)
 {
-    return tls_ble_uart_init(BLE_UART_SERVER_MODE, uart_no, NULL);    
+    return tls_ble_uart_init(BLE_UART_SERVER_MODE, uart_no, NULL);
 }
 
 int demo_ble_uart_server_off()
@@ -497,12 +497,12 @@ int demo_ble_uart_server_off()
 }
 int demo_ble_uart_client_on(uint8_t uart_no)
 {
-    return tls_ble_uart_init(BLE_UART_CLIENT_MODE, uart_no, NULL); 
+    return tls_ble_uart_init(BLE_UART_CLIENT_MODE, uart_no, NULL);
 }
 
 int demo_ble_uart_client_off()
 {
-    return tls_ble_uart_deinit(BLE_UART_CLIENT_MODE, 0xFF);   
+    return tls_ble_uart_deinit(BLE_UART_CLIENT_MODE, 0xFF);
 }
 int demo_ble_adv(uint8_t type)
 {

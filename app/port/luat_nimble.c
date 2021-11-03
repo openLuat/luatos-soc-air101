@@ -82,7 +82,7 @@ static void app_adapter_state_changed_callback(tls_bt_state_t status)
     msg.arg1 = status;
     luat_msgbus_put(&msg, 0);
 
-    
+
 	// #if (TLS_CONFIG_BLE == CFG_ON)
 
     // if(status == WM_BT_STATE_ON)
@@ -90,14 +90,14 @@ static void app_adapter_state_changed_callback(tls_bt_state_t status)
     // 	TLS_BT_APPL_TRACE_VERBOSE("init base application\r\n");
 
 	// 	//at here , user run their own applications;
-    //     #if 1		
+    //     #if 1
     //     //tls_ble_wifi_cfg_init();
     //     tls_ble_server_demo_api_init(xxx_ble_income);
     //     //tls_ble_client_demo_api_init(NULL);
     //     //tls_ble_server_demo_hid_init();
     //     //tls_ble_server_hid_uart_init();
     //     //tls_ble_client_multi_conn_demo_api_init();
-    //     #endif        
+    //     #endif
 
     // }else
     // {
@@ -166,7 +166,7 @@ on_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
 
 
 int
-luat_nimble_init(uint8_t uart_idx)
+luat_nimble_init(uint8_t uart_idx, char* name)
 {
     if(ble_system_state_on)
     {
@@ -189,23 +189,23 @@ luat_nimble_init(uint8_t uart_idx)
     ble_hs_cfg.reset_cb = on_reset;
     ble_hs_cfg.shutdown_cb = on_reset; /*same callback as on_reset */
     ble_hs_cfg.gatts_register_cb = on_svr_register_cb;
-    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;   
-    
+    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
     /* Initialize all packages. */
     nimble_port_init();
 
 
 
     /*Application levels code entry*/
-    tls_ble_gap_init();
+    tls_ble_gap_init(name);
     tls_bt_util_init();
 
     /*Initialize the vuart interface and enable controller*/
     ble_hci_vuart_init(uart_idx);
-    
+
     /* As the last thing, process events from default event queue. */
     tls_nimble_start();
-    
+
     ble_system_state_on = true;
 
     return 0;
@@ -224,21 +224,21 @@ luat_nimble_deinit(void)
     /*Stop hs system*/
     rc = nimble_port_stop();
     assert(rc == 0);
-    
+
     /*Stop controller and free vuart resource */
     rc = ble_hci_vuart_deinit();
     assert(rc == 0);
 
     /*Free hs system resource*/
     nimble_port_deinit();
-    
+
     /*Free task stack ptr and free hs task*/
     tls_nimble_stop();
 
     /*Application levels resource cleanup*/
     tls_ble_gap_deinit();
     tls_bt_util_deinit();
-    
+
     ble_system_state_on = false;
 
     return rc;
@@ -248,6 +248,6 @@ luat_nimble_deinit(void)
 //----------------------------------------
 // 设置广播数据
 int luat_nimble_gap_adv_set_fields() {
-    
+
 }
 //----------------------------------------

@@ -6,7 +6,7 @@
 
 typedef int (app_gap_evt_cback_t)(struct ble_gap_event *event, void *arg);
 
-extern int tls_ble_gap_init(void);
+extern int tls_ble_gap_init(char * name);
 extern int tls_ble_gap_deinit(void);
 extern int tls_nimble_gap_adv(wm_ble_adv_type_t type , int duration);
 extern int tls_ble_gap_set_adv_param(uint8_t adv_type, uint32_t min, uint32_t max, uint8_t chn_map, uint8_t filter_policy,uint8_t *dir_mac, uint8_t dir_mac_type);
