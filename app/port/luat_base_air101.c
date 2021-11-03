@@ -143,6 +143,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_NIMBLE
   {"nimble",    luaopen_nimble},
 #endif
+#ifdef LUAT_USE_FDB
+  {"fdb",       luaopen_fdb},
+#endif
   {NULL, NULL}
 };
 

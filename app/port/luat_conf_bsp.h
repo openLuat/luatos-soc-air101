@@ -52,6 +52,7 @@
 
 #define LUAT_USE_SHELL 1
 // #define LUAT_USE_NIMBLE 1
+#define LUAT_USE_FDB 1
 
 //---------------------
 // UI
