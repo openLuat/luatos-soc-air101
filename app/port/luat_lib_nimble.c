@@ -10,7 +10,11 @@
 
 static int l_nimble_init(lua_State* L) {
     int rc = 0;
-    rc = luat_nimble_init(0xFF);
+    char* name = NULL;
+    if(lua_isstring(L, 1)) {
+        name = lua_tostring(L, 1);
+    }
+    rc = luat_nimble_init(0xFF,name);
     if (rc) {
         lua_pushboolean(L, 0);
         lua_pushinteger(L, rc);

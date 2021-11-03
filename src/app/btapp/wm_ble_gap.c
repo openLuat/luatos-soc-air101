@@ -76,7 +76,7 @@ static void tls_ble_dm_event_handler(tls_ble_dm_evt_t evt, tls_ble_dm_msg_t *msg
 			{
 				report_evt_t *report_evt = NULL;
                 report_evt_t *report_evt_next = NULL;
-				cpu_sr = tls_os_set_critical();	
+				cpu_sr = tls_os_set_critical();
                 if(!dl_list_empty(&report_evt_list.list))
                 {
     				dl_list_for_each_safe(report_evt,report_evt_next, &report_evt_list.list, report_evt_t, list)
@@ -90,7 +90,7 @@ static void tls_ble_dm_event_handler(tls_ble_dm_evt_t evt, tls_ble_dm_msg_t *msg
     				}
                 }
 				tls_os_release_critical(cpu_sr);
-				
+
 				break;
 			}
 
@@ -100,7 +100,7 @@ static void tls_ble_dm_event_handler(tls_ble_dm_evt_t evt, tls_ble_dm_msg_t *msg
 	}
 }
 
-int tls_ble_gap_init()
+int tls_ble_gap_init(char * name)
 {
 	dl_list_init(&report_evt_list.list);
 	return tls_ble_dm_init(tls_ble_dm_event_handler);
@@ -111,12 +111,12 @@ int tls_ble_gap_deinit()
 	uint32_t cpu_sr;
 
 	report_evt_t *evt = NULL;
-	report_evt_t *evt_next = NULL;	
+	report_evt_t *evt_next = NULL;
 
 	if(dl_list_empty(&report_evt_list.list))
 		return TLS_BT_STATUS_SUCCESS;
-	
-	cpu_sr = tls_os_set_critical();	
+
+	cpu_sr = tls_os_set_critical();
 
 	dl_list_for_each_safe(evt, evt_next,&report_evt_list.list, report_evt_t, list)
 	{
@@ -173,7 +173,7 @@ int tls_ble_register_report_evt(tls_ble_dm_evt_t rpt_evt,  tls_ble_dm_callback_t
     cpu_sr = tls_os_set_critical();
     dl_list_add_tail(&report_evt_list.list, &evt->list);
     tls_os_release_critical(cpu_sr);
-	
+
 	return TLS_BT_STATUS_SUCCESS;
 
 }
@@ -183,7 +183,7 @@ int tls_ble_deregister_report_evt(tls_ble_dm_evt_t rpt_evt,  tls_ble_dm_callback
 	report_evt_t *evt = NULL;
 	report_evt_t *evt_next = NULL;
 
-	cpu_sr = tls_os_set_critical();	
+	cpu_sr = tls_os_set_critical();
     if(!dl_list_empty(&report_evt_list.list))
     {
     	dl_list_for_each_safe(evt,evt_next, &report_evt_list.list, report_evt_t, list)
@@ -200,11 +200,11 @@ int tls_ble_deregister_report_evt(tls_ble_dm_evt_t rpt_evt,  tls_ble_dm_callback
                     evt = NULL;
     			}
     		}
-            cpu_sr = tls_os_set_critical();	
+            cpu_sr = tls_os_set_critical();
     	}
     }
 	tls_os_release_critical(cpu_sr);
-	
+
 	return TLS_BT_STATUS_SUCCESS;
 }
 
@@ -217,13 +217,13 @@ int tls_ble_gap_set_name(const char * dev_name, uint8_t update_flash)
     {
         return TLS_BT_STATUS_PARM_INVALID;
     }
-    
+
 	prop.type = WM_BT_PROPERTY_BDNAME;
 	prop.len = strlen(dev_name);     ////name length;
     prop.val = (void*)dev_name;  ////name value;
-           
+
 	ret = tls_bt_set_adapter_property(&prop, update_flash);
 
-	return ret;    
+	return ret;
 }
 #endif

@@ -72,20 +72,20 @@ gap_event(struct ble_gap_event *event, void *arg)
     TLS_BT_APPL_TRACE_EVENT("gap_event, [%s]\n",tls_bt_gap_evt_2_str(event->type));
 
     /*Notify those who cares the event type*/
-    ble_npl_mutex_pend(&report_evt_list.list_mutex, 0); 
-    
+    ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
+
     if(!dl_list_empty(&report_evt_list.list))
     {
         dl_list_for_each_safe(report_evt,report_evt_next, &report_evt_list.list, report_evt_t, list)
         {
             ble_npl_mutex_release(&report_evt_list.list_mutex);
-            
+
             if((report_evt)&&(report_evt->evt&evt)&&(report_evt->reg_func_ptr))
             {
                 rc = report_evt->reg_func_ptr(event, arg);
             }
-            
-            ble_npl_mutex_pend(&report_evt_list.list_mutex, 0); 
+
+            ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
         }
     }
     ble_npl_mutex_release(&report_evt_list.list_mutex);
@@ -158,11 +158,11 @@ scan_enable(uint8_t type, bool filter_duplicate)
 static void tls_ble_gap_free_left_report_list()
 {
 	report_evt_t *evt = NULL;
-	report_evt_t *evt_next = NULL;	
+	report_evt_t *evt_next = NULL;
 
 	if(dl_list_empty(&report_evt_list.list))
 		return ;
-	
+
 	ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
 
 	dl_list_for_each_safe(evt, evt_next,&report_evt_list.list, report_evt_t, list)
@@ -171,7 +171,7 @@ static void tls_ble_gap_free_left_report_list()
 		tls_mem_free(evt);
 	}
 
-	ble_npl_mutex_release(&report_evt_list.list_mutex);    
+	ble_npl_mutex_release(&report_evt_list.list_mutex);
 }
 
 /*
@@ -182,18 +182,18 @@ static void tls_ble_gap_free_left_report_list()
 int tls_nimble_gap_adv(wm_ble_adv_type_t type, int duration)
 {
     int rc ;
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
     }
-    
+
     if(type)
     {
         uint8_t own_addr_type;
         struct ble_gap_adv_params adv_params;
-        
+
         /* Figure out address to use while advertising (no privacy for now) */
         rc = ble_hs_id_infer_auto(0, &own_addr_type);
         if (rc != 0) {
@@ -217,7 +217,7 @@ int tls_nimble_gap_adv(wm_ble_adv_type_t type, int duration)
         {
             adv_params.itvl_min = 0x40;
         }
-        
+
         if(adv_params_dft.itvl_max)
         {
             adv_params.itvl_max = adv_params_dft.itvl_max;
@@ -229,7 +229,7 @@ int tls_nimble_gap_adv(wm_ble_adv_type_t type, int duration)
 
         TLS_BT_APPL_TRACE_DEBUG("Starting advertising\r\n");
 
-        
+
         /* As own address type we use hard-coded value, because we generate
               NRPA and by definition it's random */
         rc = ble_gap_adv_start(own_addr_type, &direct_adv_addr, duration?duration:BLE_HS_FOREVER,
@@ -237,7 +237,7 @@ int tls_nimble_gap_adv(wm_ble_adv_type_t type, int duration)
         //assert(rc == 0);
         if(rc)
         {
-           TLS_BT_APPL_TRACE_WARNING("Starting advertising failed, rc=%d\r\n", rc); 
+           TLS_BT_APPL_TRACE_WARNING("Starting advertising failed, rc=%d\r\n", rc);
         }
 
     }else
@@ -253,17 +253,17 @@ static wm_ble_scan_type_t g_scan_state = WM_BLE_SCAN_STOP;
 int tls_ble_gap_scan(wm_ble_scan_type_t type, bool filter_duplicate)
 {
     int rc = 1;
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
     }
-    
+
     if((type == WM_BLE_SCAN_STOP) && (g_scan_state != type))
     {
         rc = ble_gap_disc_cancel();
-        
+
     }else if((type == WM_BLE_SCAN_PASSIVE)&&(g_scan_state == WM_BLE_SCAN_STOP))
     {
         /*passive scan*/
@@ -274,7 +274,7 @@ int tls_ble_gap_scan(wm_ble_scan_type_t type, bool filter_duplicate)
         /*active scan*/
         rc = scan_enable(0,filter_duplicate);
     }
-    
+
     if(rc == 0)
     {
         g_scan_state = type;
@@ -289,15 +289,15 @@ int tls_ble_register_gap_evt(uint32_t evt_type, app_gap_evt_cback_t *evt_cback)
 {
     int rc = 0;
 	report_evt_t *evt = NULL;
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
     }
 
-    
-    ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);	
+
+    ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
 
 	dl_list_for_each(evt, &report_evt_list.list, report_evt_t, list)
 	{
@@ -332,7 +332,7 @@ int tls_ble_register_gap_evt(uint32_t evt_type, app_gap_evt_cback_t *evt_cback)
     ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
     dl_list_add_tail(&report_evt_list.list, &evt->list);
     ble_npl_mutex_release(&report_evt_list.list_mutex);
-	
+
 	return rc;
 
 }
@@ -340,14 +340,14 @@ int tls_ble_register_gap_evt(uint32_t evt_type, app_gap_evt_cback_t *evt_cback)
 int tls_ble_gap_set_data(wm_ble_gap_data_t type, uint8_t *data, int data_len)
 {
     int rc;
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
     }
 
-    
+
     if(type == WM_BLE_ADV_DATA)
     {
         rc = ble_gap_adv_set_data(data,data_len);
@@ -470,7 +470,7 @@ int tls_ble_gap_set_adv_param(uint8_t adv_type, uint32_t min, uint32_t max, uint
                 adv_params_dft.conn_mode = BLE_GAP_CONN_MODE_UND;
                 adv_params_dft.disc_mode = BLE_GAP_DISC_MODE_GEN;
             break;
-    }    
+    }
 
     adv_params_dft.itvl_min = min;
     adv_params_dft.itvl_max = max;
@@ -503,14 +503,14 @@ int tls_ble_deregister_gap_evt(uint32_t evt_type, app_gap_evt_cback_t *evt_cback
 {
 	report_evt_t *evt = NULL;
 	report_evt_t *evt_next = NULL;
-    
+
     if(bt_adapter_state == WM_BT_STATE_OFF)
     {
         TLS_BT_APPL_TRACE_ERROR("%s failed rc=%s\r\n", __FUNCTION__, tls_bt_rc_2_str(BLE_HS_EDISABLED));
         return BLE_HS_EDISABLED;
     }
 
-	ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);	
+	ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
     if(!dl_list_empty(&report_evt_list.list))
     {
     	dl_list_for_each_safe(evt,evt_next, &report_evt_list.list, report_evt_t, list)
@@ -527,11 +527,11 @@ int tls_ble_deregister_gap_evt(uint32_t evt_type, app_gap_evt_cback_t *evt_cback
                     evt = NULL;
     			}
     		}
-            ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);	
+            ble_npl_mutex_pend(&report_evt_list.list_mutex, 0);
     	}
     }
 	ble_npl_mutex_release(&report_evt_list.list_mutex);
-	
+
 	return 0;
 }
 
@@ -547,28 +547,31 @@ int tls_ble_gap_deinit(void)
     return 0;
 }
 
-int tls_ble_gap_init(void)
+int tls_ble_gap_init(char * name)
 {
     char default_device_name[MYNEWT_VAL(BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH)];
     uint8_t bt_mac[6];
     int ret_len = 0;
-    
+
     g_scan_state = WM_BLE_SCAN_STOP;
-    memset(&adv_params_dft, 0, sizeof(adv_params_dft)); 
+    memset(&adv_params_dft, 0, sizeof(adv_params_dft));
     adv_params_dft.conn_mode = BLE_GAP_CONN_MODE_UND;  //default conn  mode;
     adv_params_dft.disc_mode = BLE_GAP_DISC_MODE_GEN;  //default disc  mode;
     memset(&disc_params_dft, 0, sizeof(disc_params_dft));
     memset(&direct_adv_addr, 0, sizeof(direct_adv_addr));
     dl_list_init(&report_evt_list.list);
     ble_npl_mutex_init(&report_evt_list.list_mutex);
-    
+
     if(btif_config_get_str("Local", "Adapter", "Name", default_device_name, &ret_len))
     {
         ble_svc_gap_device_name_set(default_device_name);
     }else
     {
         tls_get_bt_mac_addr(bt_mac);
-        sprintf(default_device_name, "WM-%02X:%02X:%02X", bt_mac[3], bt_mac[4], bt_mac[5]);
+        if(name != NULL)
+            sprintf(default_device_name, "%s", name);
+        else
+            sprintf(default_device_name, "LUATOS-%02X:%02X:%02X", bt_mac[3], bt_mac[4], bt_mac[5]);
         ble_svc_gap_device_name_set(default_device_name);
     }
     return 0;
