@@ -163,6 +163,12 @@ target("air10x")
     add_includedirs("src/bt/blehost/ext/tinycrypt/include", "src/bt/blehost/nimble/host/util/include")
 
     add_includedirs(luatos.."components/nr_micro_shell")
+    
+    -- flashdb & fal
+    add_includedirs(luatos.."components/fal/inc")
+    add_files(luatos.."components/fal/src/*.c")
+    add_includedirs(luatos.."components/flashdb/inc")
+    add_files(luatos.."components/flashdb/src/*.c")
 
 	after_build(function(target)
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
@@ -194,7 +200,7 @@ target("air10x")
         elseif is_mode("release") then
             import("lib.detect.find_file")
             os.cp("$(buildir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
-            local path7z
+            local path7z = "7z.exe"
             if is_plat("windows") then
                 path7z = find_file("7z.exe", { "C:/Program Files/7-Zip/", "D:/Program Files/7-Zip/", "E:/Program Files/7-Zip/"})
             elseif is_plat("linux") then
