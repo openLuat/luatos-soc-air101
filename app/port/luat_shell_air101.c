@@ -15,9 +15,52 @@ typedef struct console_st
 
 static console 	ShellConsole;
 
+int luat_sendchar(int port,int ch){
+	if (port == 0){
+		if(ch == '\n'){
+			while (tls_reg_read32(HR_UART0_FIFO_STATUS) & 0x3F);
+			tls_reg_write32(HR_UART0_TX_WIN, '\r');
+	    }
+	    while(tls_reg_read32(HR_UART0_FIFO_STATUS) & 0x3F);
+	    tls_reg_write32(HR_UART0_TX_WIN, (char)ch);
+	}else if (port == 1){
+		if(ch == '\n'){
+			while (tls_reg_read32(HR_UART1_FIFO_STATUS) & 0x3F);
+			tls_reg_write32(HR_UART1_TX_WIN, '\r');
+	    }
+		while(tls_reg_read32(HR_UART1_FIFO_STATUS) & 0x3F);
+		tls_reg_write32(HR_UART1_TX_WIN, (char)ch);
+	}else if (port == 2){
+		if(ch == '\n'){
+			while (tls_reg_read32(HR_UART2_FIFO_STATUS) & 0x3F);
+			tls_reg_write32(HR_UART2_TX_WIN, '\r');
+	    }
+		while(tls_reg_read32(HR_UART2_FIFO_STATUS) & 0x3F);
+		tls_reg_write32(HR_UART2_TX_WIN, (char)ch);
+	}else if (port == 3){
+		if(ch == '\n'){
+			while (tls_reg_read32(HR_UART3_FIFO_STATUS) & 0x3F);
+			tls_reg_write32(HR_UART3_TX_WIN, '\r');
+	    }
+		while(tls_reg_read32(HR_UART3_FIFO_STATUS) & 0x3F);
+		tls_reg_write32(HR_UART3_TX_WIN, (char)ch);
+	}else if (port == 4){
+		if(ch == '\n'){
+			while (tls_reg_read32(HR_UART4_FIFO_STATUS) & 0x3F);
+			tls_reg_write32(HR_UART4_TX_WIN, '\r');
+	    }
+		while(tls_reg_read32(HR_UART4_FIFO_STATUS) & 0x3F);
+		tls_reg_write32(HR_UART4_TX_WIN, (char)ch);
+	}
+    return ch;
+}
+
 void luat_shell_write(char* buff, size_t len) {
+    int i=0;
     if (drv > -1 && len >= 0) {
-        tls_uart_write(drv, buff, len);
+        while (i<len){
+            luat_sendchar(drv,buff[i++]);
+        };
     }
 }
 
