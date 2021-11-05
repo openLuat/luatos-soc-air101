@@ -146,6 +146,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FDB
   {"fdb",       luaopen_fdb},
 #endif
+#ifdef LUAT_USE_LCDSEG
+  {"lcdseg",       luaopen_lcdseg},
+#endif
   {NULL, NULL}
 };
 
