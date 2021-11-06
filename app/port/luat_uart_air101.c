@@ -28,7 +28,7 @@ static s16 uart_input_cb(u16 len, void* user_data)
 {
     int uartid = (int)user_data;
     //不是fifo超时回调
-    if(uartid <= MAX_DEVICE_COUNT)
+    if(uartid < 100)
     {
         //未读取长度够不够？
         if(CIRC_CNT(uart_port[uartid].recv.head, uart_port[uartid].recv.tail, TLS_UART_RX_BUF_SIZE)
@@ -37,7 +37,7 @@ static s16 uart_input_cb(u16 len, void* user_data)
     }
     else//是fifo超时回调
     {
-        uartid /= 10;
+        uartid -= 100;
     }
 
     rtos_msg_t msg;

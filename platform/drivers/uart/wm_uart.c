@@ -623,7 +623,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
     }
     if (intr_src & UIS_RX_FIFO_TIMEOUT)
     {
-        port->rx_callback(0, (void*)((int)port->priv_data*10));
+        port->rx_callback(0, (void*)((int)port->priv_data+100));
     }
     csi_kernel_intrpt_exit();
 }
@@ -730,7 +730,7 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
     }
     if (intr_src & UIS_RX_FIFO_TIMEOUT)
     {
-        port->rx_callback(0, (void*)((int)port->priv_data*10));
+        port->rx_callback(0, (void*)((int)port->priv_data+100));
     }
     csi_kernel_intrpt_exit();
 }
@@ -818,7 +818,7 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
     }
     if (intr_src & UIS_RX_FIFO_TIMEOUT)
     {
-        port->rx_callback(0, (void*)((int)port->priv_data*10));
+        port->rx_callback(0, (void*)((int)port->priv_data+100));
     }
     port->regs->UR_INTS = intr_src;
     csi_kernel_intrpt_exit();

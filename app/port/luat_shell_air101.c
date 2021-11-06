@@ -3,9 +3,12 @@
 
 #define LUAT_LOG_TAG "luat.shell"
 #include "luat_log.h"
+#include "wm_uart.h"
 
 static int drv = -1;
 #define CONSOLE_BUF_SIZE   512
+
+extern struct tls_uart_port uart_port[TLS_UART_MAX];
 
 typedef struct console_st
 {
@@ -82,8 +85,12 @@ void luat_shell_notify_recv(void) {
 }
 
 int16_t demo_console_rx(uint16_t len, void* user_data){
-    ShellConsole.rx_data_len += len;
-    luat_shell_notify_read();
+	int uartid = (int)user_data;
+	if(uartid >= 100)
+	{
+		ShellConsole.rx_data_len = CIRC_CNT(uart_port[0].recv.head, uart_port[0].recv.tail, TLS_UART_RX_BUF_SIZE);
+    	luat_shell_notify_read();
+	}
     return 0;
 }
 
