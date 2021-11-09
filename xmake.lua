@@ -189,11 +189,15 @@ target("air10x")
         if fls then fls:write(img) fls:close() end
         if is_mode("debug") then
             os.cd("./mklfs")
-            os.exec("./luac_536_32bits.exe -s -o ./disk/main.luac ../user/demo/gpio/main.lua")
+            os.exec("./luac_536_32bits.exe -s -o ./disk/main.luac ../main.lua")
             os.exec("./mklfs.exe")
             os.cd("../")
             os.mv("./mklfs/script.bin", "$(buildir)/out/script.bin")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
+            if TARGET_NAME == "AIR101" then
+                os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
+            else 
+                os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 80E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
+            end
             local script = io.readfile("$(buildir)/out/script.img", {encoding = "binary"})
             local fls = io.open("$(buildir)/out/"..TARGET_NAME..".fls", "a+")
             if fls then fls:write(script) fls:close() end
