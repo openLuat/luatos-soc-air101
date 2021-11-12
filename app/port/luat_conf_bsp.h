@@ -6,6 +6,8 @@
 
 #define AIR101
 
+#define FLASH_FS_REGION_SIZE 112
+
 #define LUAT_FAST_RAMRUN __attribute__((section (".ram_run")))
 // #define LV_ATTRIBUTE_FAST_MEM __attribute__((section (".ram_run")))
 

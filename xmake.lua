@@ -7,6 +7,7 @@ add_rules("mode.debug", "mode.release")
 local AIR10X_VERSION
 local luatos = "../LuatOS/"
 local TARGET_NAME 
+local AIR10X_FLASH_FS_REGION_SIZE
 
 local sdk_dir = "D:\\csky-elfabiv2-tools-mingw-minilibc\\"
 if is_plat("linux") then
@@ -71,6 +72,7 @@ target("air10x")
     set_targetdir("$(buildir)/out")
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
+        AIR10X_FLASH_FS_REGION_SIZE = conf_data:match("#define FLASH_FS_REGION_SIZE (%d+)")
         AIR10X_VERSION = conf_data:match("#define LUAT_BSP_VERSION \"(%w+)\"")
         local LVGL_CONF = conf_data:find("// #define LUAT_USE_LVGL\n")
         if LVGL_CONF == nil then target:add("deps", "lvgl") end
@@ -214,7 +216,13 @@ target("air10x")
                 end
             end
             if path7z then
-                os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
+                if AIR10X_FLASH_FS_REGION_SIZE then
+                    local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
+                    local LVGL_CONF = info_data:gsub("\"size\" : 112\n","\"size\" : "..AIR10X_FLASH_FS_REGION_SIZE.."\n")
+                    io.writefile("./soc_tools/info.json", LVGL_CONF)
+                else
+                    os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
+                end
                 os.exec(path7z.." a LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./soc_tools/"..TARGET_NAME..".fls")
                 os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
