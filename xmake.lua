@@ -217,9 +217,18 @@ target("air10x")
             end
             if path7z then
                 if AIR10X_FLASH_FS_REGION_SIZE then
+                    print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
                     local LVGL_CONF = info_data:gsub("\"size\" : 112\n","\"size\" : "..AIR10X_FLASH_FS_REGION_SIZE.."\n")
-                    io.writefile("./soc_tools/info.json", LVGL_CONF)
+                    local offset,LVGL_JSON
+                    if TARGET_NAME == "AIR101" then
+                        offset = string.format("%X",0x81FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
+                        LVGL_JSON = LVGL_CONF:gsub("\"offset\" : \"81E0000\",\n","\"offset\" : \""..offset.."\",\n")
+                    else
+                        offset = string.format("%X",0x80FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
+                        LVGL_JSON = LVGL_CONF:gsub("\"offset\" : \"80E0000\",\n","\"offset\" : \""..offset.."\",\n")
+                    end
+                    io.writefile("./soc_tools/info.json", LVGL_JSON)
                 else
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
