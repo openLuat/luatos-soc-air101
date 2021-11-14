@@ -1,4 +1,4 @@
-#include "luat_conf_bsp.h"
+// #include "luat_conf_bsp.h"
 #include "luat_base.h"
 #include "luat_fs.h"
 #define LUAT_LOG_TAG "luat.fs"

@@ -41,22 +41,31 @@ static void luat_start(void *sdata){
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
 
-static void _lvgl_handler(void* args) {
-    while (1) {
-		lv_task_handler();
-        vTaskDelay(10 / (1000 / configTICK_RATE_HZ));
-    };
+static uint8_t lvgl_called = 0;
+static int luat_lvgl_cb(lua_State *L, void* ptr) {
+	lv_task_handler();
+	lvgl_called = 0;
+	return 0;
 }
-#define    LVGL_TASK_SIZE      512
-static OS_STK __attribute__((aligned(4)))			LVGLTaskStk[LVGL_TASK_SIZE] = {0};
+
+static void lvgl_timer_cb(void *ptmr, void *parg) {
+	if (lvgl_called)
+		return;
+	rtos_msg_t msg = {0};
+	msg.handler = luat_lvgl_cb;
+    luat_msgbus_put(&msg, 0);
+	lvgl_called = 1;
+}
+// #define    LVGL_TASK_SIZE      512
+// static OS_STK __attribute__((aligned(4)))			LVGLTaskStk[LVGL_TASK_SIZE] = {0};
 #endif
 
-#define    TASK_START_STK_SIZE         2048
+#define    TASK_START_STK_SIZE         4096
 static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] = {0};
 
 #endif
 
-int rst_sta = 0;
+uint32_t rst_sta = 0;
 
 #ifdef USE_LUATOS
 extern unsigned int  TLS_FLASH_PARAM_DEFAULT        ;
@@ -154,13 +163,9 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 #ifdef USE_LUATOS
 #ifdef LUAT_USE_LVGL
 	lv_init();
-	tls_os_task_create(NULL, NULL,
-				_lvgl_handler,
-				NULL,
-				(void *)LVGLTaskStk,          /* task's stack start address */
-				LVGL_TASK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
-				40,
-				0);
+	static tls_os_timer_t *os_timer = NULL;
+	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
+	tls_os_timer_start(os_timer);
 #endif
 	tls_os_task_create(NULL, NULL,
 				luat_start,
