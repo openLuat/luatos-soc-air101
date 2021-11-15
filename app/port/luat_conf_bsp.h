@@ -74,7 +74,7 @@
 // LVGL
 #define LUAT_USE_LVGL
 #define LV_DISP_DEF_REFR_PERIOD 10
-// #define LUAT_LV_DEBUG 0
+#define LUAT_LV_DEBUG 0
 
 #define LUAT_USE_LVGL_INDEV 1
 
