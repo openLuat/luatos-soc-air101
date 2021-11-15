@@ -41,20 +41,20 @@ static void luat_start(void *sdata){
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
 
-static uint8_t lvgl_called = 0;
+// static uint8_t lvgl_called = 0;
 static int luat_lvgl_cb(lua_State *L, void* ptr) {
 	lv_task_handler();
-	lvgl_called = 0;
+	// lvgl_called = 0;
 	return 0;
 }
 
 static void lvgl_timer_cb(void *ptmr, void *parg) {
-	if (lvgl_called)
-		return;
+	// if (lvgl_called)
+		// return;
 	rtos_msg_t msg = {0};
 	msg.handler = luat_lvgl_cb;
     luat_msgbus_put(&msg, 0);
-	lvgl_called = 1;
+	// lvgl_called = 1;
 }
 // #define    LVGL_TASK_SIZE      512
 // static OS_STK __attribute__((aligned(4)))			LVGLTaskStk[LVGL_TASK_SIZE] = {0};
@@ -181,6 +181,6 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 }
 
 #ifndef USE_LUATOS
-void vApplicationTickHook( void ) {}
+// void vApplicationTickHook( void ) {}
 void bpool(void *buffer, long len) {}
 #endif
