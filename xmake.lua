@@ -16,8 +16,8 @@ elseif is_plat("windows") then
     sdk_dir = "E:\\csky-elfabiv2-tools-mingw-minilibc\\"
 end
 
-local flto = " -flto "
--- local flto = ""
+-- local flto = " -flto "
+local flto = ""
 
 toolchain("csky_toolchain")
     set_kind("standalone")
