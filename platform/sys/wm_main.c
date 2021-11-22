@@ -164,7 +164,7 @@ int main(void)
 {
     u32 value = 0;
     /*32K switch to use RC circuit & calibration*/
-    tls_pmu_clk_select(0);
+    tls_pmu_clk_select(1);
 
     /*Switch to DBG*/
     value = tls_reg_read32(HR_PMU_BK_REG);
