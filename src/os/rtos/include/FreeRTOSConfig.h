@@ -82,7 +82,7 @@
 #define configUSE_TRACE_FACILITY	0		//是否使用可视化追踪
 #define configUSE_16_BIT_TICKS		0	//定义portTickType
 #define configIDLE_SHOULD_YIELD		1	//讲阻止空闲任务让出时间直到他的时间片用完
-#define configUSE_HEAP3				0
+#define configUSE_HEAP3				1
 
 #define configQUEUE_REGISTRY_SIZE 	0
 #define configSEMAPHORE_INIT_VALUE	5	//创建信号量的最大计数值
