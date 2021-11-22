@@ -23,7 +23,12 @@
 #include "luat_log.h"
 
 #ifndef LUAT_HEAP_SIZE
+#ifdef LUAT_USE_LVGL
 #define LUAT_HEAP_SIZE (128+48)*1024
+#else
+/*非LVGL项目并不需要太多的系统内存*/
+#define LUAT_HEAP_SIZE (128+80)*1024
+#endif
 #endif
 
 #if (LUAT_HEAP_SIZE > 128*1024)
