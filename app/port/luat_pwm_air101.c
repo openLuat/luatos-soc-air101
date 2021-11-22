@@ -106,10 +106,10 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm2_config(WM_IO_PA_12);
 			break;
 		case 22:
-			wm_pwm2_config(WM_IO_PB_24);
+			wm_pwm2_config(WM_IO_PB_14);
 			break;
 		case 32:
-			wm_pwm2_config(WM_IO_PB_14);
+			wm_pwm2_config(WM_IO_PB_24);
 			break;
 		case 03:
 			wm_pwm3_config(WM_IO_PB_03);
@@ -118,10 +118,10 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm3_config(WM_IO_PA_13);
 			break;
 		case 23:
-			wm_pwm3_config(WM_IO_PB_25);
+			wm_pwm3_config(WM_IO_PB_15);
 			break;
 		case 33:
-			wm_pwm3_config(WM_IO_PB_15);
+			wm_pwm3_config(WM_IO_PB_25);
 			break;
 		case 04:
 			wm_pwm4_config(WM_IO_PA_07);
@@ -130,10 +130,10 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm4_config(WM_IO_PA_14);
 			break;
 		case 24:
-			wm_pwm4_config(WM_IO_PB_26);
+			wm_pwm4_config(WM_IO_PB_16);
 			break;
 		case 34:
-			wm_pwm4_config(WM_IO_PB_16);
+			wm_pwm4_config(WM_IO_PB_26);
 			break;
 #endif
 		// TODO 再选一组PWM0~PWM4
