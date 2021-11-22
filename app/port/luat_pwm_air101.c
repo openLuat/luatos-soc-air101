@@ -78,8 +78,8 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 		case 00:
 			wm_pwm0_config(WM_IO_PB_00);
 			break;
-		case 10:
-			wm_pwm0_config(WM_IO_PB_19);
+		// case 10:
+		// 	wm_pwm0_config(WM_IO_PB_19);
 			break;
 		case 20:
 			wm_pwm0_config(WM_IO_PA_02);
@@ -93,8 +93,8 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 		case 01:
 			wm_pwm1_config(WM_IO_PB_01);
 			break;
-		case 11:
-			wm_pwm1_config(WM_IO_PB_20);
+		// case 11:
+		// 	wm_pwm1_config(WM_IO_PB_20);
 			break;
 		case 21:
 			wm_pwm1_config(WM_IO_PA_03);
@@ -106,11 +106,11 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm1_config(WM_IO_PB_13);
 			break;
 		case 02:
-			wm_pwm2_config(WM_IO_PA_00);
-			break;
-		case 12:
 			wm_pwm2_config(WM_IO_PB_02);
 			break;
+		// case 12:
+		// 	wm_pwm2_config(WM_IO_PA_00);
+		// 	break;
 		case 22:
 			wm_pwm2_config(WM_IO_PA_12);
 			break;
@@ -121,10 +121,10 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm2_config(WM_IO_PB_24);
 			break;
 		case 03:
-			wm_pwm3_config(WM_IO_PA_01);
+			wm_pwm3_config(WM_IO_PB_03);
 			break;
 		case 13:
-			wm_pwm3_config(WM_IO_PB_03);
+			wm_pwm3_config(WM_IO_PA_01);
 			break;
 		case 23:
 			wm_pwm3_config(WM_IO_PA_13);
@@ -136,10 +136,10 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 			wm_pwm3_config(WM_IO_PB_25);
 			break;
 		case 04:
-			wm_pwm4_config(WM_IO_PA_04);
+			wm_pwm4_config(WM_IO_PA_07);
 			break;
 		case 14:
-			wm_pwm4_config(WM_IO_PA_07);
+			wm_pwm4_config(WM_IO_PA_04);
 			break;
 		case 24:
 			wm_pwm4_config(WM_IO_PA_14);
