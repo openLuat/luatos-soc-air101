@@ -4,17 +4,24 @@
 
 #define LUAT_BSP_VERSION "V0004"
 
-#define AIR101
+// Air101 与 Air103 的Flash大小有差异,需要区分
+#define AIR103
 
+// 文件系统大小, 一般不需要修改
+// 若需要增加,必须等于 (112+64*N), 其中N为正整数.
 #define FLASH_FS_REGION_SIZE 112
 
+// 将少许核心方法放入内存, 对性能有少许影响
 #define LUAT_FAST_RAMRUN __attribute__((section (".ram_run")))
-// #define LV_ATTRIBUTE_FAST_MEM __attribute__((section (".ram_run")))
 
+//----------------------------------
+// 使用VFS(虚拟文件系统)和内置库文件, 必须启用
 #define LUAT_USE_FS_VFS 1
-
 #define LUAT_USE_VFS_INLINE_LIB 1
+//----------------------------------
 
+//----------------------------
+// 外设,按需启用, 最起码启用uart和wdt库
 #define LUAT_USE_UART 1
 #define LUAT_USE_GPIO 1
 #define LUAT_USE_I2C  1
@@ -24,36 +31,51 @@
 #define LUAT_USE_WDT  1
 #define LUAT_USE_PM  1
 #define LUAT_USE_MCU  1
-#define LUAT_USE_HWTIMER  1
+// hwtimer库对lua代码没多少用处,通常禁用
+// #define LUAT_USE_HWTIMER  1
 #define LUAT_USE_RTC 1
+// SDIO 仅支持TF/SD卡的挂载
 // #define LUAT_USE_SDIO 1
-#define LUAT_USE_LCDSEG 1
+// 段码屏/段式屏, 按需启用
+// #define LUAT_USE_LCDSEG 1
 
+//----------------------------
+// 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
 #define LUAT_USE_CRYPTO  1
 #define LUAT_USE_CJSON  1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 // #define LUAT_USE_GNSS  1
-#define LUAT_USE_FS  1
-#define LUAT_USE_SENSOR  1
-#define LUAT_USE_SFUD  1
+// #define LUAT_USE_FS  1
+// #define LUAT_USE_SENSOR  1
+// #define LUAT_USE_SFUD  1
 // #define LUAT_USE_STATEM 1
 
-#define LUAT_USE_GTFONT 1
-#define LUAT_USE_GTFONT_UTF8
+//----------------------------
+// 高通字体, 需配合芯片使用
+// #define LUAT_USE_GTFONT 1
+// #define LUAT_USE_GTFONT_UTF8
 
+//----------------------------
+// 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
 #define LUAT_USE_SHELL 1
+// NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
 // #define LUAT_USE_NIMBLE 1
+// FDB 提供kv数据库, 与nvm库类似
 // #define LUAT_USE_FDB 1
+// 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
 
 //---------------------
 // UI
+// LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
-#define LUAT_USE_EINK
+// EINK 是墨水屏
+// #define LUAT_USE_EINK
 
 //---------------------
 // U8G2
+// 单色屏, 支持i2c/spi
 // #define LUAT_USE_DISP 
 // #define LUAT_USE_U8G2
 // #define U8G2_USE_SH1106
@@ -70,15 +92,29 @@
 // #define LV_FONT_OPPOSANS_M_8
 // #define LV_FONT_OPPOSANS_M_10
 
+// -------------------------------------
+// PSRAM
+// 需要外挂PSRAM芯片, 否则不要启用, 必死机
+// air101虽然支持psram,但与spi存在复用冲突
+// air103支持psram与spi同时使用,复用不冲突
+// #define LUAT_USE_PSRAM 1
+// LVGL推荐把部分方法放入内存, 按需采用
+// #define LV_ATTRIBUTE_FAST_MEM __attribute__((section (".ram_run")))
+// ROTABLE技术是节省内存的关键技术, 启用PSRAM后内存不缺, 禁用可提高性能
+// #define LUAT_CONF_DISABLE_ROTABLE 1
+//---------------------------------------
+
+
 //---------------------
 // LVGL
+// 主推的UI库, 功能强大但API繁琐
 #define LUAT_USE_LVGL
 #define LV_DISP_DEF_REFR_PERIOD 30
 #define LUAT_LV_DEBUG 0
 
 #define LV_MEM_CUSTOM 1
 
-#define LUAT_USE_LVGL_INDEV 1
+#define LUAT_USE_LVGL_INDEV 1 // 输入设备
 
 #define LUAT_USE_LVGL_ARC   //圆弧 无依赖
 #define LUAT_USE_LVGL_BAR   //进度条 无依赖

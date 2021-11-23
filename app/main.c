@@ -16,6 +16,7 @@
 #include "tls_sys.h"
 #include "wm_ram_config.h"
 #include "wm_internal_flash.h"
+#include "wm_psram.h"
 
 #include "FreeRTOS.h"
 
@@ -36,10 +37,14 @@ static uint8_t __attribute__((aligned(4))) heap_ext[LUAT_HEAP_SIZE - 128*1024] =
 #endif
 
 static void luat_start(void *sdata){
+#ifdef LUAT_USE_PSRAM
+	bpool((void*)0x30000000, 4*1024*1024);
+#else
 	bpool((void*)0x20028000, 128*1024);
 	#if (LUAT_HEAP_SIZE > 128*1024)
 	bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
 	#endif
+#endif
 	luat_main();
 }
 
@@ -135,35 +140,14 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
     tls_param_init(); /*add param to init sysparam_lock sem*/
 #endif
 
-#if 0
+// 如要使用psram,启用以下代码,并重新编译sdk
+#ifdef LUAT_USE_PSRAM
 	// 首先, 初始化psram相关引脚
-	printf("==============================\n");
-	printf("CALL wm_psram_config(1)\n");
 	wm_psram_config(1);
 	// 然后初始化psram的寄存器
-	printf("CALL psram_init()\n");
-	psram_init(PSRAM_QPI); // 如果失败, 再试试PSRAM_SPI
-	uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
-	// memset + memcheck
-	memset(psram_ptr, 0x00, PSRAM_SIZE_BYTE);
-	for (size_t psram_pos = 0; psram_pos < PSRAM_SIZE_BYTE; psram_pos++)
-	{
-		if (psram_ptr[psram_pos] != 0x00) {
-			printf("PSRAM memcheck 0x00 fail at %08X %02X\n", PSRAM_ADDR_START + psram_pos, psram_ptr[psram_pos]);
-			break;
-		}
-	}
-	memset(psram_ptr, 0x3A, PSRAM_SIZE_BYTE);
-	for (size_t psram_pos = 0; psram_pos < PSRAM_SIZE_BYTE; psram_pos++)
-	{
-		if (psram_ptr[psram_pos] != 0x3A) {
-			printf("PSRAM memcheck 0x3A fail at %08X %02X\n", PSRAM_ADDR_START + psram_pos, psram_ptr[psram_pos]);
-			break;
-		}
-	}
-	printf("==============================\n");
+	psram_init(PSRAM_QPI);
+	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
 #endif
-	
 	
 #ifdef USE_LUATOS
 #ifdef LUAT_USE_LVGL

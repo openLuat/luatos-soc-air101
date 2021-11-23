@@ -104,12 +104,4 @@ void board_init(void)
 	uart1Init(115200);
 	set_printf_port(1);	
 #endif
-// 如要使用psram,启用以下代码,并重新编译sdk
-#if 0
-	// 首先, 初始化psram相关引脚
-	wm_psram_config(1);
-	// 然后初始化psram的寄存器
-	psram_init(PSRAM_QPI);
-	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
-#endif
 }
