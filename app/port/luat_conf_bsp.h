@@ -63,7 +63,7 @@
 /**********U8G2&LCD FONT*************/
 // #define USE_U8G2_UNIFONT_SYMBOLS
 // #define USE_U8G2_OPPOSANSM12_CHINESE
-#define USE_U8G2_OPPOSANSM16_CHINESE
+// #define USE_U8G2_OPPOSANSM16_CHINESE
 // #define USE_U8G2_OPPOSANSM24_CHINESE
 // #define USE_U8G2_OPPOSANSM32_CHINESE
 /**********LVGL FONT*************/
@@ -73,8 +73,10 @@
 //---------------------
 // LVGL
 #define LUAT_USE_LVGL
-#define LV_DISP_DEF_REFR_PERIOD 10
+#define LV_DISP_DEF_REFR_PERIOD 30
 #define LUAT_LV_DEBUG 0
+
+#define LV_MEM_CUSTOM 1
 
 #define LUAT_USE_LVGL_INDEV 1
 
