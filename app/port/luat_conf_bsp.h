@@ -5,7 +5,7 @@
 #define LUAT_BSP_VERSION "V0004"
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
-#define AIR103
+#define AIR101
 
 // 文件系统大小, 一般不需要修改
 // 若需要增加,必须等于 (112+64*N), 其中N为正整数.
@@ -76,7 +76,7 @@
 //---------------------
 // U8G2
 // 单色屏, 支持i2c/spi
-// #define LUAT_USE_DISP 
+// #define LUAT_USE_DISP
 // #define LUAT_USE_U8G2
 // #define U8G2_USE_SH1106
 // #define U8G2_USE_ST7567
