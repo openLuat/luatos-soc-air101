@@ -282,7 +282,7 @@ int l_crypto_cipher_xxx(lua_State *L, uint8_t flags) {
 
     if (!strcmp("AES-128-CBC", cipher)) {
         luaL_buffinitsize(L, &buff, str_size);
-        mempcpy(buff.b, str, str_size);
+        memcpy(buff.b, str, str_size);
         if (flags) {
             ret = aes_128_cbc_encrypt((const u8*)key, (const u8*)iv, (u8*)buff.b, str_size);
         }
