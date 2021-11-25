@@ -26,7 +26,7 @@ toolchain_end()
 
 set_toolchains("csky_toolchain")
 --add macro defination
-add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","USE_LUATOS")
+add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 
 set_warnings("all")
 set_optimize("smallest")
@@ -82,7 +82,7 @@ target("air10x")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
-        target:add("defines", TARGET_NAME)
+        -- target:add("defines", TARGET_NAME)
         target:set("filename", TARGET_NAME..".elf")
         target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmsys.a ./lib/libdrivers.a ./lib/libos.a ./lib/libblehost.a ./lib/libwmarch.a ./lib/libwmcommon.a ./lib/libapp.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)

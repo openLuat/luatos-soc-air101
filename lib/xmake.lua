@@ -20,7 +20,7 @@ toolchain_end()
 
 set_toolchains("csky_toolchain")
 --add macro defination
-add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","USE_LUATOS")
+add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 -- set warning all as error
 set_warnings("all")
 set_optimize("smallest")

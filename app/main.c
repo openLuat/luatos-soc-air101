@@ -3,7 +3,7 @@
 #include "wm_psram.h"
 #include "wm_internal_flash.h"
 
-#ifdef USE_LUATOS
+#ifdef __LUATOS__
 #include "string.h"
 #include "luat_fs.h"
 #include "bget.h"
@@ -77,7 +77,7 @@ static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] =
 
 uint32_t rst_sta = 0;
 
-#ifdef USE_LUATOS
+#ifdef __LUATOS__
 extern unsigned int  TLS_FLASH_PARAM_DEFAULT        ;
 extern unsigned int  TLS_FLASH_PARAM1_ADDR          ;
 extern unsigned int  TLS_FLASH_PARAM2_ADDR          ;
@@ -106,7 +106,7 @@ void UserMain(void){
 	luat_shell_poweron(0);
 #endif
 
-#ifdef USE_LUATOS
+#ifdef __LUATOS__
 	tls_fls_read_unique_id(unique_id);
 	if (unique_id[1] == 0x10){
 		printf("I/main auth ok %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X %s\n",
@@ -149,7 +149,7 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
 #endif
 	
-#ifdef USE_LUATOS
+#ifdef __LUATOS__
 #ifdef LUAT_USE_LVGL
 	lv_init();
 	static tls_os_timer_t *os_timer = NULL;
@@ -169,7 +169,7 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 #endif
 }
 
-#ifndef USE_LUATOS
+#ifndef __LUATOS__
 // void vApplicationTickHook( void ) {}
 void bpool(void *buffer, long len) {}
 #endif
