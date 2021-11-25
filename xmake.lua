@@ -120,7 +120,7 @@ target("air10x")
     add_files(luatos.."components/coremark/*.c")
     add_includedirs(luatos.."components/coremark")
 
-    add_files(luatos.."components/cjson/*.c")
+    --add_files(luatos.."components/cjson/*.c")
     add_includedirs(luatos.."components/cjson")
 
     add_includedirs("demo")
