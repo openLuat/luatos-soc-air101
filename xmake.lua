@@ -117,6 +117,12 @@ target("air10x")
     add_files(luatos.."components/statem/*.c")
     add_includedirs(luatos.."components/statem")
 
+    add_files(luatos.."components/coremark/*.c")
+    add_includedirs(luatos.."components/coremark")
+
+    add_files(luatos.."components/cjson/*.c")
+    add_includedirs(luatos.."components/cjson")
+
     add_includedirs("demo")
     add_includedirs("demo/console")
     add_includedirs("include/app")
