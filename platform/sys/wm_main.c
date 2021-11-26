@@ -160,6 +160,15 @@ void task_start_free()
 	}
 }
 #endif
+
+// int main(void)
+// {
+// 	tls_sys_clk_set(CPU_CLK_80M);
+
+// 	while (1);
+// }
+
+
 int main(void)
 {
     u32 value = 0;
@@ -181,7 +190,7 @@ int main(void)
     /*Close those not initialized clk except uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);
     value &= ~0x3fffff;
-    value |= 0x1a02;
+    value |= 0x0002;
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
 
