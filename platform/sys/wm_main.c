@@ -190,7 +190,7 @@ int main(void)
     /*Close those not initialized clk except uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);
     value &= ~0x3fffff;
-    value |= 0x0002;
+    value |= 0x1a02;
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
 
