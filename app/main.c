@@ -143,7 +143,17 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 // 如要使用psram,启用以下代码,并重新编译sdk
 #ifdef LUAT_USE_PSRAM
 	// 首先, 初始化psram相关引脚
-	wm_psram_config(1);
+#ifndef LUAT_USE_PSRAM_PORT
+#ifdef AIR101
+	// air101只能是0, 与SPI和UART3冲突, PB0~PB5
+#define LUAT_USE_PSRAM_PORT 0
+#else
+    // air103可以是0或1
+	// 1的话, PB2~PB5, PA15, PB27, 依然占用SPI0,但改用SPI1
+#define LUAT_USE_PSRAM_PORT 1
+#endif
+#endif
+	wm_psram_config(LUAT_USE_PSRAM_PORT);
 	// 然后初始化psram的寄存器
 	psram_init(PSRAM_QPI);
 	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
