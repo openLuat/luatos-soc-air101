@@ -17,7 +17,7 @@
 #include "wm_pmu.h"
 
 #ifndef WM_SWD_ENABLE
-#define WM_SWD_ENABLE   1
+#define WM_SWD_ENABLE   0
 #endif
 void wm_hspi_gpio_config(uint8_t numsel)
 {
