@@ -20,14 +20,15 @@ void luat_shell_notify_recv(void) {
 
 static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 	int uartid = (int)user_data;
-	char buff[512];
+	char buff[512] = {0};
 	if(uartid >= 100)
 	{
 		int l = 1;
 		while (l > 0) {
 			l = luat_uart_read(0, buff, 512);
+			//printf("uart read buff %d %s\n", l, buff);
 			if (l > 0)
-				luat_shell_push(buff, 0, l);
+				luat_shell_push(buff, l);
 		}
 	}
     return 0;
