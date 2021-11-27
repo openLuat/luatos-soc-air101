@@ -84,7 +84,7 @@ void luat_shell_notify_recv(void) {
     ShellConsole.rx_data_len = 0;
 }
 
-int16_t demo_console_rx(uint16_t len, void* user_data){
+static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 	int uartid = (int)user_data;
 	if(uartid >= 100)
 	{
@@ -97,7 +97,7 @@ int16_t demo_console_rx(uint16_t len, void* user_data){
 void luat_shell_poweron(int _drv) {
     drv = _drv;
     memset(ShellConsole.rx_buf, 0, CONSOLE_BUF_SIZE + 1);
-    tls_uart_rx_callback_register(drv,(int16_t(*)(uint16_t, void*))demo_console_rx, NULL);
+    tls_uart_rx_callback_register(drv,(int16_t(*)(uint16_t, void*))luat_shell_uart_cb, NULL);
     luat_shell_notify_recv();
 }
 
