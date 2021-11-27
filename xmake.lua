@@ -39,6 +39,24 @@ add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std
 set_dependir("$(buildir)/.deps")
 set_objectdir("$(buildir)/.objs")
 
+target("blehost")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+    
+    add_files("src/bt/blehost/**.c")
+    add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
+    add_includedirs("src/app/bleapp",{public = true})
+    add_includedirs("src/os/rtos/include",{public = true})
+    add_includedirs("include",{public = true})
+    add_includedirs("include/bt",{public = true})
+    add_includedirs("include/platform",{public = true})
+    add_includedirs("include/os",{public = true})
+    add_includedirs("include/arch/xt804",{public = true})
+    add_includedirs("include/arch/xt804/csi_core",{public = true})
+
+target_end()
+
 target("lvgl")
     set_kind("static")
     set_plat("cross")
@@ -84,44 +102,37 @@ target("air10x")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
         -- target:add("defines", TARGET_NAME)
         target:set("filename", TARGET_NAME..".elf")
-        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmsys.a ./lib/libdrivers.a ./lib/libos.a ./lib/libblehost.a ./lib/libwmarch.a ./lib/libwmcommon.a ./lib/libapp.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
+        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libapp.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)
+
+    add_deps("blehost")
 
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
     add_files("app/custom/*.c")
+    add_files("platform/sys/*.c")
+    add_files("platform/drivers/**.c")
+    add_files("src/os/**.c")
+    add_files("src/os/**.S")
+    add_files("platform/common/**.c")
 
-    add_files(luatos.."lua/src/*.c")
-    add_files(luatos.."luat/modules/*.c")
-    add_files(luatos.."luat/vfs/*.c")
-    del_files(luatos.."luat/vfs/luat_fs_posix.c")
+    add_includedirs("platform/common/params",{public = true})
+    add_includedirs("src/app/mbedtls/include",{public = true})
+    add_includedirs("src/os/rtos/include",{public = true})
+    add_includedirs("platform/arch",{public = true})
+    add_includedirs("include",{public = true})
+    add_includedirs("include/driver",{public = true})
+    add_includedirs("include/os",{public = true})
+    add_includedirs("include/platform",{public = true})
+    add_includedirs("include/wifi",{public = true})
+    add_includedirs("include/arch/xt804",{public = true})
+    add_includedirs("include/arch/xt804/csi_core",{public = true})
+    add_includedirs("include/app",{public = true})
+    add_includedirs("include/net",{public = true})
+    add_includedirs("demo",{public = true})
+    add_includedirs("platform/inc",{public = true})
 
-    add_files(luatos.."components/lcd/*.c")
-    add_files(luatos.."components/sfd/*.c")
-    add_files(luatos.."components/nr_micro_shell/*.c")
-    add_files(luatos.."luat/packages/eink/*.c")
-    add_files(luatos.."luat/packages/epaper/*.c")
-    del_files(luatos.."luat/packages/epaper/GUI_Paint.c")
-    add_files(luatos.."luat/packages/iconv/*.c")
-    add_files(luatos.."luat/packages/lfs/*.c")
-    add_files(luatos.."luat/packages/lua-cjson/*.c")
-    add_files(luatos.."luat/packages/minmea/*.c")
-    add_files(luatos.."luat/packages/qrcode/*.c")
-    add_files(luatos.."luat/packages/u8g2/*.c")
-    add_files(luatos.."luat/weak/*.c")
-
-    add_files(luatos.."components/sfud/*.c")
-    add_includedirs(luatos.."components/sfud")
-
-    add_files(luatos.."components/statem/*.c")
-    add_includedirs(luatos.."components/statem")
-
-    add_files(luatos.."components/coremark/*.c")
-    add_includedirs(luatos.."components/coremark")
-
-    --add_files(luatos.."components/cjson/*.c")
-    add_includedirs(luatos.."components/cjson")
 
     add_includedirs("demo")
     add_includedirs("demo/console")
@@ -145,7 +156,28 @@ target("air10x")
     add_includedirs("src/app/fatfs")
 
     add_includedirs("app/port",{public = true})
-    add_includedirs("include",{public = true})
+
+    add_files(luatos.."lua/src/*.c")
+    add_files(luatos.."luat/modules/*.c")
+    add_files(luatos.."luat/vfs/*.c")
+    del_files(luatos.."luat/vfs/luat_fs_posix.c")
+
+    add_files(luatos.."components/lcd/*.c")
+    add_files(luatos.."components/sfd/*.c")
+    add_files(luatos.."components/nr_micro_shell/*.c")
+    add_files(luatos.."luat/packages/eink/*.c")
+    add_files(luatos.."luat/packages/epaper/*.c")
+    del_files(luatos.."luat/packages/epaper/GUI_Paint.c")
+    add_files(luatos.."luat/packages/iconv/*.c")
+    add_files(luatos.."luat/packages/lfs/*.c")
+    add_files(luatos.."luat/packages/lua-cjson/*.c")
+    add_files(luatos.."luat/packages/minmea/*.c")
+    add_files(luatos.."luat/packages/qrcode/*.c")
+    add_files(luatos.."luat/packages/u8g2/*.c")
+    add_files(luatos.."luat/weak/*.c")
+
+    
+
     add_includedirs(luatos.."lua/include",{public = true})
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."components/lcd",{public = true})
@@ -163,6 +195,18 @@ target("air10x")
     add_includedirs(luatos.."luat/packages/minmea")
     add_includedirs(luatos.."luat/packages/qrcode")
     add_includedirs(luatos.."luat/packages/u8g2")
+
+    add_files(luatos.."components/sfud/*.c")
+    add_includedirs(luatos.."components/sfud")
+
+    add_files(luatos.."components/statem/*.c")
+    add_includedirs(luatos.."components/statem")
+
+    add_files(luatos.."components/coremark/*.c")
+    add_includedirs(luatos.."components/coremark")
+
+    --add_files(luatos.."components/cjson/*.c")
+    add_includedirs(luatos.."components/cjson")
 
     -- gtfont
     add_includedirs(luatos.."components/gtfont",{public = true})
@@ -255,3 +299,5 @@ target("air10x")
         -- os.mv("$(buildir)/out/AIR101_gz.img", "$(buildir)/out/AIR101_ota.img")
     end)
 target_end()
+
+includes("lib")
