@@ -241,7 +241,7 @@ target("air10x")
                 else
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
-                os.exec(path7z.." a LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./soc_tools/"..TARGET_NAME..".fls")
+                os.exec(path7z.." a LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
                 os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
