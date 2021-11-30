@@ -29,7 +29,7 @@ int luat_i2c_setup(int id, int speed, int slaveaddr) {
 }
 
 int luat_ic2_close(int id) {
-    tls_i2c_stop();
+    // tls_i2c_stop();
     return 0;
 }
 
@@ -43,6 +43,7 @@ int luat_i2c_send(int id, int addr, void* buff, size_t len) {
         if(WM_FAILED == tls_i2c_wait_ack())
             return -1;
     }
+    tls_i2c_stop();
     return 0;
 }
 
@@ -50,16 +51,22 @@ int luat_i2c_recv(int id, int addr, void* buff, size_t len) {
     tls_i2c_write_byte((addr << 1) + 1, 1);
     if(WM_FAILED == tls_i2c_wait_ack())
         return -1;
-    for (size_t i = 0; i < len; i++)
-    {
-        if (i == 0)
-            ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
-        else if (i == len - 1)
-            ((u8*)buff)[i] = tls_i2c_read_byte(0, 1);
-        else
-            ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
-        if(WM_FAILED == tls_i2c_wait_ack())
-            break;
+    if (len < 1) 
+        return -1;
+    else if (len == 1){
+        ((u8*)buff)[0] = tls_i2c_read_byte(0, 1);
+    }else {
+        for (size_t i = 0; i < len; i++){
+            if (i == 0)
+                ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
+            else if (i == len - 1)
+                ((u8*)buff)[i] = tls_i2c_read_byte(0, 1);
+            else
+                ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
+            if(WM_FAILED == tls_i2c_wait_ack())
+                break;
+        }
     }
+    
     return 0;
 }
