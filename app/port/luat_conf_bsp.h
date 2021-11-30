@@ -35,7 +35,7 @@
 // #define LUAT_USE_HWTIMER  1
 #define LUAT_USE_RTC 1
 // SDIO 仅支持TF/SD卡的挂载
-// #define LUAT_USE_SDIO 1
+#define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
 // #define LUAT_USE_LCDSEG 1
 
@@ -46,10 +46,10 @@
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 // #define LUAT_USE_GNSS  1
-// #define LUAT_USE_FS  1
-// #define LUAT_USE_SENSOR  1
-// #define LUAT_USE_SFUD  1
-// #define LUAT_USE_STATEM 1
+#define LUAT_USE_FS  1
+#define LUAT_USE_SENSOR  1
+#define LUAT_USE_SFUD  1
+#define LUAT_USE_STATEM 1
 // 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
 // #define LUAT_USE_COREMARK 1
 
@@ -62,11 +62,13 @@
 // 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
 #define LUAT_USE_SHELL 1
 // NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
-// #define LUAT_USE_NIMBLE 1
+#define LUAT_USE_NIMBLE 1
 // FDB 提供kv数据库, 与nvm库类似
-// #define LUAT_USE_FDB 1
+#define LUAT_USE_FDB 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
+
+#define LUAT_USE_DBG
 
 //---------------------
 // UI
