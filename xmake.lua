@@ -209,8 +209,11 @@ target("air10x")
     add_includedirs(luatos.."components/cjson")
 
     -- gtfont
-    add_includedirs(luatos.."components/gtfont",{public = true})
+    add_includedirs(luatos.."components/gtfont")
     add_files(luatos.."components/gtfont/*.c")
+
+    add_files(luatos.."components/luatfonts/*.c")
+    add_includedirs(luatos.."components/luatfonts")
 
     -- ble
     add_includedirs("src/app/bleapp", "src/bt/blehost/nimble/include", "src/bt/blehost/nimble/host/include", "include/bt")

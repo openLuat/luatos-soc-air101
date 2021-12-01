@@ -158,6 +158,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_COREMARK
   {"coremark", luaopen_coremark},
 #endif
+#ifdef LUAT_USE_FONTS
+  {"fonts", luaopen_fonts},
+#endif
   {NULL, NULL}
 };
 
