@@ -143,13 +143,14 @@ static void compact(char *src) {
     struct dirent *ent;
     char curr_path[PATH_MAX];
 	struct stat _stat;
-
+	unsigned int cnt = 0;
     dir = opendir(src);
     if (dir) {
         while ((ent = readdir(dir))) {
             // Skip . and .. directories
             if ((strcmp(ent->d_name,".") != 0) && (strcmp(ent->d_name,"..") != 0)) {
-                // Update the current path
+                cnt++;
+				// Update the current path
                 strcpy(curr_path, src);
                 strcat(curr_path, "/");
                 strcat(curr_path, ent->d_name);
@@ -163,9 +164,11 @@ static void compact(char *src) {
                 }
             }
         }
-
         closedir(dir);
-    }
+		if(cnt == 0) exit(1);
+    }else{
+		exit(1);
+	}
 }
 
 void usage() {
@@ -216,9 +219,9 @@ static int to_int(const char *s) {
 	return -1;
 }
 
-#define FLASH_FS_REGION_OFFSET          0x1E0000
-#define FLASH_FS_REGION_END             0x1FC000
-#define FLASH_FS_REGION_SIZE            (FLASH_FS_REGION_END-FLASH_FS_REGION_OFFSET)      // 112KB
+#define FLASH_FS_REGION_OFFSET          0x350000
+#define FLASH_FS_REGION_END             0x3A4000
+#define FLASH_FS_REGION_SIZE            (FLASH_FS_REGION_END-FLASH_FS_REGION_OFFSET)      // 336KB
 
 #define LFS_BLOCK_DEVICE_READ_SIZE      (256)
 #define LFS_BLOCK_DEVICE_PROG_SIZE      (256)
@@ -229,9 +232,17 @@ static int to_int(const char *s) {
 
 int main(int argc, char **argv) {
     char *src = "disk";   // Source directory
-    char *dst = "script.bin";   // Destination image
+    char *dst = "disk.fs";   // Destination image
 	int err = 0;
 	int fs_size = LFS_BLOCK_DEVICE_TOTOAL_SIZE;
+	if (argc > 1 && !strcmp("-size", argv[1])) {
+		fs_size = atoi(argv[2]) * 1024;
+	}
+	for (size_t i = 0; i < argc; i++)
+	{
+		//printf("argv[%d] %s\n", i, argv[i]);
+	}
+	
 
     // Mount the file system
     cfg.read  = lfs_read;
@@ -242,7 +253,7 @@ int main(int argc, char **argv) {
     cfg.read_size = LFS_BLOCK_DEVICE_READ_SIZE;
     cfg.prog_size = LFS_BLOCK_DEVICE_PROG_SIZE;
     cfg.block_size = LFS_BLOCK_DEVICE_ERASE_SIZE;
-    cfg.block_count = LFS_BLOCK_DEVICE_TOTOAL_SIZE / LFS_BLOCK_DEVICE_ERASE_SIZE;
+    cfg.block_count = fs_size / LFS_BLOCK_DEVICE_ERASE_SIZE;
     cfg.block_cycles = 200;
     cfg.cache_size = LFS_BLOCK_DEVICE_CACHE_SIZE;
     cfg.lookahead_size = LFS_BLOCK_DEVICE_LOOK_AHEAD;
