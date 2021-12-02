@@ -13,19 +13,23 @@
 #include "lfs.h"
 #include "wm_flash_map.h"
 #include "wm_internal_flash.h"
+#include "luat_timer.h"
 
 
-#ifndef FLASH_FS_REGION_SIZE
-#define FLASH_FS_REGION_SIZE 112
+extern uint32_t lfs_addr;
+extern uint32_t lfs_size_kb;
+
+#ifdef FLASH_FS_REGION_SIZE
+#undef FLASH_FS_REGION_SIZE
 #endif
 
-#ifndef LFS_START_ADDR
-#ifdef AIR103
-#define LFS_START_ADDR (0x0FC000 - FLASH_FS_REGION_SIZE * 1024)
-#else
-#define LFS_START_ADDR (0x1FC000 - FLASH_FS_REGION_SIZE * 1024)
+#ifdef LFS_START_ADDR
+#undef LFS_START_ADDR
 #endif
-#endif
+
+#define FLASH_FS_REGION_SIZE lfs_size_kb
+#define LFS_START_ADDR lfs_addr
+
 /***************************************************
  ***************       MACRO      ******************
  ***************************************************/
@@ -38,6 +42,8 @@
 /***************************************************
  *******    FUNCTION FORWARD DECLARTION     ********
  ***************************************************/
+
+
 
 // Read a block
 static int block_device_read(const struct lfs_config *cfg, lfs_block_t block,
@@ -88,7 +94,7 @@ struct lfs_config lfs_cfg =
     .read_size = LFS_BLOCK_DEVICE_READ_SIZE,
     .prog_size = LFS_BLOCK_DEVICE_PROG_SIZE,
     .block_size = LFS_BLOCK_DEVICE_ERASE_SIZE,
-    .block_count = LFS_BLOCK_DEVICE_TOTOAL_SIZE / LFS_BLOCK_DEVICE_ERASE_SIZE,
+    //.block_count = LFS_BLOCK_DEVICE_TOTOAL_SIZE / LFS_BLOCK_DEVICE_ERASE_SIZE,
     .block_cycles = 200,
     .cache_size = LFS_BLOCK_DEVICE_CACHE_SIZE,
     .lookahead_size = LFS_BLOCK_DEVICE_LOOK_AHEAD,
@@ -162,18 +168,28 @@ static int lfs_statfs_count(void *p, lfs_block_t b)
 // Initialize
 int LFS_Init(void)
 {
+    //luat_timer_mdelay(1000);
+    //LLOGD("lfs addr %08X", LFS_START_ADDR);
+    // LLOGD("lfs addr2 %08X", lfs_addr);
+    // LLOGD("lfs addr3 %p", &lfs_addr);
+    // LLOGD("lfs block_count %d", LFS_BLOCK_DEVICE_TOTOAL_SIZE / LFS_BLOCK_DEVICE_ERASE_SIZE);
     //printf("------------LFS_Init------------\r\n");
     // mount the filesystem
+    lfs_cfg.block_count = LFS_BLOCK_DEVICE_TOTOAL_SIZE / LFS_BLOCK_DEVICE_ERASE_SIZE;
     int err = lfs_mount(&lfs, &lfs_cfg);
     //printf("lfs_mount %d\r\n",err);
     // reformat if we can't mount the filesystem
     // this should only happen on the first boot
     if (err)
     {
+        luat_timer_mdelay(1000);
+        LLOGI("lfs mount fail ret=%d , exec format", err);
         err = lfs_format(&lfs, &lfs_cfg);
         //printf("lfs_format %d\r\n",err);
-        if(err)
+        if(err) {
+            LLOGW("lfs format fail ret=%d", err);
             return err;
+        }
 
         err = lfs_mount(&lfs, &lfs_cfg);
         //printf("lfs_mount %d\r\n",err);

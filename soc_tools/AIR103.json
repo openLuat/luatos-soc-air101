@@ -13,7 +13,8 @@
         "fs" : {
             "script" : {
                 "offset" : "80E0000",
-                "size" : 112
+                "size" : 112,
+                "type" : "luadb"
             }
         },
         "version-core": "v0007",
