@@ -269,9 +269,9 @@ target("air10x")
         if is_mode("debug") then
             os.cd("./mklfs")
             os.exec("./luac_536_32bits.exe -s -o ./disk/main.luac ../main.lua")
-            os.exec("./mklfs.exe")
+            os.exec("./mklfs.exe -size 112")
             os.cd("../")
-            os.mv("./mklfs/script.bin", "$(buildir)/out/script.bin")
+            os.mv("./mklfs/disk.fs", "$(buildir)/out/script.bin")
             if TARGET_NAME == "AIR101" then
                 os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
             else 
