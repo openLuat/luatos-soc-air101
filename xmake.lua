@@ -85,6 +85,23 @@ target("lvgl")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+target("u8g2")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_files(luatos.."luat/packages/u8g2/*.c")
+
+    add_includedirs("app/port",{public = true})
+    add_includedirs("include",{public = true})
+    add_includedirs(luatos.."lua/include",{public = true})
+    add_includedirs(luatos.."luat/include",{public = true})
+    add_includedirs(luatos.."luat/packages/u8g2",{public = true})
+    add_includedirs(luatos.."components/gtfont")
+    
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -106,6 +123,7 @@ target("air10x")
     end)
 
     add_deps("blehost")
+    add_deps("u8g2")
 
     -- add files
     add_files("app/*.c")
@@ -173,7 +191,7 @@ target("air10x")
     add_files(luatos.."luat/packages/lua-cjson/*.c")
     add_files(luatos.."luat/packages/minmea/*.c")
     add_files(luatos.."luat/packages/qrcode/*.c")
-    add_files(luatos.."luat/packages/u8g2/*.c")
+    -- add_files(luatos.."luat/packages/u8g2/*.c")
     add_files(luatos.."luat/weak/*.c")
 
     
@@ -194,7 +212,7 @@ target("air10x")
     add_includedirs(luatos.."luat/packages/lua-cjson")
     add_includedirs(luatos.."luat/packages/minmea")
     add_includedirs(luatos.."luat/packages/qrcode")
-    add_includedirs(luatos.."luat/packages/u8g2")
+    -- add_includedirs(luatos.."luat/packages/u8g2")
 
     add_files(luatos.."components/sfud/*.c")
     add_includedirs(luatos.."components/sfud")
@@ -214,6 +232,9 @@ target("air10x")
 
     add_files(luatos.."components/luatfonts/*.c")
     add_includedirs(luatos.."components/luatfonts")
+
+    -- add_files(luatos.."components/mlx90640-library/*.c")
+    -- add_includedirs(luatos.."components/mlx90640-library")
 
     -- ble
     add_includedirs("src/app/bleapp", "src/bt/blehost/nimble/include", "src/bt/blehost/nimble/host/include", "include/bt")
