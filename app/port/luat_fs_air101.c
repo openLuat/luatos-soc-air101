@@ -5,172 +5,27 @@
 #include "luat_log.h"
 #include "lfs_port.h"
 #include "wm_include.h"
+#include "luat_timer.h"
+#include "stdio.h"
 
 extern struct lfs_config lfs_cfg;
 extern lfs_t lfs;
 
-#ifndef LUAT_USE_FS_VFS
+// 分区信息
 
-FILE *luat_fs_fopen(const char *filename, const char *mode)
-{
-    ////LLOGD("fopen %s %s", filename, mode);
-    int ret;
-    char *t = (char *)mode;
-    int flags = 0;
-    lfs_file_t *lfsfile = NULL;
-    for (int i = 0; i < strlen(mode); i++)
-    {
+// KV -- 64k
+// luadb -- N k
+// lfs - (112 + 64 - N)k
+uint32_t kv_addr;
+uint32_t kv_size_kb = 64;
+uint32_t luadb_addr;
+uint32_t luadb_size_kb;
+uint32_t lfs_addr;
+uint32_t lfs_size_kb;
 
-        switch (*(t++))
-        {
-        case 'w':
-            flags |= LFS_O_RDWR;
-            break;
-        case 'r':
-            flags |= LFS_O_RDONLY;
-            break;
-        case 'a':
-            flags |= LFS_O_APPEND;
-            break;
-        case 'b':
-            break;
-        case '+':
-            break;
-        default:
-
-            break;
-        }
-    }
-
-    lfsfile = tls_mem_alloc(sizeof(lfs_file_t));
-    if (!lfsfile)
-    {
-        return lfsfile;
-    }
-
-    ret = lfs_file_open(&lfs, lfsfile, filename, flags);
-    if (ret != 0)
-    {
-        return NULL;
-    }
-
-    return lfsfile;
-
-}
-
-int luat_fs_getc(FILE *stream)
-{
-    return getc(stream);
-}
-
-int luat_fs_fseek(FILE *stream, long int offset, int origin)
-{
-    int ret;
-    ret = lfs_file_seek(&lfs, stream, offset, origin);
-    if (ret < 0)
-    {
-        return -1;
-    }
-
-    return ret;
-}
-
-int luat_fs_ftell(FILE *stream)
-{
-    return ftell(stream);
-}
-
-int luat_fs_fclose(FILE *stream)
-{
-    int ret;
-    ret = lfs_file_close(&lfs, (lfs_dir_t *)stream);
-    if (ret != 0)
-    {
-        return 1;
-    }
-    tls_mem_free(stream);
-    return 0;
-}
-int luat_fs_feof(FILE *stream)
-{
-    return feof(stream);
-}
-int luat_fs_ferror(FILE *stream)
-{
-    return ferror(stream);
-}
-size_t luat_fs_fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-    int ret;
-    ret = lfs_file_read(&lfs, stream,ptr, size * nmemb);
-    if (ret < 0)
-    {
-        return 0;
-    }
-    return  ret;
-}
-size_t luat_fs_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-    int ret;
-    ret = lfs_file_write(&lfs,stream, ptr, size * nmemb);
-    if (ret < 0)
-    {
-        return 0;
-    }
-
-    return ret;
-}
-int luat_fs_remove(const char *filename)
-{
-    int ret;
-    ret = lfs_remove(&lfs,filename);
-    if(ret != 0)
-    {
-        return 1;
-    }
-    return 0;
-}
-int luat_fs_rename(const char *old_filename, const char *new_filename)
-{
-    int ret;
-    ret = lfs_rename(&lfs, old_filename,new_filename);
-    if (ret != 0)
-    {
-       return 1;
-    }
-    return 0;
-}
-int luat_fs_fexist(const char *filename)
-{
-    FILE *fd = luat_fs_fopen(filename, "rb");
-    if (fd)
-    {
-        luat_fs_fclose(fd);
-        return 1;
-    }
-    return 0;
-}
-
-size_t luat_fs_fsize(const char *filename)
-{
-    FILE *fd;
-    size_t size = 0;
-    fd = luat_fs_fopen(filename, "rb");
-    if (fd)
-    {
-        luat_fs_fseek(fd, 0, SEEK_END);
-        size = luat_fs_ftell(fd);
-        luat_fs_fclose(fd);
-    }
-    return size;
-}
-
-int luat_fs_init(void)
-{
-    LFS_Init();
-}
-
-#else
+#ifndef FLASH_FS_REGION_SIZE
+#define FLASH_FS_REGION_SIZE 112
+#endif
 
 extern const struct luat_vfs_filesystem vfs_fs_lfs2;
 #ifdef LUAT_USE_VFS_INLINE_LIB
@@ -182,12 +37,51 @@ extern const struct luat_vfs_filesystem vfs_fs_luadb;
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
 void luat_lv_fs_init(void);
-void lv_bmp_init(void);
-void lv_png_init(void);
+// void lv_bmp_init(void);
+// void lv_png_init(void);
 void lv_split_jpeg_init(void);
 #endif
 
 int luat_fs_init(void) {
+    //luat_timer_mdelay(1000);
+#ifdef AIR103
+    luadb_addr =  0x0E0000;
+#else
+    luadb_addr =  0x1E0000;
+#endif
+    //LLOGD("luadb_addr 0x%08X", luadb_addr);
+    uint8_t *ptr = (uint8_t*)(luadb_addr + 0x8000000); //0x80E0000
+    //LLOGD("luadb_addr ptr %p", ptr);
+
+    // 兼容老的LuaTools, 并提示更新
+    static const uint8_t luadb_magic[] = {0x01, 0x04, 0x5A, 0xA5};
+    uint8_t header[4];
+    memcpy(header, ptr, 4);
+    //LLOGD(">> %02X %02X %02X %02X", header[0], header[1], header[2], header[3]);
+    if (memcmp(header, luadb_magic, 4)) {
+        // 老的布局
+        LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools");
+        lfs_addr = luadb_addr;
+        kv_addr = lfs_addr - 64*1024;
+        lfs_size_kb = FLASH_FS_REGION_SIZE;
+        luadb_addr = 0;
+    }
+    else {
+        LLOGI("Using LuaDB as script zone format");
+        // TODO 根据LuaDB的区域动态调整?
+#ifdef AIR103
+        lfs_addr = luadb_addr + 64*1024;
+        lfs_size_kb = 48;
+#else
+        lfs_addr = luadb_addr + 64*1024;
+        lfs_size_kb = 48;
+#endif
+    }
+
+    //LLOGD("lfs addr4 %p", &lfs_addr);
+    //LLOGD("lfs addr5 0x%08X", lfs_addr);
+    //LLOGD("luadb_addr 0x%08X", luadb_addr);
+
     LFS_Init();
     luat_vfs_reg(&vfs_fs_lfs2);
 	luat_fs_conf_t conf = {
@@ -200,7 +94,7 @@ int luat_fs_init(void) {
 	#ifdef LUAT_USE_VFS_INLINE_LIB
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
-		.busname = (char*)luadb_inline_sys,
+		.busname = (char*)(luadb_addr == 0 ? luadb_inline_sys : ptr),
 		.type = "luadb",
 		.filesystem = "luadb",
 		.mount_point = "/luadb/",
@@ -217,5 +111,3 @@ int luat_fs_init(void) {
 
 	return 0;
 }
-
-#endif
