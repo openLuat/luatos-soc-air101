@@ -28,11 +28,8 @@ uint32_t lfs_size_kb;
 #endif
 
 extern const struct luat_vfs_filesystem vfs_fs_lfs2;
-#ifdef LUAT_USE_VFS_INLINE_LIB
 extern const char luadb_inline_sys[];
-extern const char luadb_inline[];
 extern const struct luat_vfs_filesystem vfs_fs_luadb;
-#endif
 
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
@@ -60,14 +57,14 @@ int luat_fs_init(void) {
     //LLOGD(">> %02X %02X %02X %02X", header[0], header[1], header[2], header[3]);
     if (memcmp(header, luadb_magic, 4)) {
         // 老的布局
-        LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools");
+        LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools %p", ptr);
         lfs_addr = luadb_addr;
         kv_addr = lfs_addr - 64*1024;
         lfs_size_kb = FLASH_FS_REGION_SIZE;
         luadb_addr = 0;
     }
     else {
-        LLOGI("Using LuaDB as script zone format");
+        LLOGI("Using LuaDB as script zone format %p", ptr);
         // TODO 根据LuaDB的区域动态调整?
 #ifdef AIR103
         lfs_addr = luadb_addr + 64*1024;
@@ -91,7 +88,6 @@ int luat_fs_init(void) {
 		.mount_point = "/"
 	};
 	luat_fs_mount(&conf);
-	#ifdef LUAT_USE_VFS_INLINE_LIB
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
 		.busname = (char*)(luadb_addr == 0 ? luadb_inline_sys : ptr),
@@ -100,7 +96,6 @@ int luat_fs_init(void) {
 		.mount_point = "/luadb/",
 	};
 	luat_fs_mount(&conf2);
-	#endif
 
 	#ifdef LUAT_USE_LVGL
 	luat_lv_fs_init();
