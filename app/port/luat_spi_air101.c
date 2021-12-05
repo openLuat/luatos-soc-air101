@@ -35,7 +35,7 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
         wm_spi_do_config(WM_IO_PB_05);
         return 0;
     }
-    #ifdef AIR103
+    // #ifdef AIR103
     else if (bus_id == 1) { // 本质上是mode=1,不是spi1,该模式下psram可用
 	    wm_spi_ck_config(WM_IO_PB_15);
 	    wm_spi_di_config(WM_IO_PB_16);
@@ -46,7 +46,7 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
 	    wm_spi_di_config(WM_IO_PB_25);
 	    wm_spi_do_config(WM_IO_PB_26);
     }
-    #endif
+    // #endif
     else{
         LLOGD("spi_bus error");
         return -1;
@@ -68,7 +68,7 @@ int luat_spi_setup(luat_spi_t* spi) {
             wm_spi_di_config(WM_IO_PB_03);
             wm_spi_do_config(WM_IO_PB_05);
     }
-    #ifdef AIR103
+    // #ifdef AIR103
     else if (spi->id == 1) { // 本质上是mode=1,不是spi1,该模式下psram可用
         if (spi->cs == 0 || spi->cs == WM_IO_PB_14)
 	        wm_spi_cs_config(WM_IO_PB_14);
@@ -83,7 +83,7 @@ int luat_spi_setup(luat_spi_t* spi) {
 	    wm_spi_di_config(WM_IO_PB_25);
 	    wm_spi_do_config(WM_IO_PB_26);
     }
-    #endif
+    // #endif
     else {
         return -1;
     }

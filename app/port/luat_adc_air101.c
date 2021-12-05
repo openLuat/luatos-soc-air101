@@ -17,14 +17,14 @@ int luat_adc_open(int ch, void *args)
     case 1:
         wm_adc_config(ch);
         break;
-#ifdef AIR103
+// #ifdef AIR103
     case 2:
         wm_adc_config(ch);
         break;
     case 3:
         wm_adc_config(ch);
         break;
-#endif
+// #endif
     case 10:
         return 0; // 温度传感器
     case 11:
@@ -47,14 +47,14 @@ int luat_adc_read(int ch, int *val, int *val2)
     case 1:
         voltage = adc_get_inputVolt2(ch, val);
         break;
-#ifdef AIR103
+// #ifdef AIR103
     case 2:
         voltage = adc_get_inputVolt2(ch, val);
         break;
     case 3:
         voltage = adc_get_inputVolt2(ch, val);
         break;
-#endif
+// #endif
     case 10:
         voltage = adc_temp();
         *val = voltage;
@@ -90,14 +90,14 @@ int luat_adc_close(int ch)
     case 1:
         tls_io_cfg_set(WM_IO_PA_04, WM_IO_OPTION5);
         break;
-#ifdef AIR103
+// #ifdef AIR103
     case 2:
         tls_io_cfg_set(WM_IO_PA_03, WM_IO_OPTION5);
         break;
     case 3:
         tls_io_cfg_set(WM_IO_PA_02, WM_IO_OPTION5);
         break;
-#endif
+// #endif
     case 10:
         break; // 温度
     case 11:

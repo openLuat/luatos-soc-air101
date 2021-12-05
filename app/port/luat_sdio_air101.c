@@ -21,12 +21,12 @@ int luat_sdio_init(int id){
 		wm_sdio_host_config(0);
 		return 0;
 	}
-#ifdef AIR103
+// #ifdef AIR103
 	else if (id == 1) {
 		wm_sdio_host_config(1);
 		return 0;
 	}
-#endif
+// #endif
 	return -1;
 }
 
