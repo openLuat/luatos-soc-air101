@@ -87,6 +87,7 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_RTC
   {"rtc", luaopen_rtc},                   // 实时时钟
 #endif
+  {"pin", luaopen_pin},                   // pin
 //-----------------------------------------------------------------------
 // 工具库, 按需选用
 #ifdef LUAT_USE_CRYPTO
@@ -270,6 +271,14 @@ void luat_os_entry_cri(void) {
 
 void luat_os_exit_cri(void) {
   tls_os_release_critical(cpu_sr);
+}
+
+void luat_os_irq_disable(uint8_t IRQ_Type) {
+  tls_irq_disable(IRQ_Type);
+}
+
+void luat_os_irq_enable(uint8_t IRQ_Type) {
+  tls_irq_enable(IRQ_Type);
 }
 
 #ifdef LUAT_USE_LVGL
