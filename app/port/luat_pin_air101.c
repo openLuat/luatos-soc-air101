@@ -11,7 +11,7 @@ static int get_pin_index(lua_State *L){
     if (memcmp("PA",pin_name, 2)==0){
         strncpy(pin_sn, pin_name+2, 2);
         pin_n = atoi(pin_sn);
-        if (pin_n >= 0 && pin_n < 48){
+        if (pin_n >= 0 && pin_n < 16){
             lua_pushinteger(L,pin_n);
             return 1;
         }else
@@ -19,7 +19,7 @@ static int get_pin_index(lua_State *L){
     }else if(memcmp("PB",pin_name, 2)==0){
         strncpy(pin_sn, pin_name+2, 2);
         pin_n = atoi(pin_sn);
-        if (pin_n >= 0 && pin_n < 48){
+        if (pin_n >= 0 && pin_n < 16){
             lua_pushinteger(L,pin_n+16);
             return 1;
         }else
