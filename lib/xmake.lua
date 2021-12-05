@@ -7,6 +7,8 @@ target("app")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
+
+    add_includedirs(sdkdir .. "app/port")
     
     add_files(sdkdir.."src/app/**.c")
     del_files(sdkdir.."src/app/btapp/**.c")

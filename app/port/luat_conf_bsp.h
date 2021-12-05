@@ -24,20 +24,20 @@
 // 外设,按需启用, 最起码启用uart和wdt库
 #define LUAT_USE_UART 1
 #define LUAT_USE_GPIO 1
-// #define LUAT_USE_I2C  1
+#define LUAT_USE_I2C  1
 #define LUAT_USE_SPI  1
-// #define LUAT_USE_ADC  1
+#define LUAT_USE_ADC  1
 #define LUAT_USE_PWM  1
 #define LUAT_USE_WDT  1
 #define LUAT_USE_PM  1
 #define LUAT_USE_MCU  1
 // hwtimer库对lua代码没多少用处,通常禁用
 // #define LUAT_USE_HWTIMER  1
-// #define LUAT_USE_RTC 1
+#define LUAT_USE_RTC 1
 // SDIO 仅支持TF/SD卡的挂载
-// #define LUAT_USE_SDIO 1
+#define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
-// #define LUAT_USE_LCDSEG 1
+#define LUAT_USE_LCDSEG 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
@@ -46,12 +46,19 @@
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 // #define LUAT_USE_GNSS  1
-// #define LUAT_USE_FS  1
-// #define LUAT_USE_SENSOR  1
-// #define LUAT_USE_SFUD  1
+#define LUAT_USE_FS  1
+#define LUAT_USE_SENSOR  1
+#define LUAT_USE_SFUD  1
 // #define LUAT_USE_STATEM 1
 // 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
 // #define LUAT_USE_COREMARK 1
+
+//---------------SDIO-FATFS特别配置
+// sdio库对接的是fatfs
+// fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
+// 从v0006开始默认关闭之, 需要用到就打开吧
+// #define FF_USE_LFN 0
+// #define FF_LFN_UNICODE 0
 
 //----------------------------
 // 高通字体, 需配合芯片使用
@@ -60,28 +67,28 @@
 
 //----------------------------
 // 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
-// #define LUAT_USE_SHELL 1
+#define LUAT_USE_SHELL 1
 // NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
-// #define LUAT_USE_NIMBLE 1
+#define LUAT_USE_NIMBLE 1
 // FDB 提供kv数据库, 与nvm库类似
-// #define LUAT_USE_FDB 1
+#define LUAT_USE_FDB 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
 
-// #define LUAT_USE_DBG
+#define LUAT_USE_DBG
 
 //---------------------
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
 // EINK 是墨水屏
-// #define LUAT_USE_EINK
+#define LUAT_USE_EINK
 
 //---------------------
 // U8G2
 // 单色屏, 支持i2c/spi
-// #define LUAT_USE_DISP
-// #define LUAT_USE_U8G2
+#define LUAT_USE_DISP
+#define LUAT_USE_U8G2
 // #define U8G2_USE_SH1106
 // #define U8G2_USE_ST7567
 

@@ -1,3 +1,5 @@
+#include "luat_conf_bsp.h"
+
 /*---------------------------------------------------------------------------/
 /  FatFs Functional Configurations
 /---------------------------------------------------------------------------*/
@@ -96,8 +98,9 @@
 /     0 - Include all code pages above and configured by f_setcp()
 */
 
-
-#define FF_USE_LFN		3
+#ifndef FF_USE_LFN
+#define FF_USE_LFN		0
+#endif
 #define FF_MAX_LFN		255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
@@ -116,8 +119,9 @@
 /  memory for the working buffer, memory management functions, ff_memalloc() and
 /  ff_memfree() exemplified in ffsystem.c, need to be added to the project. */
 
-
+#ifndef FF_LFN_UNICODE
 #define FF_LFN_UNICODE	0
+#endif
 /* This option switches the character encoding on the API when LFN is enabled.
 /
 /   0: ANSI/OEM in current CP (TCHAR = char)
