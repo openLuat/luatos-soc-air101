@@ -38,6 +38,9 @@ static const luaL_Reg loadedlibs[] = {
 //  {LUA_UTF8LIBNAME, luaopen_utf8},
   {LUA_DBLIBNAME, luaopen_debug},     // debug库,已精简
 #ifdef LUAT_USE_DBG
+#ifndef LUAT_USE_SHELL
+#define LUAT_USE_SHELL
+#endif
   {"dbg",  luaopen_dbg},               // 调试库
 #endif
 #if defined(LUA_COMPAT_BITLIB)
