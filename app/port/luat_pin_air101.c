@@ -1,43 +1,27 @@
+
+
 #include "wm_gpio_afsel.h"
 #include "luat_base.h"
+#include "luat_pin.h"
 
 #define LUAT_LOG_TAG "pin"
 #include "luat_log.h"
 
-static int get_pin_index(lua_State *L){
-    char pin_sn[3]={0};
-    int pin_n;
-    const char* pin_name = luaL_checkstring(L, 1);
-    if (memcmp("PA",pin_name, 2)==0){
-        strncpy(pin_sn, pin_name+2, 2);
-        pin_n = atoi(pin_sn);
-        if (pin_n >= 0 && pin_n < 16){
-            lua_pushinteger(L,pin_n);
-            return 1;
-        }else
-            goto error;
-    }else if(memcmp("PB",pin_name, 2)==0){
-        strncpy(pin_sn, pin_name+2, 2);
-        pin_n = atoi(pin_sn);
-        if (pin_n >= 0 && pin_n < 16){
-            lua_pushinteger(L,pin_n+16);
-            return 1;
-        }else
-            goto error;
+int luat_pin_to_gpio(const char* pin_name) {
+    int zone = 0;
+    int index = 0;
+    int re = 0;
+    re = luat_pin_parse(pin_name, &zone, &index);
+    if (re < 0) {
+        return -1;
     }
-error:
-    LLOGW("pin does not exist");
-    return 0;
-}
-
-#include "rotable.h"
-static const rotable_Reg reg_pin[] =
-{
-    {"__index", get_pin_index, 0},
-	{ NULL, NULL , 0}
-};
-
-LUAMOD_API int luaopen_pin( lua_State *L ) {
-    luat_newlib(L, reg_pin);
-    return 1;
+    // PA00 ~ PA15
+    if (zone == 0 && index < 16) {
+        return index;
+    }
+    // PB00 ~ PB32
+    if (zone == 1 && index < 32) {
+        return index + 16;
+    }
+    return -1;
 }
