@@ -7,6 +7,11 @@
 
 #include "luat_uart.h"
 
+typedef struct {
+	size_t len;
+	char buff[0];
+}uart_data;
+
 void luat_shell_write(char* buff, size_t len) {
     int i=0;
     while (i < len){
@@ -31,7 +36,10 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 			//printf("uart read buff %d %s\n", l, buff);
 			if (l > 0){
 				// luat_shell_push(buff, l);
-				tls_os_queue_send(shell_queue, (void *)buff, sizeof(rtos_msg_t));
+				uart_data* send_buf = (uart_data*)luat_heap_malloc(sizeof(uart_data)+l);
+				send_buf->len = l;
+    			memcpy(send_buf->buff, buff, l);
+				tls_os_queue_send(shell_queue, (void *)send_buf, sizeof(rtos_msg_t));
 			}
 		}
 	}
@@ -39,11 +47,12 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 }
 
 static void luat_shell(void *sdata){
-	void* msg;
+	uart_data* receive_buf;
 	while (1) {
-		tls_os_queue_receive(shell_queue, (void **) &msg, 0, 0);
+		tls_os_queue_receive(shell_queue, (void **) &receive_buf, 0, 0);
 		// printf("uart read buff %s\n", (char*)msg);
-		luat_shell_push((char*)msg, strlen(msg));
+		luat_shell_push(receive_buf->buff, receive_buf->len);
+		luat_heap_free(receive_buf);
 	}
 }
 
