@@ -1,7 +1,7 @@
 // #include "luat_conf_bsp.h"
 #include "luat_base.h"
 #include "luat_fs.h"
-#define LUAT_LOG_TAG "luat.fs"
+#define LUAT_LOG_TAG "fs"
 #include "luat_log.h"
 #include "lfs_port.h"
 #include "wm_include.h"

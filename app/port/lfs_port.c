@@ -7,7 +7,7 @@
 
 #include "luat_base.h"
 
-#define LUAT_LOG_TAG "luat.fs.port"
+#define LUAT_LOG_TAG "lfs"
 #include "luat_log.h"
 #include "wm_include.h"
 #include "lfs.h"
