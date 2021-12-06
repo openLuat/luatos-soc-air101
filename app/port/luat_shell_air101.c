@@ -56,11 +56,11 @@ static void luat_shell(void *sdata){
 	}
 }
 
-#define    TASK_START_STK_SIZE         2048
+#define    TASK_START_STK_SIZE         512
 static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] = {0};
 void luat_shell_poweron(int _drv) {
     tls_uart_rx_callback_register(0, luat_shell_uart_cb, NULL);
-	tls_os_queue_create(&shell_queue, 2048);
+	tls_os_queue_create(&shell_queue, 512);
 	tls_os_task_create(NULL, NULL,
 				luat_shell,
 				NULL,
