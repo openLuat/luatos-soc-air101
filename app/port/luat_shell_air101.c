@@ -39,7 +39,7 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 				uart_data* send_buf = (uart_data*)luat_heap_malloc(sizeof(uart_data)+l);
 				send_buf->len = l;
     			memcpy(send_buf->buff, buff, l);
-				tls_os_queue_send(shell_queue, (void *)send_buf, sizeof(rtos_msg_t));
+				tls_os_queue_send(shell_queue, (void *)send_buf, sizeof(uart_data)+l);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ void luat_shell_poweron(int _drv) {
 				NULL,
 				(void *)TaskStartStk,          /* task's stack start address */
 				TASK_START_STK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
-				31,
+				10,
 				0);
 }
 
