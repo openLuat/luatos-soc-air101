@@ -38,7 +38,6 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
     return 0;
 }
 
-extern void luat_cmux_read(unsigned char* buff,size_t len);
 static void luat_shell(void *sdata){
 	void* msg;
 	while (1) {
