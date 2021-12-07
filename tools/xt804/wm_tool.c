@@ -3239,9 +3239,9 @@ static int wm_tool_pack_image(const char *outfile)
 	{
 		memset(buf, 0, sizeof(buf));
 		readlen = fread(buf, 1, WM_TOOL_ONCE_READ_LEN, fpbin);
-		if(readlen % 4 != 0)
+		if(readlen % WM_TOOL_ONCE_READ_LEN != 0)
 		{
-			patch = 4 - readlen%4;
+			patch = WM_TOOL_ONCE_READ_LEN - readlen % WM_TOOL_ONCE_READ_LEN;
 			readlen += patch;
 		}
 		filelen += readlen;
@@ -3335,9 +3335,9 @@ static int wm_tool_pack_gz_image(const char *gzbin, const char *outfile)
 	{
 		memset(buf, 0, sizeof(buf));
 		readlen = fread(buf, 1, WM_TOOL_ONCE_READ_LEN, fpbin);
-		if(readlen % 4 != 0)
+		if(readlen % WM_TOOL_ONCE_READ_LEN != 0)
 		{
-			patch = 4 - readlen%4;
+			patch = WM_TOOL_ONCE_READ_LEN - readlen % WM_TOOL_ONCE_READ_LEN;
 			readlen += patch;
 		}
 		filelen += readlen;
@@ -4410,7 +4410,7 @@ static int wm_tool_query_mac(void)
     int offset = 0;
     char macstr[32] = {0};
     int len = strlen("MAC:AABBCCDDEEFF\n");/* resp format, ROM "Mac:AABBCCDDEEFF\n", SECBOOT "MAC:AABBCCDDEEFF\n" */
-    unsigned char macaddr[6] = {0};
+    unsigned char macaddr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     wm_tool_uart_clear();
 
@@ -4429,6 +4429,15 @@ static int wm_tool_query_mac(void)
                 {
                     macstr[len - 1] = '\0';/* \n -> 0 */
                     err = wm_tool_str_to_hex_array(macstr + strlen("MAC:"), 6, macaddr);
+					if (strstr(macstr, "Mac:"))
+					{
+                    	err = wm_tool_str_to_hex_array(macstr + strlen("MAC:"), 6, macaddr);
+					}
+					else
+					{
+						err = 0;
+					}
+
                     if (!err)
                     {
                         wm_tool_printf("mac %02X-%02X-%02X-%02X-%02X-%02X.\r\n", macaddr[0],
@@ -4791,7 +4800,7 @@ static int wm_tool_download_firmware(void)
         wm_tool_delay_ms(200);
         // 21 06 00 c7 7c 3f 00 00 00
         wm_tool_uart_write(wm_tool_chip_cmd_reset, sizeof(wm_tool_chip_cmd_reset));
-        wm_tool_delay_ms(30);
+        //wm_tool_delay_ms(5);
         wm_tool_printf("download completed.\r\n");
     }
 
