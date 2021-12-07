@@ -68,28 +68,28 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configUSE_PREEMPTION		1	//Ê¹ÓÃÇÀÏÈÊ½ÄÚºË
-#define configUSE_IDLE_HOOK			1	//Ê¹ÓÃ¿ÕÏÐ¹³×Ó
-#define configUSE_TICK_HOOK			1	//²»Ê¹ÓÃÊ±¼äÆ¬¹³×Ó
+#define configUSE_PREEMPTION		1	//Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½Úºï¿½
+#define configUSE_IDLE_HOOK			1	//Ê¹ï¿½Ã¿ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½
+#define configUSE_TICK_HOOK			1	//ï¿½ï¿½Ê¹ï¿½ï¿½Ê±ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½
 
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///ÄÚ²¿´¦ÀíÆ÷Ö´ÐÐÆµÂÊ
+#define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½Æµï¿½ï¿½
 
-#define configTICK_RATE_HZ			( ( portTickType ) 1000u )	//Ê±¼äÆ¬ÖÐ¶ÏµÄÆµÂÊ
-#define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 63)	//Ó¦ÓÃ³ÌÐòÖÐ¿ÉÓÃÓÅÏÈ¼¶µÄÊýÄ¿
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 90 )	//¿ÕÏÐÈÎÎñÊ¹ÓÃµÄ¶ÑÕ»´óÐ¡
-#define configTOTAL_HEAP_SIZE		( ( size_t ) 12 * 1024 )		//ÄÚºËÖÐ¿ÉÓÃµÄRAMÊýÁ¿,heap2Ê¹ÓÃ
-#define configMAX_TASK_NAME_LEN		( 8 )	//´´½¨ÈÎÎñÃû³Æ×î´óÔÊÐí³¤¶È
-#define configUSE_TRACE_FACILITY	0		//ÊÇ·ñÊ¹ÓÃ¿ÉÊÓ»¯×·×Ù
-#define configUSE_16_BIT_TICKS		0	//¶¨ÒåportTickType
-#define configIDLE_SHOULD_YIELD		1	//½²×èÖ¹¿ÕÏÐÈÎÎñÈÃ³öÊ±¼äÖ±µ½ËûµÄÊ±¼äÆ¬ÓÃÍê
-#define configUSE_HEAP3				1
+#define configTICK_RATE_HZ			( ( portTickType ) 1000u )	//Ê±ï¿½ï¿½Æ¬ï¿½Ð¶Ïµï¿½Æµï¿½ï¿½
+#define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 63)	//Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 90 )	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ÃµÄ¶ï¿½Õ»ï¿½ï¿½Ð¡
+#define configTOTAL_HEAP_SIZE		( ( size_t ) 12 * 1024 )		//ï¿½Úºï¿½ï¿½Ð¿ï¿½ï¿½Ãµï¿½RAMï¿½ï¿½ï¿½ï¿½,heap2Ê¹ï¿½ï¿½
+#define configMAX_TASK_NAME_LEN		( 8 )	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define configUSE_TRACE_FACILITY	0		//ï¿½Ç·ï¿½Ê¹ï¿½Ã¿ï¿½ï¿½Ó»ï¿½×·ï¿½ï¿½
+#define configUSE_16_BIT_TICKS		0	//ï¿½ï¿½ï¿½ï¿½portTickType
+#define configIDLE_SHOULD_YIELD		1	//ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã³ï¿½Ê±ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½
+#define configUSE_HEAP3				0
 
 #define configQUEUE_REGISTRY_SIZE 	0
-#define configSEMAPHORE_INIT_VALUE	5	//´´½¨ÐÅºÅÁ¿µÄ×î´ó¼ÆÊýÖµ
+#define configSEMAPHORE_INIT_VALUE	5	//ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 
 /* Co-routine definitions. */
-#define configUSE_CO_ROUTINES 		0	//²»Ê¹ÓÃºÏ×÷ÂÖ×ªÊ½³ÌÐò
-#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )	//ºÏ×÷Ê½Ó¦ÓÃ³ÌÐòÖÐ¿ÉÓÃµÄÓÅÏÈ¼¶ÊýÄ¿
+#define configUSE_CO_ROUTINES 		0	//ï¿½ï¿½Ê¹ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½×ªÊ½ï¿½ï¿½ï¿½ï¿½
+#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )	//ï¿½ï¿½ï¿½ï¿½Ê½Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½Ä¿
 
 #define configTIMER_TASK_STACK_DEPTH 400
 
@@ -108,7 +108,7 @@ to exclude the API function. */
 #define configUSE_MUTEXES               1
 #define configUSE_RECURSIVE_MUTEXES     1
 
-#define INCLUDE_xTaskGetCurrentTaskHandle   1 //¿ÉÒÔ»ñÈ¡µ±Ç°ÈÎÎñ
+#define INCLUDE_xTaskGetCurrentTaskHandle   1 //ï¿½ï¿½ï¿½Ô»ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½
 
 
 #endif /* FREERTOS_CONFIG_H */

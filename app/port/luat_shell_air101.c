@@ -31,14 +31,19 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 	if(uartid >= 100)
 	{
 		int l = 1;
-		while (l > 0) {
+		while (l > 0 && l <= 512) {
 			l = luat_uart_read(0, buff, 512);
 			//printf("uart read buff %d %s\n", l, buff);
-			if (l > 0){
+			if (l > 0 && l <= 512){
 				// luat_shell_push(buff, l);
-				uart_data* send_buf = (uart_data*)luat_heap_malloc(sizeof(uart_data)+l);
+				// 多一个字节放\0
+				uart_data* send_buf = (uart_data*)luat_heap_malloc(sizeof(uart_data)+l+1);
+				if(send_buf == NULL)
+					break;
+				
 				send_buf->len = l;
-    			memcpy(send_buf->buff, buff, l);
+    			memmove(send_buf->buff, buff, l);
+				send_buf->buff[l] = 0; // 放个0x0, 确认一下
 				tls_os_queue_send(shell_queue, (void *)send_buf, sizeof(uart_data)+l);
 			}
 		}
@@ -48,9 +53,13 @@ static int16_t luat_shell_uart_cb(uint16_t len, void* user_data){
 
 static void luat_shell(void *sdata){
 	uart_data* receive_buf;
+	// char* receive_buf;
+	int ret = 0;
 	while (1) {
-		tls_os_queue_receive(shell_queue, (void **) &receive_buf, 0, 0);
-		// printf("uart read buff %s\n", (char*)msg);
+		ret = tls_os_queue_receive(shell_queue, (void **) &receive_buf, 0, 0);
+		if (ret) {
+			break;
+		}
 		luat_shell_push(receive_buf->buff, receive_buf->len);
 		luat_heap_free(receive_buf);
 	}
@@ -60,7 +69,7 @@ static void luat_shell(void *sdata){
 static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] = {0};
 void luat_shell_poweron(int _drv) {
     tls_uart_rx_callback_register(0, luat_shell_uart_cb, NULL);
-	tls_os_queue_create(&shell_queue, 512);
+	tls_os_queue_create(&shell_queue, 1024);
 	tls_os_task_create(NULL, NULL,
 				luat_shell,
 				NULL,
