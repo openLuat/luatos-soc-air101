@@ -90,6 +90,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_RTC
   {"rtc", luaopen_rtc},                   // 实时时钟
 #endif
+#ifdef LUAT_USE_OTP
+  {"otp", luaopen_otp},                   // OTP
+#endif
   {"pin", luaopen_pin},                   // pin
 //-----------------------------------------------------------------------
 // 工具库, 按需选用

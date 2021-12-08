@@ -38,6 +38,8 @@
 #define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
 #define LUAT_USE_LCDSEG 1
+// OTP
+#define LUAT_USE_OTP 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
@@ -69,9 +71,9 @@
 // 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
 #define LUAT_USE_SHELL 1
 // NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
-#define LUAT_USE_NIMBLE 1
+// #define LUAT_USE_NIMBLE 1
 // FDB 提供kv数据库, 与nvm库类似
-#define LUAT_USE_FDB 1
+// #define LUAT_USE_FDB 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
 
