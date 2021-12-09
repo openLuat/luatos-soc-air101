@@ -23,12 +23,6 @@ uint32_t luadb_size_kb;
 uint32_t lfs_addr;
 uint32_t lfs_size_kb;
 
-const uint32_t luat_rom_addr_start = 0x8010000;
-#ifdef AIR103
-const uint32_t luat_rom_addr_end   = 0x80FFFFF;
-#else
-const uint32_t luat_rom_addr_end   = 0x81FFFFF;
-#endif
 
 #ifndef FLASH_FS_REGION_SIZE
 #define FLASH_FS_REGION_SIZE 112
