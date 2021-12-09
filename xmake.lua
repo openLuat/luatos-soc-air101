@@ -39,6 +39,63 @@ add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std
 set_dependir("$(buildir)/.deps")
 set_objectdir("$(buildir)/.objs")
 
+set_policy("build.across_targets_in_parallel")
+
+target("app")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_includedirs("app/port")
+    
+    add_files("src/app/**.c")
+    del_files("src/app/btapp/**.c")
+
+    add_includedirs(os.dirs(path.join(os.scriptdir(),"src/app/**")))
+    add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
+
+    add_includedirs("include",{public = true})
+    add_includedirs("include/app",{public = true})
+    add_includedirs("include/driver",{public = true})
+    add_includedirs("include/os",{public = true})
+    add_includedirs("include/bt",{public = true})
+    add_includedirs("include/platform",{public = true})
+    add_includedirs("platform/common/params",{public = true})
+    add_includedirs("include/wifi",{public = true})
+    add_includedirs("include/arch/xt804",{public = true})
+    add_includedirs("include/arch/xt804/csi_core",{public = true})
+    add_includedirs("include/net",{public = true})
+    add_includedirs("demo",{public = true})
+    add_includedirs("platform/inc",{public = true})
+
+target_end()
+
+target("wmarch")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+    set_targetdir("$(projectdir)/lib")
+
+    add_files("platform/arch/**.c")
+    add_files("platform/arch/**.S")
+    add_includedirs("include",{public = true})
+    add_includedirs("include/driver",{public = true})
+    add_includedirs("include/os",{public = true})
+    add_includedirs("include/arch/xt804",{public = true})
+    add_includedirs("include/arch/xt804/csi_core",{public = true})
+
+    after_load(function (target)
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.sourcekind == "as" then -- only asm files
+                for idx, objectfile in ipairs(sourcebatch.objectfiles) do
+                    sourcebatch.objectfiles[idx] = objectfile:gsub("%.S%.o", ".o")
+                end
+            end
+        end
+    end)
+
+target_end()
+
 target("blehost")
     set_kind("static")
     set_plat("cross")
@@ -119,9 +176,11 @@ target("air10x")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
         -- target:add("defines", TARGET_NAME)
         target:set("filename", TARGET_NAME..".elf")
-        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libapp.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
+        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)
 
+    add_deps("app")
+    -- add_deps("wmarch")
     add_deps("blehost")
     add_deps("u8g2")
 
@@ -193,9 +252,7 @@ target("air10x")
     add_files(luatos.."luat/packages/qrcode/*.c")
     -- add_files(luatos.."luat/packages/u8g2/*.c")
     add_files(luatos.."luat/weak/*.c")
-
     
-
     add_includedirs(luatos.."lua/include",{public = true})
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."components/lcd",{public = true})
@@ -212,7 +269,6 @@ target("air10x")
     add_includedirs(luatos.."luat/packages/lua-cjson")
     add_includedirs(luatos.."luat/packages/minmea")
     add_includedirs(luatos.."luat/packages/qrcode")
-    -- add_includedirs(luatos.."luat/packages/u8g2")
 
     add_files(luatos.."components/sfud/*.c")
     add_includedirs(luatos.."components/sfud")
@@ -234,6 +290,7 @@ target("air10x")
     add_includedirs(luatos.."components/luatfonts")
 
     -- add_files(luatos.."components/mlx90640-library/*.c")
+    -- del_files(luatos.."components/mlx90640-library/MLX90640_I2C_Driver.c")
     -- add_includedirs(luatos.."components/mlx90640-library")
 
     -- ble
@@ -324,4 +381,3 @@ target("air10x")
     end)
 target_end()
 
-includes("lib")
