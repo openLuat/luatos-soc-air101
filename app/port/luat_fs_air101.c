@@ -23,6 +23,7 @@ uint32_t luadb_size_kb;
 uint32_t lfs_addr;
 uint32_t lfs_size_kb;
 
+
 #ifndef FLASH_FS_REGION_SIZE
 #define FLASH_FS_REGION_SIZE 112
 #endif
