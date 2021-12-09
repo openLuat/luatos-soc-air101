@@ -33,7 +33,6 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
         wm_spi_ck_config(WM_IO_PB_02);
         wm_spi_di_config(WM_IO_PB_03);
         wm_spi_do_config(WM_IO_PB_05);
-        return 0;
     }
     // #ifdef AIR103
     else if (bus_id == 1) { // 本质上是mode=1,不是spi1,该模式下psram可用
@@ -51,7 +50,7 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
         LLOGD("spi_bus error");
         return -1;
     }
-    tls_spi_trans_type(SPI_BYTE_TRANSFER);
+    tls_spi_trans_type(SPI_DMA_TRANSFER);
 }
 
 //初始化配置SPI各项参数，并打开SPI
@@ -99,7 +98,7 @@ int luat_spi_setup(luat_spi_t* spi) {
     if(clk / (UNIT_MHZ/2) > sysclk.apbclk)
         clk = sysclk.apbclk * (UNIT_MHZ/2);
 
-    tls_spi_trans_type(SPI_BYTE_TRANSFER);
+    tls_spi_trans_type(SPI_DMA_TRANSFER);
     ret = tls_spi_setup(TLS_SPI_MODE, TLS_SPI_CS_LOW, clk);
 
     return ret;
