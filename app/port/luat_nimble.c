@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "wm_bt_config.h"
+#include "wm_regs.h"
 
 #include "wm_bt.h"
 #include "wm_bt_util.h"
@@ -172,6 +173,7 @@ luat_nimble_init(uint8_t uart_idx, char* name)
     {
         return BLE_HS_EALREADY;
     }
+    tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x7F);
 
     memset(&ble_hs_cfg, 0, sizeof(ble_hs_cfg));
 

@@ -193,6 +193,8 @@ int main(void)
     value |= 0x1a02;
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
+	/* Close bbp clk */
+	tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x0F);
 
     tls_sys_clk_set(CPU_CLK_80M);
     tls_os_init(NULL);

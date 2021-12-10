@@ -36,8 +36,6 @@ void tls_sys_clk_set(u32 clk)
 		return;
 	}
 	
-	/* Close bbp clk */
-	tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x0F);
 
 	RegValue = tls_reg_read32(HR_CLK_DIV_CTL);
 	wlanDiv = (RegValue>>8)&0xFF;

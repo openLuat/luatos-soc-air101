@@ -28,7 +28,7 @@
 #define LUAT_HEAP_SIZE (128+48)*1024
 #else
 /*非LVGL项目并不需要太多的系统内存*/
-#define LUAT_HEAP_SIZE (128+80)*1024
+#define LUAT_HEAP_SIZE (128+48)*1024
 #endif
 #endif
 
