@@ -53,8 +53,20 @@ static void pwm_dma_callback(void * channel)
 	tls_pwm_stop(channel);
 }
 
-// @return -1 打开失败。 0 打开成功
-int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
+int luat_pwm_setup(luat_pwm_conf_t* conf) {
+    int channel = conf->channel;
+	size_t period = conf->period;
+	size_t pulse = conf->pulse;
+	size_t pnum = conf->pnum;
+	size_t precision = conf->precision;
+
+	if (precision != 100 && precision != 256) {
+		LLOGW("only 100 or 256 PWM precision supported");
+		return -1;
+	}
+	if (precision == 100)
+		period = period * 2.55;
+
     int ret = -1;
     switch (channel)
 	{
@@ -138,13 +150,14 @@ int luat_pwm_open(int channel, size_t period, size_t pulse,int pnum) {
 // #endif
 		// TODO 再选一组PWM0~PWM4
 		default:
-			break;
+			LLOGW("unkown pwm channel %d", channel);
+			return -1;
 	}
 // #ifdef AIR103
 	channel = channel%10;
 // #endif
     tls_pwm_stop(channel);
-    ret = tls_pwm_init(channel, period, pulse*2.55, pnum);
+    ret = tls_pwm_init(channel, period, pulse, pnum);
     if(ret != WM_SUCCESS)
         return ret;
     tls_pwm_start(channel);
