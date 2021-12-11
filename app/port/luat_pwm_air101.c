@@ -157,7 +157,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	channel = channel%10;
 // #endif
     tls_pwm_stop(channel);
-    ret = tls_pwm_init(channel, period, pulse, pnum);
+    ret = tls_pwm_init(channel, period, pulse-1, pnum);
     if(ret != WM_SUCCESS)
         return ret;
     tls_pwm_start(channel);
