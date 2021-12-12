@@ -299,7 +299,6 @@ int l_crypto_cipher_xxx(lua_State *L, uint8_t flags) {
 }
 
 int luat_crypto_trng(char* buff, size_t len) {
-    tls_crypto_trng(buff, len);
-    return 0;
+    return tls_crypto_trng(buff, len);
 }
 
