@@ -64,8 +64,15 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		LLOGW("only 100 or 256 PWM precision supported");
 		return -1;
 	}
+	if (pulse >= precision)
+		pulse = precision;
+
 	if (precision == 100)
-		period = period * 2.55;
+		pulse = pulse * 2.55;
+	else if (precision == 256) {
+		if (pulse > 0)
+			pulse --;
+	}
 
     int ret = -1;
     switch (channel)
@@ -157,7 +164,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	channel = channel%10;
 // #endif
     tls_pwm_stop(channel);
-    ret = tls_pwm_init(channel, period, pulse-1, pnum);
+    ret = tls_pwm_init(channel, period, pulse, pnum);
     if(ret != WM_SUCCESS)
         return ret;
     tls_pwm_start(channel);
