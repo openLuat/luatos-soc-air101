@@ -14,7 +14,9 @@
 #include "luat_msgbus.h"
 
 uint32_t pwmDmaCap0[10]={0}; 
-uint32_t pwmDmaCap4[10]={0}; 
+uint32_t pwmDmaCap4[10]={0};
+
+static luat_pwm_conf_t pwm_confs[5];
 
 int l_pwm_dma_capture(lua_State *L, void* ptr) {
 	int pwmH,pwmL,pulse;
@@ -160,14 +162,46 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 			LLOGW("unkown pwm channel %d", channel);
 			return -1;
 	}
-// #ifdef AIR103
 	channel = channel%10;
-// #endif
-    tls_pwm_stop(channel);
-    ret = tls_pwm_init(channel, period, pulse, pnum);
+	if (channel < 0 || channel > 4)
+		return -1;
+	tls_sys_clk sysclk;
+	
+	tls_sys_clk_get(&sysclk);
+
+	// 判断一下是否只修改了占空比
+	if (memcmp(&pwm_confs[channel], conf, sizeof(luat_pwm_conf_t))) {
+		while (1) {
+			if (pwm_confs[channel].period != conf->period) {
+				break;
+				// TODO 支持只修改频率
+				//tls_pwm_freq_config(channel, sysclk.apbclk*UNIT_MHZ/256/period, period);
+			}
+			if (pwm_confs[channel].pnum != conf->pnum) {
+				break;
+			}
+			if (pwm_confs[channel].precision != conf->precision) {
+				break;
+			}
+			if (pwm_confs[channel].pulse != conf->pulse) {
+				// 仅占空比不同,修改即可, V0006
+				tls_pwm_duty_config(channel, pulse);
+				return 0;
+			}
+		}
+	}
+	else {
+		// 完全相同, 那不需要重新配置了
+		return 0;
+	}
+	
+	// 属于全新配置
+	ret = tls_pwm_init(channel, period, pulse, pnum);
     if(ret != WM_SUCCESS)
         return ret;
     tls_pwm_start(channel);
+	memcpy(&pwm_confs[channel], conf, sizeof(luat_pwm_conf_t));
+    
     return 0;
 }
 
@@ -379,10 +413,11 @@ int luat_pwm_capture(int channel,int freq) {
 // @return -1 关闭失败。 0 关闭成功
 int luat_pwm_close(int channel) {
     int ret = -1;
-// #ifdef AIR103
 	channel = channel%10;
-// #endif
+	if (channel < 0 || channel > 4)
+		return 0;
     ret = tls_pwm_stop(channel);
+	pwm_confs[channel].period = 0;
     if(ret != WM_SUCCESS)
         return ret;
     return 0;
