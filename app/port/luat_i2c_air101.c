@@ -28,7 +28,7 @@ int luat_i2c_setup(int id, int speed, int slaveaddr) {
     return 0;
 }
 
-int luat_ic2_close(int id) {
+int luat_i2c_close(int id) {
     // tls_i2c_stop();
     return 0;
 }
