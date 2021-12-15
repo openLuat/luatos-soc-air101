@@ -250,6 +250,12 @@ luat_nimble_deinit(void)
 //----------------------------------------
 // 设置广播数据
 int luat_nimble_gap_adv_set_fields() {
-
+    return -1;
 }
 //----------------------------------------
+
+
+// 发送数据
+int luat_nimble_server_send(int id, char* data, size_t len) {
+    return tls_ble_server_api_send_msg((u8*)data, len);
+}
