@@ -20,8 +20,6 @@ int luat_i2c_setup(int id, int speed, int slaveaddr) {
         speed = 100 * 1000; // SLOW
     else if (speed == 1)
         speed = 400 * 1000; // FAST
-    else if (speed == 2)
-        speed = 800 * 1000; // SuperFast
     wm_i2c_scl_config(WM_IO_PA_01);
     wm_i2c_sda_config(WM_IO_PA_04);
     tls_i2c_init(speed);
