@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 
 local AIR10X_VERSION
 local luatos = "../LuatOS/"
-local TARGET_NAME 
+local TARGET_NAME
 local AIR10X_FLASH_FS_REGION_SIZE
 
 local sdk_dir = "D:\\csky-elfabiv2-tools-mingw-minilibc\\"
@@ -47,7 +47,7 @@ target("app")
     set_arch("c-sky")
 
     add_includedirs("app/port",{public = true})
-    
+
     add_files("src/app/**.c")
     del_files("src/app/btapp/**.c")
 
@@ -100,7 +100,7 @@ target("blehost")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
-    
+
     add_files("src/bt/blehost/**.c")
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
     add_includedirs("src/app/bleapp",{public = true})
@@ -118,7 +118,7 @@ target("lvgl")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
-    
+
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local LVGL_CONF = conf_data:find("// #define LUAT_USE_LVGL\n")
@@ -138,7 +138,7 @@ target("lvgl")
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
     add_includedirs(luatos.."luat/packages/u8g2")
-    
+
     set_targetdir("$(buildir)/lib")
 target_end()
 
@@ -155,7 +155,7 @@ target("u8g2")
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."luat/packages/u8g2",{public = true})
     add_includedirs(luatos.."components/gtfont")
-    
+
     set_targetdir("$(buildir)/lib")
 target_end()
 
@@ -174,9 +174,19 @@ target("air10x")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
-        -- target:add("defines", TARGET_NAME)
+        local FDB_CONF = conf_data:find("// #define LUAT_USE_FDB ")
+        if FDB_CONF == nil then 
+            local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
+            local I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x08010800 , LENGTH = 0x(%x+)")
+            local I_SRAM_LENGTH_N = string.format("%X",tonumber('0X'..I_SRAM_LENGTH)-64*1024)
+            local ld_data_n = ld_data:gsub(I_SRAM_LENGTH,I_SRAM_LENGTH_N)
+            io.writefile("./ld/air101_103.ld", ld_data_n)
+        else
+            os.cp("./ld/"..TARGET_NAME..".ld", "./ld/air101_103.ld")
+        end
+
         target:set("filename", TARGET_NAME..".elf")
-        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/"..TARGET_NAME..".ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
+        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/air101_103.ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)
 
     add_deps("app")
@@ -229,7 +239,7 @@ target("air10x")
     add_files(luatos.."luat/packages/qrcode/*.c")
     -- add_files(luatos.."luat/packages/u8g2/*.c")
     add_files(luatos.."luat/weak/*.c")
-    
+
     add_includedirs(luatos.."lua/include",{public = true})
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."components/lcd",{public = true})
@@ -238,7 +248,7 @@ target("air10x")
     add_includedirs(luatos.."components/lvgl/gen",{public = true})
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
-    
+
     add_includedirs(luatos.."luat/packages/eink")
     add_includedirs(luatos.."luat/packages/epaper")
     add_includedirs(luatos.."luat/packages/iconv")
@@ -276,7 +286,7 @@ target("air10x")
     add_includedirs("src/bt/blehost/ext/tinycrypt/include", "src/bt/blehost/nimble/host/util/include")
 
     add_includedirs(luatos.."components/nr_micro_shell")
-    
+
     -- flashdb & fal
     add_includedirs(luatos.."components/fal/inc")
     add_files(luatos.."components/fal/src/*.c")
@@ -308,7 +318,7 @@ target("air10x")
             os.mv("./mklfs/disk.fs", "$(buildir)/out/script.bin")
             if TARGET_NAME == "AIR101" then
                 os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
-            else 
+            else
                 os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 80E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
             end
             local script = io.readfile("$(buildir)/out/script.img", {encoding = "binary"})
@@ -352,7 +362,9 @@ target("air10x")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
                 return
             end
+            
         end
+        os.rm("./ld/air101_103.ld")
         -- os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/AIR101.img -fc 1 -it 1 -ih 80D0000 -ra 80D0400 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/AIR101")
         -- os.mv("$(buildir)/out/AIR101_gz.img", "$(buildir)/out/AIR101_ota.img")
     end)
