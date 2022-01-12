@@ -41,7 +41,7 @@ int luat_i2c_send(int id, int addr, void* buff, size_t len) {
         if(WM_FAILED == tls_i2c_wait_ack())
             return -1;
     }
-    tls_i2c_stop();
+    // tls_i2c_stop();
     return 0;
 }
 

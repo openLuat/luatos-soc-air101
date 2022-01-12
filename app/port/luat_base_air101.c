@@ -168,6 +168,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FONTS
   {"fonts", luaopen_fonts},
 #endif
+#ifdef LUAT_USE_ZLIB
+  {"zlib", luaopen_zlib},
+#endif
   {NULL, NULL}
 };
 
