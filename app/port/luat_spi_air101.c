@@ -11,6 +11,7 @@
 
 #define LUAT_LOG_TAG "luat.spi"
 #include "luat_log.h"
+#include "luat_timer.h"
 
 int luat_spi_device_config(luat_spi_device_t* spi_dev) {
     unsigned int clk;
@@ -30,6 +31,11 @@ int luat_spi_device_config(luat_spi_device_t* spi_dev) {
 int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
     int bus_id = spi_dev->bus_id;
     if (bus_id == 0){
+#ifdef LUAT_USE_PSRAM
+        LLOGE("psram/spi0 use the same pin, pls switch to spi1");
+        luat_timer_mdelay(1000);
+        return -1;
+#endif
         wm_spi_ck_config(WM_IO_PB_02);
         wm_spi_di_config(WM_IO_PB_03);
         wm_spi_do_config(WM_IO_PB_05);
@@ -60,6 +66,11 @@ int luat_spi_setup(luat_spi_t* spi) {
     unsigned int clk;
     uint8_t TLS_SPI_MODE = 0x00 ;
     if (spi->id == 0) {
+#ifdef LUAT_USE_PSRAM
+        LLOGE("psram/spi0 use the same pin, pls switch to spi1");
+        luat_timer_mdelay(1000);
+        return -1;
+#endif
 	    // 兼容CS=0,默认配置, 也兼容CS为GPIO20的配置,其他配置不受控,自然不应该配置CS脚
         if (spi->cs == 0 || spi->cs == WM_IO_PB_04)
 	        wm_spi_cs_config(WM_IO_PB_04);
