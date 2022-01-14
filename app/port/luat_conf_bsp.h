@@ -40,6 +40,7 @@
 #define LUAT_USE_LCDSEG 1
 // OTP
 #define LUAT_USE_OTP 1
+#define LUAT_USE_TOUCHKEY 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
