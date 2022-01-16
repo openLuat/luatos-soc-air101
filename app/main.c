@@ -31,17 +31,29 @@
 #endif
 #endif
 
-#if (LUAT_HEAP_SIZE > 128*1024)
-static uint8_t __attribute__((aligned(4))) heap_ext[LUAT_HEAP_SIZE - 128*1024] = {0};
-#endif
-
 static void luat_start(void *sdata){
-#ifdef LUAT_USE_PSRAM
-	bpool((void*)0x30000000, 4*1024*1024);
-#else
+	// 毕竟sram还是快很多的, 优先psram吧
 	bpool((void*)0x20028000, 128*1024);
+#ifdef LUAT_USE_PSRAM
+	char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
+	char* psram_ptr = (void*)0x30000000;
+	memcpy(psram_ptr, test, 4);
+	if (memcmp(psram_ptr, test, 4)) {
+		LLOGW("psram is enable, but can't access!!");
+	}
+	else {
+		memset(psram_ptr, 0, 1024);
+		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
+		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
+		luat_main();
+		return;
+	}
+#else
 	#if (LUAT_HEAP_SIZE > 128*1024)
-	bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
+	char* heap_ext = malloc(LUAT_HEAP_SIZE - 128*1024);
+	if (heap_ext) {
+		bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
+	}
 	#endif
 #endif
 	luat_main();
