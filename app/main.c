@@ -17,6 +17,7 @@
 #include "wm_ram_config.h"
 #include "wm_internal_flash.h"
 #include "wm_psram.h"
+#include "wm_efuse.h"
 
 #include "FreeRTOS.h"
 
@@ -149,6 +150,22 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
     tls_ft_param_init();
     tls_param_load_factory_default();
     tls_param_init(); /*add param to init sysparam_lock sem*/
+
+	// 读蓝牙mac, 如果是默认值,就根据unique_id读取
+	uint8_t bt_mac[6];
+	// 缺省mac C0:25:08:09:01:10
+	uint8_t bt_default_mac[] = {0xC0,0x25,0x08,0x09,0x01,0x10};
+	tls_get_bt_mac_addr(bt_mac);
+	if (!memcmp(bt_mac, bt_default_mac, 6)) { // 看来是默认MAC, 那就改一下吧
+		if (unique_id[1] == 0x10){
+			memcpy(bt_mac, unique_id + 10, 6);
+		}
+		else {
+			memcpy(bt_mac, unique_id + 2, 6);
+		}
+		tls_set_bt_mac_addr(bt_mac);
+	}
+	LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
 #endif
 
 // 如要使用psram,启用以下代码,并重新编译sdk
