@@ -39,7 +39,7 @@ void luat_lv_fs_init(void);
 // void lv_png_init(void);
 void lv_split_jpeg_init(void);
 #endif
-
+extern int zlib_decompress(FILE *source, FILE *dest);
 int luat_fs_init(void) {
     //luat_timer_mdelay(1000);
 #ifdef AIR103
@@ -92,7 +92,12 @@ int luat_fs_init(void) {
 	luat_fs_mount(&conf);
 
     //检测是否有升级文件
-    if(luat_fs_fexist("/update.bin")){
+    if(luat_fs_fexist("/update")){
+        FILE *fd_in = luat_fs_fopen("/update", "r");
+        FILE *fd_out = luat_fs_fopen("/update.bin", "w+");
+        zlib_decompress(fd_in, fd_out);
+        luat_fs_fclose(fd_in);
+        luat_fs_fclose(fd_out);
         size_t binsize = luat_fs_fsize("/update.bin");
         LLOGI("update.bin size:%d",binsize);
         uint8_t* binbuff = (uint8_t*)luat_heap_malloc(binsize * sizeof(uint8_t));
@@ -137,6 +142,7 @@ _close:
         luat_heap_free(binbuff);
         //不论成功与否都删掉避免每次启动都执行一遍
         luat_fs_remove("/update.bin");
+        luat_fs_remove("/update");
     }
 
 	luat_vfs_reg(&vfs_fs_luadb);
