@@ -90,6 +90,55 @@ int luat_fs_init(void) {
 		.mount_point = "/"
 	};
 	luat_fs_mount(&conf);
+
+    //检测是否有升级文件
+    if(luat_fs_fexist("/update.bin")){
+        size_t binsize = luat_fs_fsize("/update.bin");
+        LLOGI("update.bin size:%d",binsize);
+        uint8_t* binbuff = (uint8_t*)luat_heap_malloc(binsize * sizeof(uint8_t));
+        FILE * fd = luat_fs_fopen("/update.bin", "rb");
+        if (fd) {
+            luat_fs_fread(binbuff, sizeof(uint8_t), binsize, fd);
+            //做一下校验
+            if (binbuff[0] != 0x01 || binbuff[1] != 0x04 || binbuff[2]+(binbuff[3]<<8) != 0xA55A || binbuff[4]+(binbuff[5]<<8) != 0xA55A){
+                LLOGI("Magic error");
+                goto _close;
+            }
+            LLOGI("Magic OK");
+            if (binbuff[6] != 0x02 || binbuff[7] != 0x02 || binbuff[8] != 0x02 || binbuff[9] != 0x00){
+                LLOGI("Version error");
+                goto _close;
+            }
+            LLOGI("Version OK");
+            if (binbuff[10] != 0x03 || binbuff[11] != 0x04){
+                LLOGI("Header error");
+                goto _close;
+            }
+            uint32_t headsize = binbuff[12]+(binbuff[13]<<8)+(binbuff[14]<<16)+(binbuff[15]<<24);
+            LLOGI("Header OK headers:%08x",headsize);
+
+            if (binbuff[16] != 0x04 || binbuff[17] != 0x02){
+                LLOGI("file count error");
+                goto _close;
+            }
+            uint16_t filecount = binbuff[18]+(binbuff[19]<<8);
+            LLOGI("file count:%04x",filecount);
+            if (binbuff[20] != 0xFE || binbuff[21] != 0x02){
+                LLOGI("CRC16 error");
+                goto _close;
+            }
+            uint16_t CRC16 = binbuff[22]+(binbuff[23]<<8);
+            // LLOGI("CRC16:%04x",CRC16);
+
+            tls_fls_write(luadb_addr, binbuff, binsize);
+_close:
+            luat_fs_fclose(fd);
+        }
+        luat_heap_free(binbuff);
+        //不论成功与否都删掉避免每次启动都执行一遍
+        luat_fs_remove("/update.bin");
+    }
+
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
 		.busname = (char*)(luadb_addr == 0 ? luadb_inline_sys : ptr),
