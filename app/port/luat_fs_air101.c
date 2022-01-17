@@ -39,7 +39,10 @@ void luat_lv_fs_init(void);
 // void lv_png_init(void);
 void lv_split_jpeg_init(void);
 #endif
+
 extern int zlib_decompress(FILE *source, FILE *dest);
+extern int luat_luadb_checkfile(const char* path);
+
 int luat_fs_init(void) {
     //luat_timer_mdelay(1000);
 #ifdef AIR103
@@ -91,58 +94,43 @@ int luat_fs_init(void) {
 	};
 	luat_fs_mount(&conf);
 
-    //检测是否有升级文件
-    if(luat_fs_fexist("/update")){
-        FILE *fd_in = luat_fs_fopen("/update", "r");
-        FILE *fd_out = luat_fs_fopen("/update.bin", "w+");
+    // 检查是否有压缩升级文件
+    #define UPDATE_BIN_PATH "/update.bin"
+    if(luat_fs_fexist("/update.tgz")){
+        LLOGI("found update.tgz, decompress ...");
+        FILE *fd_in = luat_fs_fopen("/update.tgz", "r");
+        luat_fs_remove(UPDATE_BIN_PATH);
+        FILE *fd_out = luat_fs_fopen(UPDATE_BIN_PATH, "w+");
         zlib_decompress(fd_in, fd_out);
         luat_fs_fclose(fd_in);
         luat_fs_fclose(fd_out);
-        size_t binsize = luat_fs_fsize("/update.bin");
-        LLOGI("update.bin size:%d",binsize);
-        uint8_t* binbuff = (uint8_t*)luat_heap_malloc(binsize * sizeof(uint8_t));
-        FILE * fd = luat_fs_fopen("/update.bin", "rb");
-        if (fd) {
-            luat_fs_fread(binbuff, sizeof(uint8_t), binsize, fd);
-            //做一下校验
-            if (binbuff[0] != 0x01 || binbuff[1] != 0x04 || binbuff[2]+(binbuff[3]<<8) != 0xA55A || binbuff[4]+(binbuff[5]<<8) != 0xA55A){
-                LLOGI("Magic error");
-                goto _close;
-            }
-            LLOGI("Magic OK");
-            if (binbuff[6] != 0x02 || binbuff[7] != 0x02 || binbuff[8] != 0x02 || binbuff[9] != 0x00){
-                LLOGI("Version error");
-                goto _close;
-            }
-            LLOGI("Version OK");
-            if (binbuff[10] != 0x03 || binbuff[11] != 0x04){
-                LLOGI("Header error");
-                goto _close;
-            }
-            uint32_t headsize = binbuff[12]+(binbuff[13]<<8)+(binbuff[14]<<16)+(binbuff[15]<<24);
-            LLOGI("Header OK headers:%08x",headsize);
+        luat_fs_remove("/update.tgz");
+    }
 
-            if (binbuff[16] != 0x04 || binbuff[17] != 0x02){
-                LLOGI("file count error");
-                goto _close;
+    // 检查是否有普通升级文件
+    if(luat_fs_fexist(UPDATE_BIN_PATH)){
+        LLOGI("found update.bin, checking");
+        if (luat_luadb_checkfile(UPDATE_BIN_PATH) == 0) {
+            LLOGI("update.bin ok, updating...");
+            #define UPDATE_BUFF_SIZE 4096
+            char* buff = luat_heap_malloc(UPDATE_BUFF_SIZE);
+            int len = 0;
+            int offset = 0;
+            if (buff != NULL) {
+                FILE* fd = luat_fs_fopen(UPDATE_BIN_PATH, "rb");
+                while (1) {
+                    len = luat_fs_fread(buff, UPDATE_BUFF_SIZE, 1, fd);
+                    if (len < 1)
+                        break;
+                    tls_fls_write(luadb_addr + offset, buff, len);
+                    offset += len;
+                }
             }
-            uint16_t filecount = binbuff[18]+(binbuff[19]<<8);
-            LLOGI("file count:%04x",filecount);
-            if (binbuff[20] != 0xFE || binbuff[21] != 0x02){
-                LLOGI("CRC16 error");
-                goto _close;
-            }
-            uint16_t CRC16 = binbuff[22]+(binbuff[23]<<8);
-            // LLOGI("CRC16:%04x",CRC16);
-
-            tls_fls_write(luadb_addr, binbuff, binsize);
-_close:
-            luat_fs_fclose(fd);
         }
-        luat_heap_free(binbuff);
-        //不论成功与否都删掉避免每次启动都执行一遍
-        luat_fs_remove("/update.bin");
-        luat_fs_remove("/update");
+        else {
+            LLOGW("update.bin NOT ok, skip");
+        }
+        luat_fs_remove(UPDATE_BIN_PATH);
     }
 
 	luat_vfs_reg(&vfs_fs_luadb);
