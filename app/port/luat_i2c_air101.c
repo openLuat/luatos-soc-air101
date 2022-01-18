@@ -57,8 +57,10 @@ int luat_i2c_recv(int id, int addr, void* buff, size_t len) {
         for (size_t i = 0; i < len; i++){
             if (i == 0)
                 ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
-            else if (i == len - 1)
+            else if (i == len - 1){
                 ((u8*)buff)[i] = tls_i2c_read_byte(0, 1);
+                break;
+            }
             else
                 ((u8*)buff)[i] = tls_i2c_read_byte(1, 0);
             if(WM_FAILED == tls_i2c_wait_ack())
