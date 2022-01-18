@@ -277,8 +277,8 @@ target("air10x")
     add_files(luatos.."components/luatfonts/*.c")
     add_includedirs(luatos.."components/luatfonts")
 
-    add_files(luatos.."luat/packages/zlib/*.c")
-    add_includedirs(luatos.."luat/packages/zlib")
+    add_files(luatos.."components/zlib/*.c")
+    add_includedirs(luatos.."components/zlib")
 
     -- add_files(luatos.."components/mlx90640-library/*.c")
     -- del_files(luatos.."components/mlx90640-library/MLX90640_I2C_Driver.c")
