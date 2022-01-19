@@ -280,9 +280,8 @@ target("air10x")
     add_files(luatos.."components/zlib/*.c")
     add_includedirs(luatos.."components/zlib")
 
-    -- add_files(luatos.."components/mlx90640-library/*.c")
-    -- del_files(luatos.."components/mlx90640-library/MLX90640_I2C_Driver.c")
-    -- add_includedirs(luatos.."components/mlx90640-library")
+    add_files(luatos.."components/mlx90640-library/*.c")
+    add_includedirs(luatos.."components/mlx90640-library")
 
     -- ble
     add_includedirs("src/app/bleapp", "src/bt/blehost/nimble/include", "src/bt/blehost/nimble/host/include", "include/bt")

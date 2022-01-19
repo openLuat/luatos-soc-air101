@@ -174,6 +174,7 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_ZLIB
   {"zlib", luaopen_zlib},
 #endif
+  // {"mlx90640", luaopen_mlx90640},
   {NULL, NULL}
 };
 
