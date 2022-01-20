@@ -55,7 +55,8 @@
 // #define LUAT_USE_STATEM 1
 // 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
 // #define LUAT_USE_COREMARK 1
-// #define LUAT_USE_ZLIB 
+// #define LUAT_USE_ZLIB 1 
+// #define LUAT_USE_IR 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
