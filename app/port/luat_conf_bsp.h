@@ -81,6 +81,8 @@
 // #define LUAT_USE_VMX 1
 
 #define LUAT_USE_DBG
+#define LUAT_USE_MLX90640
+#define LUAT_USE_I2CTOOLS
 
 //---------------------
 // UI
