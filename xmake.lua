@@ -9,23 +9,6 @@ local luatos = "../LuatOS/"
 local TARGET_NAME
 local AIR10X_FLASH_FS_REGION_SIZE
 
-
--- local sdk_dir = "D:\\csky-elfabiv2-tools-mingw-minilibc\\"
--- if is_plat("linux") then
---     sdk_dir = "/opt/csky-elfabiv2-tools/"
--- elseif is_plat("windows") then
---     sdk_dir = "E:\\csky-elfabiv2-tools-mingw-minilibc\\"
--- end
-
--- local flto = " -flto "
-
--- toolchain("csky_toolchain")
---     set_kind("standalone")
---     set_sdkdir(sdk_dir)
--- toolchain_end()
-
--- set_toolchains("csky_toolchain")
-
 toolchain("csky")
     set_kind("cross")
     -- on load
@@ -81,7 +64,7 @@ target("app")
     add_includedirs("app/port",{public = true})
 
     add_files("src/app/**.c")
-    del_files("src/app/btapp/**.c")
+    remove_files("src/app/btapp/**.c")
 
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/app/**")))
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
@@ -256,7 +239,7 @@ target("air10x")
     add_files(luatos.."lua/src/*.c")
     add_files(luatos.."luat/modules/*.c")
     add_files(luatos.."luat/vfs/*.c")
-    del_files(luatos.."luat/vfs/luat_fs_posix.c")
+    remove_files(luatos.."luat/vfs/luat_fs_posix.c")
 
     add_files(luatos.."components/lcd/*.c")
     add_files(luatos.."components/sfd/*.c")
@@ -264,7 +247,7 @@ target("air10x")
     add_files(luatos.."components/luf/*.c")
     add_files(luatos.."luat/packages/eink/*.c")
     add_files(luatos.."luat/packages/epaper/*.c")
-    del_files(luatos.."luat/packages/epaper/GUI_Paint.c")
+    remove_files(luatos.."luat/packages/epaper/GUI_Paint.c")
     add_files(luatos.."luat/packages/iconv/*.c")
     add_files(luatos.."luat/packages/lfs/*.c")
     add_files(luatos.."luat/packages/lua-cjson/*.c")
