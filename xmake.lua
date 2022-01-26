@@ -1,5 +1,5 @@
 set_project("AIR101")
-set_xmakever("2.5.8")
+set_xmakever("2.6.3")
 
 -- set_version("0.0.2", {build = "%Y%m%d%H%M"})
 add_rules("mode.debug", "mode.release")
@@ -9,22 +9,54 @@ local luatos = "../LuatOS/"
 local TARGET_NAME
 local AIR10X_FLASH_FS_REGION_SIZE
 
-local sdk_dir = "D:\\csky-elfabiv2-tools-mingw-minilibc\\"
-if is_plat("linux") then
-    sdk_dir = "/opt/csky-elfabiv2-tools/"
-elseif is_plat("windows") then
-    sdk_dir = "E:\\csky-elfabiv2-tools-mingw-minilibc\\"
-end
+
+-- local sdk_dir = "D:\\csky-elfabiv2-tools-mingw-minilibc\\"
+-- if is_plat("linux") then
+--     sdk_dir = "/opt/csky-elfabiv2-tools/"
+-- elseif is_plat("windows") then
+--     sdk_dir = "E:\\csky-elfabiv2-tools-mingw-minilibc\\"
+-- end
 
 -- local flto = " -flto "
-local flto = ""
 
-toolchain("csky_toolchain")
-    set_kind("standalone")
-    set_sdkdir(sdk_dir)
+-- toolchain("csky_toolchain")
+--     set_kind("standalone")
+--     set_sdkdir(sdk_dir)
+-- toolchain_end()
+
+-- set_toolchains("csky_toolchain")
+
+toolchain("csky")
+    set_kind("cross")
+    -- on load
+    on_load(function (toolchain)
+        -- load basic configuration of cross toolchain
+        toolchain:load_cross_toolchain()
+    end)
 toolchain_end()
 
-set_toolchains("csky_toolchain")
+package("csky")
+    set_kind("toolchain")
+    set_homepage("https://occ.t-head.cn/community/download?id=3885366095506644992")
+    set_description("GNU Csky Embedded Toolchain")
+
+    if is_host("windows") then
+        set_urls("http://cdndownload.openluat.com/xmake/toolchains/csky/csky-elfabiv2-tools-mingw-minilibc-$(version).tar.gz")
+        add_versions("20210423", "e7d0130df26bcf7b625f7c0818251c04e6be4715ed9b3c8f6303081cea1f058b")
+    elseif is_host("linux") then
+        set_urls("http://cdndownload.openluat.com/xmake/toolchains/csky/csky-elfabiv2-tools-x86_64-minilibc-$(version).tar.gz")
+        add_versions("20210423", "8b9a353c157e4d44001a21974254a21cc0f3c7ea2bf3c894f18a905509a7048f")
+    end
+    on_install("@windows", "@linux", function (package)
+        os.vcp("*", package:installdir())
+    end)
+package_end()
+
+add_requires("csky 20210423")
+set_toolchains("csky@csky")
+
+local flto = ""
+
 --add macro defination
 add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 
@@ -300,6 +332,7 @@ target("air10x")
     add_files(luatos.."components/flashdb/src/*.c")
 
 	after_build(function(target)
+        sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
         io.writefile("$(buildir)/out/"..TARGET_NAME..".asm", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -d $(buildir)/out/"..TARGET_NAME..".elf"))
         io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
