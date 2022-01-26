@@ -76,10 +76,10 @@
 // NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
 // #define LUAT_USE_NIMBLE 1
 // FDB 提供kv数据库, 与nvm库类似
-// #define LUAT_USE_FDB 1
+#define LUAT_USE_FDB 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
-
+#define LUAT_USE_OTA
 #define LUAT_USE_DBG
 #define LUAT_USE_MLX90640
 #define LUAT_USE_I2CTOOLS
