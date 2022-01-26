@@ -7,6 +7,7 @@
 #include "wm_include.h"
 #include "luat_timer.h"
 #include "stdio.h"
+#include "luat_ota.h"
 
 extern struct lfs_config lfs_cfg;
 extern lfs_t lfs;
@@ -22,75 +23,6 @@ uint32_t luadb_addr;
 uint32_t luadb_size_kb;
 uint32_t lfs_addr;
 uint32_t lfs_size_kb;
-
-#define UPDATE_TGZ_PATH "/update.tgz"
-#define UPDATE_BIN_PATH "/update.bin"
-
-extern int zlib_decompress(FILE *source, FILE *dest);
-extern int luat_luadb_checkfile(const char* path);
-
-static int luat_ota(void){
-    int ret  = 0;
-    //检测是否有压缩升级文件
-    if(luat_fs_fexist(UPDATE_TGZ_PATH)){
-        LLOGI("found update.tgz, decompress ...");
-        FILE *fd_in = luat_fs_fopen(UPDATE_TGZ_PATH, "r");
-        if (fd_in == NULL){
-            LLOGE("open the input file : %s error!", UPDATE_TGZ_PATH);
-            ret = -1;
-            goto _close_decompress;
-        }
-        luat_fs_remove(UPDATE_BIN_PATH);
-        FILE *fd_out = luat_fs_fopen(UPDATE_BIN_PATH, "w+");
-        if (fd_out == NULL){
-            LLOGE("open the output file : %s error!", UPDATE_BIN_PATH);
-            ret = -1;
-            goto _close_decompress;
-        }
-        ret = zlib_decompress(fd_in, fd_out);
-        if (ret != 0){
-            LLOGE("decompress file error!");
-        }
-_close_decompress:
-        if(fd_in != NULL){
-            luat_fs_fclose(fd_in);
-        }
-        if(fd_out != NULL){
-            luat_fs_fclose(fd_out);
-        }
-        //不论成功与否都删掉避免每次启动都执行一遍
-        luat_fs_remove(UPDATE_TGZ_PATH);
-    }
-
-    //检测是否有升级文件
-    if(luat_fs_fexist(UPDATE_BIN_PATH)){
-        LLOGI("found update.bin, checking");
-        if (luat_luadb_checkfile(UPDATE_BIN_PATH) == 0) {
-            LLOGI("update.bin ok, updating...");
-            #define UPDATE_BUFF_SIZE 4096
-            char* buff = luat_heap_malloc(UPDATE_BUFF_SIZE);
-            int len = 0;
-            int offset = 0;
-            if (buff != NULL) {
-                FILE* fd = luat_fs_fopen(UPDATE_BIN_PATH, "rb");
-                while (1) {
-                    len = luat_fs_fread(buff, UPDATE_BUFF_SIZE, 1, fd);
-                    if (len < 1)
-                        break;
-                    tls_fls_write(luadb_addr + offset, buff, len);
-                    offset += len;
-                }
-            }
-        }
-        else {
-            ret = -1;
-            LLOGW("update.bin NOT ok, skip");
-        }
-        luat_fs_remove(UPDATE_BIN_PATH);
-    }
-    return ret;
-}
-
 
 #ifndef FLASH_FS_REGION_SIZE
 #define FLASH_FS_REGION_SIZE 112
@@ -159,7 +91,7 @@ int luat_fs_init(void) {
 	};
 	luat_fs_mount(&conf);
     //OTA检测升级
-    luat_ota();
+    luat_ota(luadb_addr);
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
 		.busname = (char*)(luadb_addr == 0 ? luadb_inline_sys : ptr),
@@ -177,4 +109,8 @@ int luat_fs_init(void) {
 	#endif
 
 	return 0;
+}
+
+int luat_flash_write(uint32_t addr, uint8_t * buf, uint32_t len){
+    return tls_fls_write(addr, buf, len);
 }
