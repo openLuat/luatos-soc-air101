@@ -18,12 +18,12 @@ static wm_gpio_conf_t confs[WM_IO_PB_31 + 1];
 static void luat_gpio_irq_callback(void *ptr)
 {
     int pin = (int)ptr;
-    tls_clr_gpio_irq_status(pin);
-    //luat_gpio_irq_cb cb = confs[pin].cb;
-    //if (cb == NULL)
-        luat_irq_gpio_cb(pin, NULL);
-    //else
-    //   cb(pin, confs[pin].args);
+    int ret = tls_get_gpio_irq_status(pin);
+	if(ret)
+	{
+		tls_clr_gpio_irq_status(pin);
+		luat_irq_gpio_cb(pin, NULL);
+	}
 }
 
 int luat_gpio_setup(luat_gpio_t *gpio){
