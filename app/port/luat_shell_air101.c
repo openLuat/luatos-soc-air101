@@ -53,6 +53,7 @@ static void luat_shell(void *sdata){
 		len = 1;
 		while (len > 0 && len < 512) {
 			// printf("before luat_uart_read\r");
+			memset(buff, 0, 512);
 			len = luat_uart_read(0, buff, 511);
 			// printf("after luat_uart_read %d\r", len);
 			if (len > 0 && len < 512) {
