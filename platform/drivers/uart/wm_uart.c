@@ -60,7 +60,7 @@ static void tls_uart_tx_chars(struct tls_uart_port *port)
 		tx_msg = dl_list_first(pending_list, tls_uart_tx_msg_t, list);
 		while (tx_count-- > 0 && tx_msg->offset < tx_msg->buflen)
 		{
-		/* ���tx fifo�Ƿ����� */
+		/* 锟斤拷锟絫x fifo锟角凤拷锟斤拷锟斤拷 */
 			if ((port->regs->UR_FIFOS & UFS_TX_FIFO_CNT_MASK) == port->tx_fifofull)
 			{
 				break;
@@ -264,7 +264,7 @@ static TLS_UART_STATUS_T tls_uart_set_flow_ctrl(struct tls_uart_port * port, TLS
         return TLS_UART_STATUS_ERROR;
 
 // port->opts.flow_ctrl = flow_ctrl;
-// //�����������޸ģ�Ϊ�����͸����ATָ��������Լ��޸�flowctrl���ã����ǲ������ǹ̶������
+// //锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟睫改ｏ拷为锟斤拷锟斤拷锟酵革拷锟斤拷锟紸T指锟筋，锟斤拷锟斤拷锟斤拷锟皆硷拷锟睫革拷flowctrl锟斤拷锟矫ｏ拷锟斤拷锟角诧拷锟斤拷锟斤拷锟角固讹拷锟斤拷锟斤拷锟�
 //printf("\nport %d flow ctrl==%d\n",port->uart_no,flow_ctrl);
     switch (flow_ctrl)
     {
@@ -291,7 +291,7 @@ void tls_uart_set_fc_status(int uart_no, TLS_UART_FLOW_CTRL_MODE_T status)
 	port = &uart_port[uart_no];
     port->fcStatus = status;
     tls_uart_set_flow_ctrl(port, status);
-    if (TLS_UART_FLOW_CTRL_HARDWARE == port->opts.flow_ctrl && 0 == status && port->hw_stopped) // ׼���ر�����ʱ������tx�Ѿ�ֹͣ����Ҫ�ٴ�tx
+    if (TLS_UART_FLOW_CTRL_HARDWARE == port->opts.flow_ctrl && 0 == status && port->hw_stopped) // 准锟斤拷锟截憋拷锟斤拷锟斤拷时锟斤拷锟斤拷锟斤拷tx锟窖撅拷停止锟斤拷锟斤拷要锟劫达拷tx
     {
         tls_uart_tx_enable(port);
         tls_uart_tx_chars(port);
@@ -489,7 +489,7 @@ void tls_uart_tx_chars_start(struct tls_uart_port *port)
         tx_msg = dl_list_first(pending_list, tls_uart_tx_msg_t, list);
         while (tx_count-- > 0 && tx_msg->offset < tx_msg->buflen)
         {
-        /* ���tx fifo�Ƿ����� */
+        /* 锟斤拷锟絫x fifo锟角凤拷锟斤拷锟斤拷 */
             if ((port->regs->UR_FIFOS & UFS_TX_FIFO_CNT_MASK) ==
                 port->tx_fifofull)
             {
@@ -540,7 +540,7 @@ void tls_set_uart_rx_status(int uart_no, int status)
                 && (TLS_UART_FLOW_CTRL_HARDWARE == port->fcStatus))
             {
                 cpu_sr = tls_os_set_critical();
-                // ��rxfifo trigger level interrupt��overrun error
+                // 锟斤拷rxfifo trigger level interrupt锟斤拷overrun error
                 port->regs->UR_INTM |= ((0x1 << 2) | (0x01 << 8));
                 port->rxstatus = TLS_UART_RX_DISABLE;
                 tls_os_release_critical(cpu_sr);
@@ -591,7 +591,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
                 if (TLS_UART_FLOW_CTRL_HARDWARE == port->fcStatus)
                 {
                     tls_set_uart_rx_status(port->uart_no, TLS_UART_RX_DISABLE);
-                    rx_fifocnt = 0; // �����Ӳ�����أ��رս��գ������һ���ַ��Ž�����buffer��
+                    rx_fifocnt = 0; // 锟斤拷锟斤拷锟接诧拷锟斤拷锟斤拷兀锟斤拷乇战锟斤拷眨锟斤拷锟斤拷锟斤拷一锟斤拷锟街凤拷锟脚斤拷锟斤拷锟斤拷buffer锟斤拷
                 }
                 else
                     break;
@@ -789,7 +789,7 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
                 if (TLS_UART_FLOW_CTRL_HARDWARE == port->fcStatus)
                 {
                     tls_set_uart_rx_status(port->uart_no, TLS_UART_RX_DISABLE);
-                    rx_fifocnt = 0; // �����Ӳ�����أ��رս��գ������һ���ַ��Ž�����buffer��
+                    rx_fifocnt = 0; // 锟斤拷锟斤拷锟接诧拷锟斤拷锟斤拷兀锟斤拷乇战锟斤拷眨锟斤拷锟斤拷锟斤拷一锟斤拷锟街凤拷锟脚斤拷锟斤拷锟斤拷buffer锟斤拷
                 }
                 else
                     break;

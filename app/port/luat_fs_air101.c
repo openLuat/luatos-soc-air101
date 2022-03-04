@@ -60,7 +60,7 @@ int luat_fs_init(void) {
         // 老的布局
         LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools %p", ptr);
         lfs_addr = luadb_addr;
-        kv_addr = lfs_addr - 64*1024U;
+        kv_addr = lfs_addr - kv_size_kb*1024U;
         lfs_size_kb = FLASH_FS_REGION_SIZE;
         luadb_addr = 0;
     }
@@ -74,7 +74,7 @@ int luat_fs_init(void) {
         lfs_addr = 0x1F0000;
         lfs_size_kb = 48;
 #endif
-        kv_addr = luadb_addr - 64*1024U;
+        kv_addr = luadb_addr - kv_size_kb*1024U;
     }
 
     //LLOGD("lfs addr4 %p", &lfs_addr);

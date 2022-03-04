@@ -479,7 +479,9 @@ struct hostent* gethostbyname(const char *name);
 /** @ingroup socket */
 #define read(s,mem,len)                           recv(s,mem,len,0)
 /** @ingroup socket */
+#ifndef PPP_SUPPORT
 #define write(s,dataptr,len)                      send(s,dataptr,len,0)
+#endif
 /** @ingroup socket */
 #define close(s)                                  closesocket(s)
 /** @ingroup socket */

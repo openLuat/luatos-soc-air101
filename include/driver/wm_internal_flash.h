@@ -162,7 +162,7 @@ struct tls_inside_fls
  *
  * @param	       None	 
  *
- * @return         None
+ * @return         0-success,non-zero-failure
  *
  * @note           None
  */
@@ -173,7 +173,7 @@ int tls_flash_unlock(void);
  *
  * @param	       None	 
  *
- * @return         None
+ * @return         0-success,non-zero-failure
  *
  * @note           None
  */

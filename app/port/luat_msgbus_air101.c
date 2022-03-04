@@ -18,6 +18,11 @@ uint32_t luat_msgbus_put(rtos_msg_t *msg, size_t timeout)
         return 1;
     }
     rtos_msg_t* dst = (rtos_msg_t*)luat_heap_malloc(sizeof(rtos_msg_t));
+    if (dst == NULL)
+    {
+        return 1;
+    }
+    
     memcpy(dst, msg, sizeof(rtos_msg_t));
     int ret = tls_os_queue_send(queue, (void *)dst, sizeof(rtos_msg_t));
     return ret;
