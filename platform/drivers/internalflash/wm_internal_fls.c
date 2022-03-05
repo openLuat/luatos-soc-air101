@@ -19,6 +19,9 @@
 
 static struct tls_inside_fls *inside_fls = NULL;
 
+// read/write use the same cache, protect by inside_fls->fls_lock
+static u8 tls_fls_cache[INSIDE_FLS_SECTOR_SIZE];
+
 /**System parameter, default for 2M flash*/
 unsigned int  TLS_FLASH_PARAM_DEFAULT        =		  (0x81FB000UL);
 unsigned int  TLS_FLASH_PARAM1_ADDR          =		  (0x81FC000UL);
@@ -563,8 +566,6 @@ int readByCMD(unsigned char cmd, unsigned long addr, unsigned char *buf, unsigne
     return TLS_FLS_STATUS_OK;
 }
 
-
-
 int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 {
 #define INSIDE_FLS_MAX_RD_SIZE (1024)
@@ -607,14 +608,14 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 	}
 	else
 	{
-	    char *cache = NULL;
+	    char *cache = tls_fls_cache;
 
-	    cache = tls_mem_alloc(INSIDE_FLS_PAGE_SIZE);
-	    if (cache == NULL)
-	    {
-	        TLS_DBGPRT_ERR("allocate sector cache memory fail!\n");
-	        return TLS_FLS_STATUS_ENOMEM;
-	    }
+	    // cache = tls_mem_alloc(INSIDE_FLS_PAGE_SIZE);
+	    // if (cache == NULL)
+	    // {
+	    //     TLS_DBGPRT_ERR("allocate sector cache memory fail!\n");
+	    //     return TLS_FLS_STATUS_ENOMEM;
+	    // }
 	    flash_addr = addr & ~(INSIDE_FLS_PAGE_SIZE - 1);
 	    __readByCMD(0xEB, flash_addr, (unsigned char *)cache, INSIDE_FLS_PAGE_SIZE);
 	    if (sz > INSIDE_FLS_PAGE_SIZE - page_offset)
@@ -644,7 +645,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
 	    {
 	        MEMCPY(buf, cache + page_offset, sz);
 	    }
-	    tls_mem_free(cache);
+	    // tls_mem_free(cache);
 	}
 
     return 0;
@@ -661,7 +662,7 @@ int flashRead(unsigned long addr, unsigned char *buf, unsigned long sz)
  */
 int tls_flash_unlock(void)
 {
-    //return flashunlock();
+    // return flashunlock();
     return 0;
 }
 
@@ -676,7 +677,7 @@ int tls_flash_unlock(void)
  */
 int tls_flash_lock(void)
 {
-    //return flashlock();
+    // return flashlock();
     return 0;
 }
 
@@ -1028,7 +1029,7 @@ int tls_fls_read(u32 addr, u8 *buf, u32 len)
  */
 int tls_fls_write(u32 addr, u8 *buf, u32 len)
 {
-    u8 *cache;
+    u8 *cache = tls_fls_cache;
     unsigned int secpos;
     unsigned int secoff;
     unsigned int secremain;
@@ -1048,13 +1049,13 @@ int tls_fls_write(u32 addr, u8 *buf, u32 len)
 
     tls_os_sem_acquire(inside_fls->fls_lock, 0);
 
-    cache = tls_mem_alloc(INSIDE_FLS_SECTOR_SIZE);
-    if (cache == NULL)
-    {
-        tls_os_sem_release(inside_fls->fls_lock);
-        TLS_DBGPRT_ERR("allocate sector cache memory fail!\n");
-        return TLS_FLS_STATUS_ENOMEM;
-    }
+    // cache = tls_mem_alloc(INSIDE_FLS_SECTOR_SIZE);
+    // if (cache == NULL)
+    // {
+    //     tls_os_sem_release(inside_fls->fls_lock);
+    //     TLS_DBGPRT_ERR("allocate sector cache memory fail!\n");
+    //     return TLS_FLS_STATUS_ENOMEM;
+    // }
 
     offaddr = addr & (INSIDE_FLS_BASE_ADDR - 1);			//Offset of 0X08000000
     secpos = offaddr / INSIDE_FLS_SECTOR_SIZE;				//Section addr
@@ -1094,7 +1095,7 @@ int tls_fls_write(u32 addr, u8 *buf, u32 len)
         }
     }
 
-    tls_mem_free(cache);
+    // tls_mem_free(cache);
     tls_os_sem_release(inside_fls->fls_lock);
     return TLS_FLS_STATUS_OK;
 }
