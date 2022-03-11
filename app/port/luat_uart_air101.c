@@ -134,7 +134,7 @@ int luat_uart_write(int uartid, void *data, size_t length)
         return 0;
     }
     ret = tls_uart_write(uartid, data,length);
-
+    ret = (ret == 0) ? length : 0;
     return ret;
 }
 
@@ -146,6 +146,7 @@ int luat_uart_read(int uartid, void *buffer, size_t length)
         return 0;
     }
     ret =  tls_uart_read(uartid,(u8 *) buffer,(u16)length);
+    ret = (ret == 0) ? length : 0;
     return ret;
 }
 
