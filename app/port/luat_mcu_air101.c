@@ -57,3 +57,7 @@ const char* luat_mcu_unique_id(size_t* t) {
 long luat_mcu_ticks(void) {
     return xTaskGetTickCount();
 }
+
+uint32_t luat_mcu_hz(void) {
+    return configTICK_RATE_HZ;
+}
