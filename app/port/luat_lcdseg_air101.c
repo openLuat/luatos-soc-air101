@@ -11,7 +11,7 @@
 
 int luat_lcdseg_setup(luat_lcd_options_t *opts) {
     tls_lcd_options_t conf = {0};
-    conf.enable = 0;
+    conf.enable = 1;
     switch (opts->bias)
     {
     case 0:
@@ -172,10 +172,9 @@ int luat_lcdseg_setup(luat_lcd_options_t *opts) {
 	if (opts->seg_mark & (1 << 31))
 	    tls_io_cfg_set(WM_IO_PA_06, WM_IO_OPTION6);
 
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_LCD);
     tls_reg_write32(HR_LCD_COM_EN, opts->com_mark);
     tls_reg_write32(HR_LCD_SEG_EN, opts->seg_mark);
-
-    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_LCD);
     tls_lcd_init(&conf);
     return 0;
 }
