@@ -53,6 +53,7 @@ static void pwm_dma_callback(void * channel)
 	msg.arg1 = (int)channel;
 	luat_msgbus_put(&msg, 0);
 	tls_pwm_stop(channel);
+	tls_dma_free(1);
 }
 
 int luat_pwm_setup(luat_pwm_conf_t* conf) {
