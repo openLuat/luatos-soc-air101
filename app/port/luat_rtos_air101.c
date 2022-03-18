@@ -39,9 +39,7 @@ LUAT_RET luat_thread_stop(luat_thread_t* thread) {
 }
 
 LUAT_RET luat_thread_delete(luat_thread_t* thread) {
-	tls_os_task_del(thread->priority, (void (*)(void))thread->entry);
-	luat_heap_free(thread->task_stk);
-	return 0;
+	return LUAT_ERR_FAIL;
 }
 
 LUAT_RET luat_queue_create(luat_rtos_queue_t* queue, size_t msgcount, size_t msgsize) {
