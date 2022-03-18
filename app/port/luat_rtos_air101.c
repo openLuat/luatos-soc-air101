@@ -30,8 +30,8 @@
 #include "luat_log.h"
 
 int luat_thread_start(luat_thread_t* thread){
-	uint32_t* task_start_stk = luat_heap_malloc((thread->stack_size)*sizeof(uint32_t));
-	return tls_os_task_create(NULL, thread->name,thread->entry,NULL,(void *)task_start_stk,(thread->stack_size)*sizeof(uint32_t),thread->priority,0);
+	thread->task_stk = luat_heap_malloc((thread->stack_size)*sizeof(uint32_t));
+	return tls_os_task_create(NULL, thread->name,thread->entry,NULL,thread->task_stk,(thread->stack_size)*sizeof(uint32_t),thread->priority,0);
 }
 
 LUAT_RET luat_thread_stop(luat_thread_t* thread) {
@@ -39,7 +39,9 @@ LUAT_RET luat_thread_stop(luat_thread_t* thread) {
 }
 
 LUAT_RET luat_thread_delete(luat_thread_t* thread) {
-    return LUAT_ERR_FAIL;
+	tls_os_task_del(thread->priority, thread->entry);
+	luat_heap_free(thread->task_stk);
+	return 0;
 }
 
 LUAT_RET luat_queue_create(luat_rtos_queue_t* queue, size_t msgcount, size_t msgsize) {
