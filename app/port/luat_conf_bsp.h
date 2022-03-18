@@ -12,7 +12,7 @@
 #define FLASH_FS_REGION_SIZE 112
 
 // 将少许核心方法放入内存, 对性能有少许影响
-#define LUAT_FAST_RAMRUN __attribute__((section (".ram_run")))
+#define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
 
 //----------------------------------
 // 使用VFS(虚拟文件系统)和内置库文件, 必须启用
@@ -81,7 +81,7 @@
 // #define LUAT_USE_VMX 1
 #define LUAT_USE_OTA
 #define LUAT_USE_DBG
-#define LUAT_USE_MLX90640
+// #define LUAT_USE_MLX90640
 #define LUAT_USE_I2CTOOLS
 
 //---------------------
