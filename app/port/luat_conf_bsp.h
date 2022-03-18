@@ -11,7 +11,7 @@
 // 若需要增加,必须等于 (112+64*N), 其中N为正整数.
 #define FLASH_FS_REGION_SIZE 112
 
-// 将少许核心方法放入内存, 对性能有少许影响
+// 内存优化: 减少内存消耗, 会稍微减低性能
 #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
 
 //----------------------------------
