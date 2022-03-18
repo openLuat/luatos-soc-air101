@@ -60,7 +60,7 @@ static void tls_uart_tx_chars(struct tls_uart_port *port)
 		tx_msg = dl_list_first(pending_list, tls_uart_tx_msg_t, list);
 		while (tx_count-- > 0 && tx_msg->offset < tx_msg->buflen)
 		{
-		/* 锟斤拷锟絫x fifo锟角凤拷锟斤拷锟斤拷 */
+		/* 检查tx fifo是否已满 */
 			if ((port->regs->UR_FIFOS & UFS_TX_FIFO_CNT_MASK) == port->tx_fifofull)
 			{
 				break;
@@ -264,7 +264,7 @@ static TLS_UART_STATUS_T tls_uart_set_flow_ctrl(struct tls_uart_port * port, TLS
         return TLS_UART_STATUS_ERROR;
 
 // port->opts.flow_ctrl = flow_ctrl;
-// //锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟睫改ｏ拷为锟斤拷锟斤拷锟酵革拷锟斤拷锟紸T指锟筋，锟斤拷锟斤拷锟斤拷锟皆硷拷锟睫革拷flowctrl锟斤拷锟矫ｏ拷锟斤拷锟角诧拷锟斤拷锟斤拷锟角固讹拷锟斤拷锟斤拷锟�
+// //不能在这里修改，为了配合透传和AT指令，软件会自己修改flowctrl配置，但是参数还是固定不变的
 //printf("\nport %d flow ctrl==%d\n",port->uart_no,flow_ctrl);
     switch (flow_ctrl)
     {
@@ -291,7 +291,7 @@ void tls_uart_set_fc_status(int uart_no, TLS_UART_FLOW_CTRL_MODE_T status)
 	port = &uart_port[uart_no];
     port->fcStatus = status;
     tls_uart_set_flow_ctrl(port, status);
-    if (TLS_UART_FLOW_CTRL_HARDWARE == port->opts.flow_ctrl && 0 == status && port->hw_stopped) // 准锟斤拷锟截憋拷锟斤拷锟斤拷时锟斤拷锟斤拷锟斤拷tx锟窖撅拷停止锟斤拷锟斤拷要锟劫达拷tx
+    if (TLS_UART_FLOW_CTRL_HARDWARE == port->opts.flow_ctrl && 0 == status && port->hw_stopped) // 准备关闭流控时，发现tx已经停止，需要再打开tx
     {
         tls_uart_tx_enable(port);
         tls_uart_tx_chars(port);
@@ -489,7 +489,7 @@ void tls_uart_tx_chars_start(struct tls_uart_port *port)
         tx_msg = dl_list_first(pending_list, tls_uart_tx_msg_t, list);
         while (tx_count-- > 0 && tx_msg->offset < tx_msg->buflen)
         {
-        /* 锟斤拷锟絫x fifo锟角凤拷锟斤拷锟斤拷 */
+        /* 检查tx fifo是否已满 */
             if ((port->regs->UR_FIFOS & UFS_TX_FIFO_CNT_MASK) ==
                 port->tx_fifofull)
             {
@@ -755,9 +755,11 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
 	int intUartNum = findOutIntUart();
     struct tls_uart_port *port = &uart_port[intUartNum];
     struct tls_uart_circ_buf *recv = &port->recv;
+    u8 rx_byte_cb_flag = uart_rx_byte_cb_flag[intUartNum];	
     u32 intr_src;
     u32 rx_fifocnt;
     u32 fifos;
+    u8 escapefifocnt = 0;	
     u32 rxlen = 0;
     u8 ch;
     csi_kernel_intrpt_enter();
@@ -776,30 +778,51 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
     if ((intr_src & UART_RX_INT_FLAG) && (0 == (port->regs->UR_INTM & UIS_RX_FIFO)))
     {
         rx_fifocnt = (port->regs->UR_FIFOS >> 6) & 0x3F;
+        escapefifocnt = rx_fifocnt;
+        port->plus_char_cnt = 0;
+        rxlen = rx_fifocnt;
+        
+        if (CIRC_SPACE(recv->head, recv->tail, TLS_UART_RX_BUF_SIZE) <= RX_CACHE_LIMIT)
+        {
+            recv->tail = (recv->tail + RX_CACHE_LIMIT) & (TLS_UART_RX_BUF_SIZE - 1);
+        }
+        
         while (rx_fifocnt-- > 0)
         {
             ch = (u8) port->regs->UR_RXW;
             if (intr_src & UART_RX_ERR_INT_FLAG)
             {
                 port->regs->UR_INTS |= UART_RX_ERR_INT_FLAG;
-                continue;  /* not insert to buffer */
+                //TLS_DBGPRT_INFO("\nrx err=%x,c=%d,ch=%x\n", intr_src, rx_fifocnt, ch);
+                continue;
             }
-            if (CIRC_SPACE(recv->head, recv->tail, TLS_UART_RX_BUF_SIZE) <= 2)
-            {
-                if (TLS_UART_FLOW_CTRL_HARDWARE == port->fcStatus)
-                {
-                    tls_set_uart_rx_status(port->uart_no, TLS_UART_RX_DISABLE);
-                    rx_fifocnt = 0; // 锟斤拷锟斤拷锟接诧拷锟斤拷锟斤拷兀锟斤拷乇战锟斤拷眨锟斤拷锟斤拷锟斤拷一锟斤拷锟街凤拷锟脚斤拷锟斤拷锟斤拷buffer锟斤拷
-                }
-                else
-                    break;
-            }
-
             recv->buf[recv->head] = ch;
             recv->head = (recv->head + 1) & (TLS_UART_RX_BUF_SIZE - 1);
-            rxlen++;
         }
-        if(port->rx_callback != NULL && rxlen)
+
+        if( escapefifocnt==3 && ch=='+')
+        {
+            switch(recv->head-1)
+            {
+                case 0:
+                    if(recv->buf[TLS_UART_RX_BUF_SIZE-1]=='+' && recv->buf[TLS_UART_RX_BUF_SIZE-2]=='+')
+                        port->plus_char_cnt = 3;
+                    break;
+                case 1:
+                    if(recv->buf[0]=='+' && recv->buf[TLS_UART_RX_BUF_SIZE-1]=='+')
+                        port->plus_char_cnt = 3;
+                    break;               
+                default:
+                    if(recv->buf[recv->head-2]=='+' && recv->buf[recv->head-3]=='+')
+                        port->plus_char_cnt = 3;
+                    break;
+            }
+            if(port->rx_callback != NULL && rx_byte_cb_flag)
+            {
+                port->rx_callback(1, port->priv_data);
+            }
+        }
+        if (port->rx_callback!=NULL && !rx_byte_cb_flag)
         {
             port->rx_callback(rxlen, port->priv_data);
         }

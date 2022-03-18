@@ -31,7 +31,7 @@
 
 int luat_thread_start(luat_thread_t* thread){
 	thread->task_stk = luat_heap_malloc((thread->stack_size)*sizeof(uint32_t));
-	return tls_os_task_create(NULL, thread->name,thread->entry,NULL,thread->task_stk,(thread->stack_size)*sizeof(uint32_t),thread->priority,0);
+	return tls_os_task_create(NULL, thread->name,(void (*)(void *param))thread->entry,NULL,thread->task_stk,(thread->stack_size)*sizeof(uint32_t),thread->priority,0);
 }
 
 LUAT_RET luat_thread_stop(luat_thread_t* thread) {
@@ -39,7 +39,7 @@ LUAT_RET luat_thread_stop(luat_thread_t* thread) {
 }
 
 LUAT_RET luat_thread_delete(luat_thread_t* thread) {
-	tls_os_task_del(thread->priority, thread->entry);
+	tls_os_task_del(thread->priority, (void (*)(void))thread->entry);
 	luat_heap_free(thread->task_stk);
 	return 0;
 }
