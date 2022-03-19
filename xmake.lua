@@ -314,6 +314,12 @@ target("air10x")
     add_includedirs(luatos.."components/flashdb/inc")
     add_files(luatos.."components/flashdb/src/*.c")
 
+    -- shell & cmux
+    add_includedirs(luatos.."components/shell",{public = true})
+    add_includedirs(luatos.."components/cmux",{public = true})
+    add_files(luatos.."components/shell/*.c")
+    add_files(luatos.."components/cmux/*.c")
+
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
