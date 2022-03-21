@@ -562,18 +562,18 @@ int tls_ble_gap_init(char * name)
     dl_list_init(&report_evt_list.list);
     ble_npl_mutex_init(&report_evt_list.list_mutex);
 
-    if(btif_config_get_str("Local", "Adapter", "Name", default_device_name, &ret_len))
-    {
-        ble_svc_gap_device_name_set(default_device_name);
-    }else
-    {
+    // if(btif_config_get_str("Local", "Adapter", "Name", default_device_name, &ret_len))
+    // {
+    //     ble_svc_gap_device_name_set(default_device_name);
+    // }else
+    // {
         tls_get_bt_mac_addr(bt_mac);
         if(name != NULL)
             sprintf(default_device_name, "%s", name);
         else
-            sprintf(default_device_name, "LUATOS-%02X:%02X:%02X", bt_mac[3], bt_mac[4], bt_mac[5]);
+            sprintf(default_device_name, "LOS-%02X%02X%02X", bt_mac[3], bt_mac[4], bt_mac[5]);
         ble_svc_gap_device_name_set(default_device_name);
-    }
+    // }
     return 0;
 }
 #endif

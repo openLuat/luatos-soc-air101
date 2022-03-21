@@ -22,6 +22,9 @@ int tls_ble_server_api_send_msg(uint8_t *data, int data_len);
 #include "luat_msgbus.h"
 #include "luat_malloc.h"
 
+#define LUAT_LOG_TAG "ble"
+#include "luat_log.h"
+
 typedef struct ble_write_msg {
     // uint16_t conn_handle,
     // uint16_t attr_handle,
@@ -55,9 +58,8 @@ static volatile ble_server_state_t g_ble_server_state = BLE_SERVER_MODE_IDLE;
 /* ble attr write/notify handle */
 uint16_t g_ble_attr_indicate_handle;
 uint16_t g_ble_attr_write_handle;
+uint16_t g_ble_attr_notify_handle;
 uint16_t g_ble_conn_handle ;
-
-
 
 #define WM_GATT_SVC_UUID      0xFFF0
 #define WM_GATT_INDICATE_UUID 0xFFF1
@@ -94,13 +96,13 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
                 .uuid = BLE_UUID16_DECLARE(WM_GATT_INDICATE_UUID),
                 .val_handle = &g_ble_attr_indicate_handle,
                 .access_cb = gatt_svr_chr_access_func,
-                .flags = BLE_GATT_CHR_F_INDICATE,
+                .flags = BLE_GATT_CHR_F_INDICATE | BLE_GATT_CHR_F_READ,
             },{
             // 暂不支持NOTIFY
             //     .uuid = BLE_UUID16_DECLARE(WM_GATT_NOTIFY_UUID),
             //     .val_handle = &g_ble_attr_notify_handle,
             //     .access_cb = gatt_svr_chr_access_func,
-            //     .flags = BLE_GATT_CHR_F_NOTIFY,
+            //     .flags = BLE_GATT_CHR_F_NOTIFY | BLE_GATT_CHR_F_READ,
             // },{
               0, /* No more characteristics in this service */
             } 
@@ -194,11 +196,10 @@ gatt_svr_chr_access_func(uint16_t conn_handle, uint16_t attr_handle,
     struct os_mbuf *om = ctxt->om;
     ble_write_msg_t* wmsg;
     rtos_msg_t msg = {0};
-    
+    LLOGD("gatt_svr_chr_access_func %d %d %d", conn_handle, attr_handle, ctxt->op);
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_WRITE_CHR:
               while(om) {
-                  //LLOG("");
                   wmsg = (ble_write_msg_t*)(luat_heap_malloc(sizeof(ble_write_msg_t) + om->om_len - 1));
                   if (wmsg != NULL) {
                       wmsg->len = om->om_len;
@@ -220,6 +221,8 @@ gatt_svr_chr_access_func(uint16_t conn_handle, uint16_t attr_handle,
                   om = SLIST_NEXT(om, om_next);
               }
               return 0;
+        case BLE_GATT_ACCESS_OP_READ_CHR:
+            return 0;
         default:
             assert(0);
             return BLE_ATT_ERR_UNLIKELY;
@@ -246,7 +249,19 @@ err:
 }
 
 
-static uint8_t ss = 0x00;
+// static uint8_t ss = 0x00;
+
+static int indication_sent_cb(lua_State *L, void* ptr) {
+    rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
+    lua_getglobal(L, "sys_pub");
+    if (lua_isfunction(L, -1)) {
+        lua_pushstring(L, "BLE_IND_SENT");
+        lua_pushinteger(L, msg->arg1);
+        lua_pushinteger(L, msg->arg2);
+        lua_call(L, 3, 0);
+    }
+    return 0;
+}
 
 static void ble_server_indication_sent_cb(int conn_id, int status)
 {
@@ -254,38 +269,27 @@ static void ble_server_indication_sent_cb(int conn_id, int status)
     tls_bt_status_t ret;
 
     g_send_pending = 0;
-    if(!g_ble_indicate_enable)
-    {
-        TLS_BT_APPL_TRACE_DEBUG("Indicate disabled... when trying to send...\r\n");
-        return;
-    }
+    LLOGD("indication_sent_cb %d %d", conn_id, status);
+    // if(!g_ble_indicate_enable)
+    // {
+    //     TLS_BT_APPL_TRACE_DEBUG("Indicate disabled... when trying to send...\r\n");
+    //     return;
+    // }
 
-    if(g_ble_uart_output_fptr == NULL)
-    {
-        memset(g_ind_data, ss, sizeof(g_ind_data));
-        ss++;
-        if(ss > 0xFE) ss = 0x00;
-    	tls_ble_server_api_send_msg(g_ind_data, g_mtu); 
+    rtos_msg_t msg = {0};
+    msg.handler = indication_sent_cb;
+    msg.arg1 = conn_id;
+    msg.arg2 = status;
+    luat_msgbus_put(&msg, 0);
 
-    }else
-    {
-        len = tls_ble_uart_buffer_size();
-        len = MIN(len, g_mtu);
+    // if(g_ble_uart_output_fptr == NULL)
+    // {
+    //     memset(g_ind_data, ss, sizeof(g_ind_data));
+    //     ss++;
+    //     if(ss > 0xFE) ss = 0x00;
+    // 	tls_ble_server_api_send_msg(g_ind_data, g_mtu); 
 
-        if(len)
-        {
-            tls_ble_uart_buffer_peek(g_ind_data, len);
-            ret = tls_ble_server_api_send_msg(g_ind_data, len); 
-            if(ret == TLS_BT_STATUS_SUCCESS)
-            {
-                tls_ble_uart_buffer_delete(len);
-                g_send_pending = 1;
-            }else
-            {
-               TLS_BT_APPL_TRACE_DEBUG("server send via ble failed(%d), retry...\r\n", ret); 
-            }
-        }
-    }
+    // }
 }
 
 static void wm_ble_server_start_indicate(void *arg)
@@ -300,31 +304,31 @@ static void wm_ble_server_start_indicate(void *arg)
     {
 	    rc = tls_ble_server_api_send_msg(g_ind_data, g_mtu);
         TLS_BT_APPL_TRACE_DEBUG("Indicating sending...rc=%d\r\n", rc);
-    }else
-    {
-        /*check and send*/
-        len = tls_ble_uart_buffer_size();
-        len = MIN(len, g_mtu);
+    }
+    // else
+    // {
+    //     /*check and send*/
+    //     len = tls_ble_uart_buffer_size();
+    //     len = MIN(len, g_mtu);
 
-        if(len)
-        {
-            tls_ble_uart_buffer_peek(g_ind_data, len);
-            status = tls_ble_server_api_send_msg(g_ind_data, g_mtu);
-            if(status == TLS_BT_STATUS_SUCCESS)
-            {
-                tls_ble_uart_buffer_delete(len);
-            }else
-            {
-               TLS_BT_APPL_TRACE_DEBUG("Server send failed(%d), retry...\r\n", status); 
-               tls_bt_async_proc_func(wm_ble_server_start_indicate,(void*)g_ble_indicate_enable,1000);
-            }
-        }
-    }    
+    //     if(len)
+    //     {
+    //         tls_ble_uart_buffer_peek(g_ind_data, len);
+    //         status = tls_ble_server_api_send_msg(g_ind_data, g_mtu);
+    //         if(status == TLS_BT_STATUS_SUCCESS)
+    //         {
+    //             tls_ble_uart_buffer_delete(len);
+    //         }else
+    //         {
+    //            TLS_BT_APPL_TRACE_DEBUG("Server send failed(%d), retry...\r\n", status); 
+    //            tls_bt_async_proc_func(wm_ble_server_start_indicate,(void*)g_ble_indicate_enable,1000);
+    //         }
+    //     }
+    // }    
 }
 static void conn_param_update_cb(uint16_t conn_handle, int status, void *arg)
 {
-	TLS_BT_APPL_TRACE_DEBUG("conn param update complete; conn_handle=%d status=%d\n",
-		       conn_handle, status);
+	LLOGD("conn param update complete; conn_handle=%d status=%d", conn_handle, status);
 }
 
 static void wm_ble_server_conn_param_update_slave()
@@ -342,18 +346,34 @@ static void wm_ble_server_conn_param_update_slave()
 	assert(rc == 0);
 }
 
+static int luat_ble_gap_evt(lua_State *L, void* ptr) {
+    rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
+    lua_getglobal(L, "sys_pub");
+    if (lua_isfunction(L, -1)) {
+        lua_pushstring(L, "BLE_GAP_EVT");
+        lua_pushinteger(L, msg->arg1);
+        lua_pushinteger(L, msg->arg2);
+        lua_call(L, 3, 0);
+    }
+    return 0;
+}
+
 static int ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
 {
     int rc;
     struct ble_gap_conn_desc desc;
+
+    rtos_msg_t msg = {0};
+    msg.handler = luat_ble_gap_evt;
+    msg.arg1 = event->type;
     
     switch(event->type)
     {
         case BLE_GAP_EVENT_CONNECT:
             g_ble_prof_connected = 1;
             g_send_pending = 0;
-            
-            TLS_BT_APPL_TRACE_DEBUG("connected status=%d handle=%d,g_ble_attr_indicate_handle=%d\r\n",event->connect.status, g_ble_conn_handle, g_ble_attr_indicate_handle );
+            msg.arg2 = event->connect.status;
+            LLOGD("connected status=%d handle=%d,g_ble_attr_indicate_handle=%d",event->connect.status, g_ble_conn_handle, g_ble_attr_indicate_handle );
             if (event->connect.status == 0) {
                 g_ble_server_state = BLE_SERVER_MODE_CONNECTED;
                        //re set this flag, to prevent stop adv, but connected evt reported when deinit this demo
@@ -366,18 +386,19 @@ static int ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
                 phy_conn_changed(event->connect.conn_handle);
 #endif
             }
-            TLS_BT_APPL_TRACE_DEBUG("\r\n");
+            //TLS_BT_APPL_TRACE_DEBUG("\r\n");
 
             if (event->connect.status != 0) {
                 /* Connection failed; resume advertising. */
                 tls_nimble_gap_adv(WM_BLE_ADV_IND, 0);
             }
+            luat_msgbus_put(&msg, 0);
             break;
         case BLE_GAP_EVENT_DISCONNECT:
             g_ble_prof_connected = 0;
             g_ble_indicate_enable = 0;
             g_send_pending = 0;
-            TLS_BT_APPL_TRACE_DEBUG("disconnect reason=%d,state=%d\r\n", event->disconnect.reason,g_ble_server_state);
+            LLOGD("disconnect reason=%d,state=%d", event->disconnect.reason,g_ble_server_state);
             if(g_ble_server_state == BLE_SERVER_MODE_EXITING)
             {
                 if(g_ble_uart_output_fptr)
@@ -403,7 +424,7 @@ static int ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
                 tls_nimble_gap_adv(WM_BLE_ADV_IND, 0);
             }
             #endif
-            
+            luat_msgbus_put(&msg, 0);
             break;
         case BLE_GAP_EVENT_NOTIFY_TX:
             if(event->notify_tx.status == BLE_HS_EDONE)
@@ -413,35 +434,41 @@ static int ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
             {
                 /*Application will handle other cases*/
             }
+            msg.arg2 = event->notify_tx.status;
+            luat_msgbus_put(&msg, 0);
             break;
         case BLE_GAP_EVENT_SUBSCRIBE:
-            TLS_BT_APPL_TRACE_DEBUG("subscribe indicate(%d,%d)\r\n", event->subscribe.prev_indicate,event->subscribe.cur_indicate );
+            LLOGD("subscribe indicate(%d,%d)", event->subscribe.prev_indicate,event->subscribe.cur_indicate );
+            LLOGD("subscribe notify(%d,%d)", event->subscribe.prev_notify,event->subscribe.cur_notify );
             g_ble_indicate_enable = event->subscribe.cur_indicate;
-            if(g_ble_indicate_enable)
-            {
-                g_ble_server_state = BLE_SERVER_MODE_INDICATING;
-                /*To reach the max passthrough,  in ble_uart mode, I conifg the min connection_interval*/
-                if(g_ble_uart_output_fptr)
-                {
-                    tls_bt_async_proc_func(wm_ble_server_conn_param_update_slave, NULL, 30);
-                }
-                tls_bt_async_proc_func(wm_ble_server_start_indicate,(void*)g_ble_indicate_enable, 30);
-            }else
-            {
-                if(g_ble_server_state != BLE_SERVER_MODE_EXITING)
-                {
-                    g_ble_server_state = BLE_SERVER_MODE_CONNECTED;
-                }
-            }
+            // if(g_ble_indicate_enable)
+            // {
+            //     g_ble_server_state = BLE_SERVER_MODE_INDICATING;
+            //     /*To reach the max passthrough,  in ble_uart mode, I conifg the min connection_interval*/
+            //     if(g_ble_uart_output_fptr)
+            //     {
+            //         tls_bt_async_proc_func(wm_ble_server_conn_param_update_slave, NULL, 30);
+            //     }
+            //     tls_bt_async_proc_func(wm_ble_server_start_indicate,(void*)g_ble_indicate_enable, 30);
+            // }else
+            // {
+            //     if(g_ble_server_state != BLE_SERVER_MODE_EXITING)
+            //     {
+            //         g_ble_server_state = BLE_SERVER_MODE_CONNECTED;
+            //     }
+            // }
+            msg.arg2 = event->subscribe.cur_indicate;
+            luat_msgbus_put(&msg, 0);
             break;
         case BLE_GAP_EVENT_MTU:
-            TLS_BT_APPL_TRACE_DEBUG("wm ble dm mtu changed to(%d)\r\n", event->mtu.value);
+            LLOGD("wm ble dm mtu changed to(%d)", event->mtu.value);
             /*nimBLE config prefered ATT_MTU is 256. here 256-12 = 244. */
             /* preamble(1)+access address(4)+pdu(2~257)+crc*/
             /* ATT_MTU(247):pdu= pdu_header(2)+l2cap_len(2)+l2cap_chn(2)+mic(4)*/
             /* GATT MTU(244): ATT_MTU +opcode+chn*/
             g_mtu = min(event->mtu.value - 12, 244);
-            
+            msg.arg2 = event->mtu.value;
+            luat_msgbus_put(&msg, 0);
             break;
         case BLE_GAP_EVENT_REPEAT_PAIRING:
             /* We already have a bond with the peer, but it is attempting to
@@ -453,11 +480,11 @@ static int ble_gap_evt_cb(struct ble_gap_event *event, void *arg)
             assert(rc == 0);
             ble_store_util_delete_peer(&desc.peer_id_addr);
             
-            TLS_BT_APPL_TRACE_DEBUG("!!!BLE_GAP_EVENT_REPEAT_PAIRING\r\n");
+            LLOGD("!!!BLE_GAP_EVENT_REPEAT_PAIRING");
             return BLE_GAP_REPEAT_PAIRING_RETRY;
         
         case BLE_GAP_EVENT_PASSKEY_ACTION:
-            TLS_BT_APPL_TRACE_DEBUG(">>>BLE_GAP_EVENT_REPEAT_PAIRING\r\n");
+            LLOGD(">>>BLE_GAP_EVENT_REPEAT_PAIRING");
             return 0;
 
             
@@ -596,7 +623,8 @@ int tls_ble_server_api_send_msg(uint8_t *data, int data_len)
         return BLE_HS_ENOMEM;
     }
     
-    rc = ble_gattc_indicate_custom(g_ble_conn_handle,g_ble_attr_indicate_handle, om); 
+    rc = ble_gattc_indicate_custom(g_ble_conn_handle,g_ble_attr_indicate_handle, om);
+    // rc = ble_gattc_notify_custom(g_ble_conn_handle,g_ble_attr_notify_handle, om);
     if(rc == 0)
     {
         g_send_pending = 1;

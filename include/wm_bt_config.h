@@ -40,6 +40,9 @@
     #define WM_BT_INCLUDED                CFG_OFF
 #endif
 
+#ifndef NIMBLE_FTR
+#define NIMBLE_FTR 1
+#endif
 
 #if (WM_BLE_PERIPHERAL_INCLUDED == CFG_ON) || (WM_BLE_CENTRAL_INCLUDED == CFG_ON)
 #if NIMBLE_FTR
