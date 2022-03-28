@@ -64,7 +64,9 @@ static void luat_start(void *sdata){
 #include "lvgl.h"
 
 // static uint8_t lvgl_called = 0;
+static uint32_t lvgl_tick_cnt;
 static int luat_lvgl_cb(lua_State *L, void* ptr) {
+	if (lvgl_tick_cnt) lvgl_tick_cnt--;
 	lv_task_handler();
 	// lvgl_called = 0;
 	return 0;
@@ -73,9 +75,13 @@ static int luat_lvgl_cb(lua_State *L, void* ptr) {
 static void lvgl_timer_cb(void *ptmr, void *parg) {
 	// if (lvgl_called)
 		// return;
-	rtos_msg_t msg = {0};
-	msg.handler = luat_lvgl_cb;
-    luat_msgbus_put(&msg, 0);
+	if (lvgl_tick_cnt < 10)
+	{
+		lvgl_tick_cnt++;
+		rtos_msg_t msg = {0};
+		msg.handler = luat_lvgl_cb;
+		luat_msgbus_put(&msg, 0);
+	}
 	// lvgl_called = 1;
 }
 // #define    LVGL_TASK_SIZE      512
@@ -98,6 +104,26 @@ extern unsigned int  TLS_FLASH_OTA_FLAG_ADDR        ;
 extern unsigned int  TLS_FLASH_END_ADDR             ;
 #endif
 
+#include "luat_rtos.h"
+#include "luat_server.h"
+// static tls_os_queue_t *shell_queue = NULL;
+// luat_rtos_queue_t queue = {
+// 	.userdata = shell_queue,
+// };
+// static luat_rtos_queue_t queue;
+
+// static void prvnes_Task(void* params){
+// 	int* tag;
+// 	while (1)
+// 	{
+// 		// ret = tls_os_queue_receive(shell_queue, (void **) &tag, 0, 0);
+// 		int ret = luat_queue_recv(&queue, tag, 0, 0);
+// 		printf("this is a test task!!!!\r\n");
+// 		tls_os_time_delay(1000);
+// 	}
+	
+// }
+
 void UserMain(void){
 	char unique_id [18] = {0};
 
@@ -113,6 +139,16 @@ void UserMain(void){
 	rst_sta = tls_reg_read32(HR_CLK_RST_STA);
 	tls_reg_write32(HR_CLK_RST_STA, 0xFF);
 
+
+// luat_queue_create(&queue, 256, 0);
+
+// luat_thread_t nes_thread = {
+// 	.name = "nes",
+// 	.priority = 1,
+// 	.stack_size = 16*1024,
+// 	.entry = prvnes_Task,
+// };
+// luat_thread_start(&nes_thread);
 
 #ifdef LUAT_USE_SHELL
 	luat_shell_poweron(0);
@@ -194,6 +230,14 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
+// int a = 1;
+// while (a++)
+// {
+// 	// tls_os_queue_send(shell_queue, (void *)user_data, 0);
+// 	luat_queue_send(&queue, a,  0, 0);
+// 	tls_os_time_delay(1000);
+// }
+	luat_server_start();
 	tls_os_task_create(NULL, NULL,
 				luat_start,
 				NULL,
