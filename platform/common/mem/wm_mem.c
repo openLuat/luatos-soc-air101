@@ -76,13 +76,18 @@ void * mem_alloc_debug(u32 size) {
 	tls_os_sem_release(mem_sem);
 	return buffer;
 }
+
+extern const uint32_t __ram_end;
 void mem_free_debug(void *p) {
-    u32 cpu_sr = 0;
-	tls_os_sem_acquire(mem_sem, 0);
-	cpu_sr = tls_os_set_critical();
-	free(p);
-	tls_os_release_critical(cpu_sr);	
-	tls_os_sem_release(mem_sem);
+    if (((uint32_t)p >= (uint32_t)(&__heap_start)) && ((uint32_t)p <= (uint32_t)(&__ram_end)))
+	{
+        u32 cpu_sr = 0;
+        tls_os_sem_acquire(mem_sem, 0);
+        cpu_sr = tls_os_set_critical();
+        free(p);
+        tls_os_release_critical(cpu_sr);	
+        tls_os_sem_release(mem_sem);
+    }
 }
 void * mem_realloc_debug(void *mem_address, u32 size) {
     u32 * mem_re_addr = NULL;
