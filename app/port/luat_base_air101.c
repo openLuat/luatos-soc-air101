@@ -180,6 +180,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_IR
   {"ir", luaopen_ir},
 #endif
+#ifdef LUAT_USE_YMODEM
+  {"ymodem", luaopen_ymodem},
+#endif
   {NULL, NULL}
 };
 

@@ -320,6 +320,10 @@ target("air10x")
     add_files(luatos.."components/shell/*.c")
     add_files(luatos.."components/cmux/*.c")
 
+    -- ymodem
+    add_includedirs(luatos.."components/ymodem",{public = true})
+    add_files(luatos.."components/ymodem/*.c")
+
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
