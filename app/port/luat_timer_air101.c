@@ -15,10 +15,13 @@ static luat_timer_t* timers[FREERTOS_TIMER_COUNT] = {0};
 static void luat_timer_callback(void *ptmr, void *parg) {
     // LLOGD("timer callback");
     rtos_msg_t msg;
-    luat_timer_t *timer = (luat_timer_t*)parg;
+    size_t timer_id = (size_t)parg;
+    luat_timer_t *timer = luat_timer_get(timer_id);
+    if (timer == NULL)
+        return;
     msg.handler = timer->func;
     msg.ptr = timer;
-    msg.arg1 = 0;
+    msg.arg1 = timer_id;
     msg.arg2 = 0;
     luat_msgbus_put(&msg, 1);
     // LLOGD("timer msgbus re=%ld", re);
@@ -46,7 +49,7 @@ int luat_timer_start(luat_timer_t* timer) {
     }
     if (timer->timeout < (1000 / configTICK_RATE_HZ))
         timer->timeout = 1000 / configTICK_RATE_HZ;
-    ret =  tls_os_timer_create(&os_timer, luat_timer_callback, timer,(timer->timeout)/(1000 / configTICK_RATE_HZ), timer->repeat ? 1 : 0, NULL);
+    ret =  tls_os_timer_create(&os_timer, luat_timer_callback, (void*)timer->id,(timer->timeout)/(1000 / configTICK_RATE_HZ), timer->repeat ? 1 : 0, NULL);
     // LLOGD("timer id=%ld, osTimerNew=%08X", timerIndex, (int)timer);
     if (TLS_OS_SUCCESS != ret)
     {
