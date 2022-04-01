@@ -2,7 +2,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V0008"
+#define LUAT_BSP_VERSION "V0009"
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 #define AIR101
@@ -48,15 +48,20 @@
 #define LUAT_USE_CJSON  1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
-// #define LUAT_USE_GNSS  1
+#define LUAT_USE_GNSS  1
 #define LUAT_USE_FS  1
 #define LUAT_USE_SENSOR  1
 #define LUAT_USE_SFUD  1
 // #define LUAT_USE_STATEM 1
 // 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
 // #define LUAT_USE_COREMARK 1
-// #define LUAT_USE_ZLIB 1 
-// #define LUAT_USE_IR 1
+#define LUAT_USE_ZLIB 1 
+#define LUAT_USE_IR 1
+// FDB 提供kv数据库, 与nvm库类似
+#define LUAT_USE_FDB 1
+#define LUAT_USE_OTA
+// #define LUAT_USE_MLX90640
+#define LUAT_USE_I2CTOOLS
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
@@ -67,22 +72,17 @@
 
 //----------------------------
 // 高通字体, 需配合芯片使用
-// #define LUAT_USE_GTFONT 1
-// #define LUAT_USE_GTFONT_UTF8
+#define LUAT_USE_GTFONT 1
+#define LUAT_USE_GTFONT_UTF8
 
 //----------------------------
 // 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
 #define LUAT_USE_SHELL 1
+#define LUAT_USE_DBG
 // NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
 // #define LUAT_USE_NIMBLE 1
-// FDB 提供kv数据库, 与nvm库类似
-#define LUAT_USE_FDB 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
-#define LUAT_USE_OTA
-#define LUAT_USE_DBG
-// #define LUAT_USE_MLX90640
-#define LUAT_USE_I2CTOOLS
 
 //---------------------
 // UI
@@ -110,7 +110,7 @@
 // #define LUAT_FONTS_BASE_28P
 /**********U8G2&LCD FONT*************/
 // #define USE_U8G2_UNIFONT_SYMBOLS
-// #define USE_U8G2_OPPOSANSM12_CHINESE
+#define USE_U8G2_OPPOSANSM12_CHINESE
 // #define USE_U8G2_OPPOSANSM16_CHINESE
 // #define USE_U8G2_OPPOSANSM24_CHINESE
 // #define USE_U8G2_OPPOSANSM32_CHINESE
