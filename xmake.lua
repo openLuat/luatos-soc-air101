@@ -362,9 +362,9 @@ target("air10x")
         -- elseif is_mode("release") then
             import("lib.detect.find_file")
             os.cp("$(buildir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
-            local path7z = "7z.exe"
+            local path7z = nil
             if is_plat("windows") then
-                path7z = find_file("7z.exe", { "C:/Program Files/7-Zip/", "D:/Program Files/7-Zip/", "E:/Program Files/7-Zip/"})
+                path7z = "7za.exe"
             elseif is_plat("linux") then
                 path7z = find_file("7z", { "/usr/bin/"})
                 if not path7z then
@@ -388,7 +388,7 @@ target("air10x")
                 else
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
-                os.exec(path7z.." a LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
+                os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
                 os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
