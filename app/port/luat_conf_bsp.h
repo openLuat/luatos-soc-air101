@@ -52,7 +52,7 @@
 #define LUAT_USE_CJSON  1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
-#define LUAT_USE_GNSS  1
+#define LUAT_USE_LIBGNSS  1
 #define LUAT_USE_FS  1
 #define LUAT_USE_SENSOR  1
 #define LUAT_USE_SFUD  1
@@ -92,6 +92,7 @@
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
+#define LUAT_USE_QRCODE
 #define LUAT_USE_TJPGD
 // EINK 是墨水屏
 #define LUAT_USE_EINK
