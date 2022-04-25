@@ -153,6 +153,7 @@ target("lvgl")
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
     add_includedirs(luatos.."luat/packages/u8g2")
+    add_includedirs(luatos.."components/qrcode",{public = true})
 
     set_targetdir("$(buildir)/lib")
 target_end()
