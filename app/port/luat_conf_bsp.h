@@ -92,7 +92,6 @@
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
-#define LUAT_USE_QRCODE
 #define LUAT_USE_TJPGD
 // EINK 是墨水屏
 #define LUAT_USE_EINK

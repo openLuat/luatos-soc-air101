@@ -170,6 +170,7 @@ target("u8g2")
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."luat/packages/u8g2",{public = true})
     add_includedirs(luatos.."components/gtfont")
+    add_includedirs(luatos.."components/qrcode",{public = true})
 
     set_targetdir("$(buildir)/lib")
 target_end()
