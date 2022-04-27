@@ -27,21 +27,21 @@ int luat_i2c_setup(int id, int speed, int slaveaddr) {
 }
 
 int luat_i2c_close(int id) {
-    // tls_i2c_stop();
     return 0;
 }
 
-int luat_i2c_send(int id, int addr, void* buff, size_t len) {
+int luat_i2c_send(int id, int addr, void* buff, size_t len , uint8_t stop) {
     tls_i2c_write_byte(addr << 1, 1);
     if(WM_FAILED == tls_i2c_wait_ack())
         return -1;
-    for (size_t i = 0; i < len; i++)
-    {
+    for (size_t i = 0; i < len; i++){
         tls_i2c_write_byte(((u8*)buff)[i], 0);
         if(WM_FAILED == tls_i2c_wait_ack())
             return -1;
     }
-    tls_i2c_stop();
+    if (stop){
+        tls_i2c_stop();
+    }
     return 0;
 }
 
