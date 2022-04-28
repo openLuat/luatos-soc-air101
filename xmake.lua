@@ -44,7 +44,7 @@ local flto = ""
 add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 
 set_warnings("all")
-set_optimize("smallest")
+set_optimize("fastest")
 -- set language: c99
 set_languages("c99")
 add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wa,--gdwarf2 -fdata-sections -ffunction-sections")
@@ -331,6 +331,10 @@ target("air10x")
     -- qrcode
     add_includedirs(luatos.."components/qrcode",{public = true})
     add_files(luatos.."components/qrcode/*.c")
+
+    -- qrcode
+    add_includedirs(luatos.."components/network/adapter",{public = true})
+    add_files(luatos.."components/network/adapter/*.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
