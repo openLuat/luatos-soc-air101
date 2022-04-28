@@ -332,9 +332,9 @@ target("air10x")
     add_includedirs(luatos.."components/qrcode",{public = true})
     add_files(luatos.."components/qrcode/*.c")
 
-    -- qrcode
-    add_includedirs(luatos.."components/network/adapter",{public = true})
-    add_files(luatos.."components/network/adapter/*.c")
+    -- network
+    -- add_includedirs(luatos.."components/network/adapter",{public = true})
+    -- add_files(luatos.."components/network/adapter/*.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
@@ -373,7 +373,7 @@ target("air10x")
             os.cp("$(buildir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
             local path7z = nil
             if is_plat("windows") then
-                path7z = "$(programdir)/winenv/bin/7z.exe"
+                path7z = "\"$(programdir)/winenv/bin/7z.exe\""
             elseif is_plat("linux") then
                 path7z = find_file("7z", { "/usr/bin/"})
                 if not path7z then
