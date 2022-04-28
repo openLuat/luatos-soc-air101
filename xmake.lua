@@ -369,7 +369,7 @@ target("air10x")
             os.cp("$(buildir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
             local path7z = nil
             if is_plat("windows") then
-                path7z = "7za.exe"
+                path7z = "$(programdir)/winenv/bin/7z.exe"
             elseif is_plat("linux") then
                 path7z = find_file("7z", { "/usr/bin/"})
                 if not path7z then
