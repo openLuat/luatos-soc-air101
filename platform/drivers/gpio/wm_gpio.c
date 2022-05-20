@@ -218,16 +218,17 @@ void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
 	tls_os_release_critical(cpu_sr);
 }
 
-//hyj
+//add by hyj, 2022-05-20
+// 以极限速度输出io脉冲
 void tls_gpio_pulse(enum tls_io_name gpio_pin,u16 delay,u8* level,u16 len)
 {
-        u32 cpu_sr = 0;
-        u32 reg;
-        u32     reg_en;
+    u32 cpu_sr = 0;
+    u32 reg;
+    u32     reg_en;
     u8  pin;
     u16 offset;
-        u16 i;
-        volatile u32 del=delay;
+    u16 i;
+    volatile u32 del=delay;
     if (gpio_pin >= WM_IO_PB_00)
     {
         pin    = gpio_pin - WM_IO_PB_00;
@@ -239,25 +240,27 @@ void tls_gpio_pulse(enum tls_io_name gpio_pin,u16 delay,u8* level,u16 len)
         offset = 0;
     }
 
+    cpu_sr = tls_os_set_critical();
 
-        cpu_sr = tls_os_set_critical();
+    int GPIO_DATA = HR_GPIO_DATA + offset;
+    reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
+    tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
 
-        reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
-        tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
-
-        reg = tls_reg_read32(HR_GPIO_DATA + offset);
-        for(i=0;i<len;i++)
-        {
-          if(level[i/8]&(0x80>>(i%8)))
-            tls_reg_write32(HR_GPIO_DATA + offset, reg |  (1 << pin));      /* write high */
-          else 
-            tls_reg_write32(HR_GPIO_DATA + offset, reg & (~(1 << pin)));/* write low */
-          del = delay;
-          while(del--);
-        }
+    reg = tls_reg_read32(GPIO_DATA);
+    u32 reg_high = reg |  (1 << pin);
+    u32 reg_low  = reg & (~(1 << pin));
+    for(i=0; i<len; i++)
+    {
+        if(level[i/8]&(0x80>>(i%8)))
+            tls_reg_write32(GPIO_DATA, reg_high);  /* write high */
+        else 
+            tls_reg_write32(GPIO_DATA, reg_low);   /* write low */
+        del = delay;
+        while(del--);
+    }
     tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
 
-        tls_os_release_critical(cpu_sr);
+    tls_os_release_critical(cpu_sr);
 }
 
 
