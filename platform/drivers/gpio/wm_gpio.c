@@ -218,6 +218,50 @@ void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
 	tls_os_release_critical(cpu_sr);
 }
 
+//hyj
+void tls_gpio_pulse(enum tls_io_name gpio_pin,u16 delay,u8* level,u16 len)
+{
+        u32 cpu_sr = 0;
+        u32 reg;
+        u32     reg_en;
+    u8  pin;
+    u16 offset;
+        u16 i;
+        volatile u32 del=delay;
+    if (gpio_pin >= WM_IO_PB_00)
+    {
+        pin    = gpio_pin - WM_IO_PB_00;
+        offset = TLS_IO_AB_OFFSET;
+    }
+    else
+    {
+        pin    = gpio_pin;
+        offset = 0;
+    }
+
+
+        cpu_sr = tls_os_set_critical();
+
+        reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
+        tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
+
+        reg = tls_reg_read32(HR_GPIO_DATA + offset);
+        for(i=0;i<len;i++)
+        {
+          if(level[i/8]&(0x80>>(i%8)))
+            tls_reg_write32(HR_GPIO_DATA + offset, reg |  (1 << pin));      /* write high */
+          else 
+            tls_reg_write32(HR_GPIO_DATA + offset, reg & (~(1 << pin)));/* write low */
+          del = delay;
+          while(del--);
+        }
+    tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
+
+        tls_os_release_critical(cpu_sr);
+}
+
+
+
 /**
  * @brief          This function is used to config gpio interrupt
  *
