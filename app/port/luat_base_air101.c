@@ -228,9 +228,9 @@ void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
 const char* luat_os_bsp(void)
 {
 #ifdef AIR103
-    return "air103";
+    return "AIR103";
 #else
-    return "air101";
+    return "AIR101";
 #endif
 }
 
