@@ -101,10 +101,10 @@ int luat_gpio_set(int pin, int level)
 }
 
 //hyj
-void luat_gpio_pulse(int pin,uint16_t delay_ns, uint8_t *level, uint16_t len)
+void luat_gpio_pulse(int pin, uint8_t *level, uint16_t len,uint16_t delay_ns)
 {
     if (pin < 0 || pin > WM_IO_PB_31) return 0;
-    tls_gpio_pulse(pin,delay_ns,level,len);
+    tls_gpio_pulse(pin,level,len,delay_ns);
     return 0;
 }
 

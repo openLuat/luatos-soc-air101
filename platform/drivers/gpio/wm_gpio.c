@@ -220,7 +220,7 @@ void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
 
 //add by hyj, 2022-05-20
 // 以极限速度输出io脉冲
-void tls_gpio_pulse(enum tls_io_name gpio_pin,u16 delay,u8* level,u16 len)
+void tls_gpio_pulse(enum tls_io_name gpio_pin,u8* level,u16 len,u16 delay)
 {
     u32 cpu_sr = 0;
     u32 reg;
