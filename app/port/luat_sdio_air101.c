@@ -2,7 +2,7 @@
 #include "luat_base.h"
 #include "luat_sdio.h"
 
-#define LUAT_LOG_TAG "luat.sdio"
+#define LUAT_LOG_TAG "sdio"
 #include "luat_log.h"
 
 #include "wm_sdio_host.h"
