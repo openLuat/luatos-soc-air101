@@ -52,7 +52,7 @@ static s16 uart_input_cb(u16 len, void* user_data)
 //串口发送完成事件回调
 static s16 uart_sent_cb(struct tls_uart_port *port)
 {
-    tls_uart_free_tx_sent_data(port);
+    //tls_uart_free_tx_sent_data(port);
     rtos_msg_t msg;
     msg.handler = l_uart_handler;
     msg.arg1 = port->uart_no;
@@ -172,7 +172,7 @@ int luat_setup_cb(int uartid, int received, int sent)
 
     if (sent)
     {
-        tls_uart_tx_callback_register(uartid, (s16(*)(struct tls_uart_port *))uart_sent_cb);
+        tls_uart_tx_sent_callback_register(uartid, (s16(*)(struct tls_uart_port *))uart_sent_cb);
     }
 
     return 0;
