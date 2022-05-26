@@ -45,6 +45,8 @@
 // OTP
 #define LUAT_USE_OTP 1
 #define LUAT_USE_TOUCHKEY 1
+// i2s
+//#define LUAt_USE_I2S 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的

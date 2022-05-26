@@ -138,9 +138,9 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 
 #ifdef LUAT_USE_LVGL
-#ifndef LUAT_USE_LCD
-#define LUAT_USE_LCD
-#endif
+// #ifndef LUAT_USE_LCD
+// #define LUAT_USE_LCD
+// #endif
   {"lvgl",   luaopen_lvgl},
 #endif
 
@@ -182,6 +182,9 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 #ifdef LUAT_USE_YMODEM
   {"ymodem", luaopen_ymodem},
+#endif
+#ifdef LUAT_USE_I2S
+  {"i2s", luaopen_i2s},
 #endif
   {NULL, NULL}
 };
