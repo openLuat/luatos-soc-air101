@@ -263,12 +263,29 @@ typedef struct TLS_UART_REGS
     u32 UR_RXW;                     /**< rx windows register */
 } TLS_UART_REGS_T;
 
-
+typedef struct
+{
+	// timer_t *rs485_timer;
+	union
+	{
+		u16 rs485_param;
+		struct
+		{
+			u16 wait_time:14;
+			u16 rx_level:1;
+			u16 is_485used:1;
+		}rs485_param_bit;
+	};
+	u8 rx_mark;
+	u8 rs485_pin;
+}rs480_info;
 /**
  * @typedef struct tls_uart_port
  */
 typedef struct tls_uart_port
 {
+    rs480_info rs480;
+
     u32 uart_no;                    /**< uart number: 0 or 1 */
 
     u32 uart_irq_no;             /**< uart interrupt number */
