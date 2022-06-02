@@ -189,6 +189,4 @@
 
 #define LV_COLOR_16_SWAP   1
 
-#define LUAT__UART_TX_NEED_WAIT_DONE
-
 #endif
