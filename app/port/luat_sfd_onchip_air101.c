@@ -10,15 +10,16 @@
 #include "wm_flash_map.h"
 #include "wm_internal_flash.h"
 
+extern uint32_t kv_addr;
+extern uint32_t kv_size_kb;
+
 int sfd_onchip_init (void* userdata) {
     sfd_onchip_t* onchip = (sfd_onchip_t*)userdata;
     if (onchip == NULL)
        return -1;
-#ifdef AIR101
-    onchip->addr = (0x1FC000 - 112 * 1024 - 64 * 1024);
-#else
-    onchip->addr = (0x0FC000 - 112 * 1024 - 64 * 1024);
-#endif
+    //LLOGD("kv addr 0x%08X", kv_addr);
+    //LLOGD("kv addr2 0x%08X", (0x1FC000 - 112 * 1024 - 64 * 1024));
+    onchip->addr = kv_addr;
     return 0;
 }
 

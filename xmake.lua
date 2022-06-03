@@ -136,8 +136,8 @@ target("lvgl")
 
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        local LVGL_CONF = conf_data:find("// #define LUAT_USE_LVGL\n")
-        if LVGL_CONF == nil then target:set("default", true) else target:set("default", false) end
+        local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
+        if LVGL_CONF then target:set("default", true) else target:set("default", false) end
     end)
 
     add_files(luatos.."components/lvgl/**.c")
@@ -186,16 +186,26 @@ target("air10x")
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         AIR10X_FLASH_FS_REGION_SIZE = conf_data:match("#define FLASH_FS_REGION_SIZE (%d+)")
         AIR10X_VERSION = conf_data:match("#define LUAT_BSP_VERSION \"(%w+)\"")
-        local LVGL_CONF = conf_data:find("// #define LUAT_USE_LVGL\n")
-        if LVGL_CONF == nil then target:add("deps", "lvgl") end
+        local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
+        if LVGL_CONF then target:add("deps", "lvgl") end
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
-        local FDB_CONF = conf_data:find("// #define LUAT_USE_FDB ")
-        if FDB_CONF == nil then 
+        local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB")
+
+        local fs_size = AIR10X_FLASH_FS_REGION_SIZE and tonumber(AIR10X_FLASH_FS_REGION_SIZE) or 112
+        if FDB_CONF or fs_size > 112 then
             local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
             local I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x08010800 , LENGTH = 0x(%x+)")
-            local I_SRAM_LENGTH_N = string.format("%X",tonumber('0X'..I_SRAM_LENGTH)-64*1024)
+            local sram_size = tonumber('0X'..I_SRAM_LENGTH)
+            if FDB_CONF then
+                sram_size = sram_size - 64*1024
+            end
+            if fs_size > 112 then
+                sram_size = sram_size - (fs_size - 112) *1024
+            end
+            print("I_SRAM", sram_size // 1024)
+            local I_SRAM_LENGTH_N = string.format("%X", sram_size)
             local ld_data_n = ld_data:gsub(I_SRAM_LENGTH,I_SRAM_LENGTH_N)
             io.writefile("./ld/air101_103.ld", ld_data_n)
         else
@@ -394,6 +404,7 @@ target("air10x")
                     end
                     io.writefile("./soc_tools/info.json", LVGL_JSON)
                 else
+                    print("AIR10X_FLASH_FS_REGION_SIZE", "default", 112)
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
                 os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
