@@ -65,8 +65,7 @@ int luat_fs_init(void) {
         luadb_addr = 0;
     }
     else {
-        LLOGI("Using LuaDB as script zone format %p", ptr);
-        // TODO 根据LuaDB的区域动态调整?
+        //LLOGI("Using LuaDB as script zone format %p", ptr);
 #ifdef AIR103
         lfs_addr = 0x0F0000;
         lfs_size_kb = 48;
