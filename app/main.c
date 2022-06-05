@@ -18,6 +18,7 @@
 #include "wm_internal_flash.h"
 #include "wm_psram.h"
 #include "wm_efuse.h"
+#include "wm_regs.h"
 
 #include "FreeRTOS.h"
 
@@ -32,17 +33,24 @@
 #endif
 #endif
 
+#if (LUAT_HEAP_SIZE > 128*1024)
+ __attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - 128*1024) / 8];
+#endif
+
+
 static void luat_start(void *sdata){
-	// 毕竟sram还是快很多的, 优先psram吧
+	// 毕竟sram还是快很多的, 优先sram吧
 	bpool((void*)0x20028000, 128*1024);
 #ifdef LUAT_USE_PSRAM
 	char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
-	char* psram_ptr = (void*)0x30000000;
+	char* psram_ptr = (void*)0x30010000;
+	LLOGD("check psram ...");
 	memcpy(psram_ptr, test, 4);
 	if (memcmp(psram_ptr, test, 4)) {
 		LLOGW("psram is enable, but can't access!!");
 	}
 	else {
+		LLOGD("psram is ok");
 		memset(psram_ptr, 0, 1024);
 		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
 		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
@@ -50,11 +58,9 @@ static void luat_start(void *sdata){
 		return;
 	}
 #else
+	// 暂时还是放在这里吧, 考虑改到0x20028000之前
 	#if (LUAT_HEAP_SIZE > 128*1024)
-	char* heap_ext = malloc(LUAT_HEAP_SIZE - 128*1024);
-	if (heap_ext) {
-		bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
-	}
+	bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
 	#endif
 #endif
 	luat_main();
@@ -114,6 +120,15 @@ void UserMain(void){
 	opt.paritytype = TLS_UART_PMODE_DISABLED;
 	opt.stopbits = TLS_UART_ONE_STOPBITS;
 	tls_uart_port_init(0, &opt, 0);
+
+	// 完全禁用jtag
+	//u32 value = tls_reg_read32(HR_CLK_SEL_CTL);
+	// printf("HR_CLK_SEL_CTL %08X\n", value);
+	//value = value & 0x7FFF;
+	// value = value & 0x7F00;
+	//tls_reg_write32(HR_CLK_SEL_CTL, value);
+	// tls_reg_read32(HR_CLK_SEL_CTL);
+	// printf("HR_CLK_SEL_CTL %08X\n", value);
 
 	// 读取开机原因
 	rst_sta = tls_reg_read32(HR_CLK_RST_STA);
@@ -186,6 +201,7 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 #define LUAT_USE_PSRAM_PORT 1
 #endif
 #endif
+	printf("psram init\n");
 	wm_psram_config(LUAT_USE_PSRAM_PORT);
 	// 然后初始化psram的寄存器
 	psram_init(PSRAM_QPI);
