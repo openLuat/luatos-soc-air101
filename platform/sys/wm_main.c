@@ -48,6 +48,8 @@
 #include "wm_io.h"
 #include "wm_gpio.h"
 
+#define SYS_MEM_DEBUG 1
+
 /* c librayr mutex */
 tls_os_sem_t    *libc_sem;
 /*----------------------------------------------------------------------------
@@ -88,7 +90,7 @@ void _mutex_release (u32 *mutex)
 
 #define     TASK_START_STK_SIZE         640     /* Size of each task's stacks (# of WORDs)  */
 /*If you want to delete main task after it works, you can open this MACRO below*/
-#define MAIN_TASK_DELETE_AFTER_START_FTR  0
+#define MAIN_TASK_DELETE_AFTER_START_FTR  1
 
 u8 *TaskStartStk = NULL;
 tls_os_task_t tststarthdl = NULL;
@@ -215,7 +217,7 @@ int main(void)
     csi_vic_set_wakeup_irq(I2C_IRQn);
     csi_vic_set_wakeup_irq(ADC_IRQn);
     csi_vic_set_wakeup_irq(SPI_LS_IRQn);
-	csi_vic_set_wakeup_irq(SPI_HS_IRQn);
+	// csi_vic_set_wakeup_irq(SPI_HS_IRQn);
     csi_vic_set_wakeup_irq(GPIOA_IRQn);
     csi_vic_set_wakeup_irq(GPIOB_IRQn);
     csi_vic_set_wakeup_irq(UART0_IRQn);
@@ -227,7 +229,7 @@ int main(void)
     csi_vic_set_wakeup_irq(I2S_IRQn);
 	csi_vic_set_wakeup_irq(SIDO_HOST_IRQn);
     csi_vic_set_wakeup_irq(SYS_TICK_IRQn);
-    csi_vic_set_wakeup_irq(RSA_IRQn);
+    // csi_vic_set_wakeup_irq(RSA_IRQn);
     csi_vic_set_wakeup_irq(CRYPTION_IRQn);
     csi_vic_set_wakeup_irq(PMU_IRQn);
     csi_vic_set_wakeup_irq(TIMER_IRQn);
@@ -312,26 +314,34 @@ void task_start (void *data)
 
     /*PARAM GAIN,MAC default*/
     //tls_ft_param_init();
-    tls_crypto_init();
+    //tls_crypto_init();
+
+// 仅调试内存大小时使用
+#if 0
+    tls_mem_get_init_available_size();
+    printf("sys memory max %d kb\n", total_mem_size / 1024);
+    printf("heap memory max %d kb\n", ((unsigned int)&__heap_end - (unsigned int)&__heap_start) / 1024);
+#endif
 
     UserMain();
 
-    for (;;)
-    {
+    // for (;;)
+    // {
 #if MAIN_TASK_DELETE_AFTER_START_FTR
 		if (tststarthdl)
 		{
     		tls_os_task_del_by_task_handle(tststarthdl,task_start_free);
+            // break;
 		}
 #endif
-#if 1
-        tls_os_time_delay(0x10000000);
-#else
-        //printf("start up\n");
-        extern void tls_os_disp_task_stat_info(void);
-        tls_os_disp_task_stat_info();
-        tls_os_time_delay(1000);
-#endif
-    }
+// #if 1
+//         tls_os_time_delay(0x10000000);
+// #else
+//         //printf("start up\n");
+//         extern void tls_os_disp_task_stat_info(void);
+//         tls_os_disp_task_stat_info();
+//         tls_os_time_delay(1000);
+// #endif
+    // }
 }
 
