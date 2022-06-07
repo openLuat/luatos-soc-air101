@@ -13,7 +13,7 @@ typedef struct wm_gpio_conf
 }wm_gpio_conf_t;
 
 
-static wm_gpio_conf_t confs[WM_IO_PB_31 + 1];
+// static wm_gpio_conf_t confs[WM_IO_PB_31 + 1];
 
 static void luat_gpio_irq_callback(void *ptr)
 {
