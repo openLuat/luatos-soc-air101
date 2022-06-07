@@ -59,12 +59,12 @@ int luat_fs_init(void) {
     if (memcmp(header, luadb_magic, 4)) {
         // 老的布局
         LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools %p", ptr);
-        lfs_addr = luadb_addr;
-        kv_addr = lfs_addr - kv_size_kb*1024U;
-        lfs_size_kb = FLASH_FS_REGION_SIZE;
-        luadb_addr = 0;
+        // lfs_addr = luadb_addr;
+        // kv_addr = lfs_addr - kv_size_kb*1024U;
+        // lfs_size_kb = FLASH_FS_REGION_SIZE;
+        // luadb_addr = 0;
     }
-    else {
+    // else {
         //LLOGI("Using LuaDB as script zone format %p", ptr);
 #ifdef AIR103
         lfs_addr = 0x0F0000;
@@ -74,7 +74,7 @@ int luat_fs_init(void) {
         lfs_size_kb = 48;
 #endif
         kv_addr = luadb_addr - kv_size_kb*1024U;
-    }
+    // }
 
     //LLOGD("lfs addr4 %p", &lfs_addr);
     //LLOGD("lfs addr5 0x%08X", lfs_addr);
@@ -97,7 +97,7 @@ int luat_fs_init(void) {
     
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
-		.busname = (char*)(luadb_addr == 0 ? luadb_inline_sys : ptr),
+		.busname = (char*)(ptr),
 		.type = "luadb",
 		.filesystem = "luadb",
 		.mount_point = "/luadb/",
