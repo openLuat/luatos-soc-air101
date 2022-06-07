@@ -142,7 +142,7 @@ void tls_gpio_cfg(enum tls_io_name gpio_pin, enum tls_gpio_dir dir, enum tls_gpi
  *
  * @note           None
  */
-u8 tls_gpio_read(enum tls_io_name gpio_pin)
+__attribute__((section (".ram_run"))) u8 tls_gpio_read(enum tls_io_name gpio_pin)
 {
 	u32 reg_en;
 	u32 reg;
@@ -160,10 +160,10 @@ u8 tls_gpio_read(enum tls_io_name gpio_pin)
         offset = 0;
     }
 
-	reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
-	tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
+	// reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
+	// tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
 	reg = tls_reg_read32(HR_GPIO_DATA + offset);
-	tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
+	// tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
 	if(reg & (0x1 << pin))
 		return 1;
 	else
@@ -182,7 +182,7 @@ u8 tls_gpio_read(enum tls_io_name gpio_pin)
  *
  * @note           None
  */
-void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
+__attribute__((section (".ram_run"))) void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
 {
 	u32 cpu_sr = 0;
 	u32 reg;
@@ -202,10 +202,10 @@ void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
     }
 
 	
-	cpu_sr = tls_os_set_critical();
+	// cpu_sr = tls_os_set_critical();
 	
-	reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
-	tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
+	// reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
+	// tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
 
 	reg = tls_reg_read32(HR_GPIO_DATA + offset);
 	if(value)
@@ -213,14 +213,14 @@ void tls_gpio_write(enum tls_io_name gpio_pin, u8 value)
 	else
 		tls_reg_write32(HR_GPIO_DATA + offset, reg & (~(1 << pin)));/* write low */
 
-    tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
+    // tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
 
-	tls_os_release_critical(cpu_sr);
+	// tls_os_release_critical(cpu_sr);
 }
 
 //add by hyj, 2022-05-20
 // 以极限速度输出io脉冲
-void tls_gpio_pulse(enum tls_io_name gpio_pin,u8* level,u16 len,u16 delay)
+__attribute__((section (".ram_run"))) void tls_gpio_pulse(enum tls_io_name gpio_pin,u8* level,u16 len,u16 delay)
 {
     u32 cpu_sr = 0;
     u32 reg;
@@ -243,8 +243,8 @@ void tls_gpio_pulse(enum tls_io_name gpio_pin,u8* level,u16 len,u16 delay)
     cpu_sr = tls_os_set_critical();
 
     int GPIO_DATA = HR_GPIO_DATA + offset;
-    reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
-    tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
+    // reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
+    // tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
 
     reg = tls_reg_read32(GPIO_DATA);
     u32 reg_high = reg |  (1 << pin);
@@ -258,7 +258,7 @@ void tls_gpio_pulse(enum tls_io_name gpio_pin,u8* level,u16 len,u16 delay)
         del = delay;
         while(del--);
     }
-    tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
+    // tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
 
     tls_os_release_critical(cpu_sr);
 }
