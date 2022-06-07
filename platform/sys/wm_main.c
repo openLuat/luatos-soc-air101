@@ -48,7 +48,7 @@
 #include "wm_io.h"
 #include "wm_gpio.h"
 
-#define SYS_MEM_DEBUG 1
+// #define SYS_MEM_DEBUG 0
 
 /* c librayr mutex */
 tls_os_sem_t    *libc_sem;
