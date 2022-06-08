@@ -63,6 +63,8 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	size_t pnum = conf->pnum;
 	size_t precision = conf->precision;
 
+	tls_sys_clk sysclk;
+
 	if (precision != 100 && precision != 256) {
 		LLOGW("only 100 or 256 PWM precision supported");
 		return -1;
@@ -166,7 +168,9 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	channel = channel%10;
 	if (channel < 0 || channel > 4)
 		return -1;
-	tls_sys_clk sysclk;
+	if (conf->pulse == 0) {
+		return luat_pwm_close(conf->channel);
+	}
 	
 	tls_sys_clk_get(&sysclk);
 
@@ -187,8 +191,10 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 			if (pwm_confs[channel].pulse != conf->pulse) {
 				// 仅占空比不同,修改即可, V0006
 				tls_pwm_duty_config(channel, pulse);
+				pwm_confs[channel].pulse = conf->pulse;
 				return 0;
 			}
+			break;
 		}
 	}
 	else {
