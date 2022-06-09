@@ -35,8 +35,6 @@
 #define LUAT_USE_WDT  1
 #define LUAT_USE_PM  1
 #define LUAT_USE_MCU  1
-// hwtimer库对lua代码没多少用处,通常禁用
-// #define LUAT_USE_HWTIMER  1
 #define LUAT_USE_RTC 1
 // SDIO 仅支持TF/SD卡的挂载
 #define LUAT_USE_SDIO 1
@@ -65,16 +63,15 @@
 #define LUAT_USE_IR 1
 // FDB 提供kv数据库, 与nvm库类似
 #define LUAT_USE_FDB 1
-#define LUAT_USE_OTA
-// #define LUAT_USE_MLX90640
-#define LUAT_USE_I2CTOOLS
+#define LUAT_USE_OTA 1
+#define LUAT_USE_I2CTOOLS 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
 // 从v0006开始默认关闭之, 需要用到就打开吧
-// #define FF_USE_LFN 0
-// #define FF_LFN_UNICODE 0
+// #define FF_USE_LFN 3
+// #define FF_LFN_UNICODE 3
 
 //----------------------------
 // 高通字体, 需配合芯片使用
@@ -103,20 +100,13 @@
 // 单色屏, 支持i2c/spi
 #define LUAT_USE_DISP
 #define LUAT_USE_U8G2
-// #define U8G2_USE_SH1106
-// #define U8G2_USE_ST7567
 
 /**************FONT*****************/
-// Luat Fonts
 // #define LUAT_USE_FONTS
-// #define LUAT_FONTS_BASE_8P
-// #define LUAT_FONTS_BASE_12P
-// #define LUAT_FONTS_BASE_16P
-// #define LUAT_FONTS_BASE_20P
-// #define LUAT_FONTS_BASE_24P
-// #define LUAT_FONTS_BASE_28P
-/**********U8G2&LCD FONT*************/
-// #define USE_U8G2_UNIFONT_SYMBOLS
+/**********U8G2&LCD&EINK FONT*************/
+#define USE_U8G2_OPPOSANSM_EN 1
+// #define USE_U8G2_OPPOSANSM8_CHINESE
+// #define USE_U8G2_OPPOSANSM10_CHINESE
 #define USE_U8G2_OPPOSANSM12_CHINESE
 // #define USE_U8G2_OPPOSANSM16_CHINESE
 // #define USE_U8G2_OPPOSANSM24_CHINESE
@@ -124,6 +114,8 @@
 /**********LVGL FONT*************/
 // #define LV_FONT_OPPOSANS_M_8
 // #define LV_FONT_OPPOSANS_M_10
+// #define LV_FONT_OPPOSANS_M_12
+// #define LV_FONT_OPPOSANS_M_16
 
 // -------------------------------------
 // PSRAM
