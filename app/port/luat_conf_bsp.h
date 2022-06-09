@@ -104,7 +104,7 @@
 /**************FONT*****************/
 // #define LUAT_USE_FONTS
 /**********U8G2&LCD&EINK FONT*************/
-#define USE_U8G2_OPPOSANSM_ENGISH 1
+#define USE_U8G2_OPPOSANSM_ENGLISH 1
 // #define USE_U8G2_OPPOSANSM8_CHINESE
 // #define USE_U8G2_OPPOSANSM10_CHINESE
 #define USE_U8G2_OPPOSANSM12_CHINESE
