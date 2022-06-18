@@ -183,3 +183,6 @@ int luat_spi_send(int spi_id, const char* send_buf, size_t length) {
         return -1;
 }
 
+int luat_spi_config_dma(int spi_id, uint32_t tx_channel, uint32_t rx_channel) {
+    return 0;
+}

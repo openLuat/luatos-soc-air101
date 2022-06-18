@@ -186,6 +186,10 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_I2S
   {"i2s", luaopen_i2s},
 #endif
+#ifdef LUAT_USE_NETWORK
+  {"network", luaopen_network_adapter},
+  {"w5500",   luaopen_w5500},
+#endif
   {NULL, NULL}
 };
 
