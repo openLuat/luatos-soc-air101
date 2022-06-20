@@ -22,9 +22,13 @@
 
 #include "luat_base.h"
 #include "luat_rtos.h"
+#include "c_common.h"
 #include "luat_malloc.h"
 
 #include "wm_osal.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
+#include "task.h"
 
 #define LUAT_LOG_TAG "luat.rtos"
 #include "luat_log.h"
@@ -40,6 +44,14 @@ LUAT_RET luat_thread_stop(luat_thread_t* thread) {
 
 LUAT_RET luat_thread_delete(luat_thread_t* thread) {
 	return LUAT_ERR_FAIL;
+}
+
+LUAT_RET luat_send_event_to_task(void *task_handle, uint32_t id, uint32_t param1, uint32_t param2, uint32_t param3) {
+    return LUAT_ERR_OK;
+}
+
+LUAT_RET luat_wait_event_from_task(void *task_handle, uint32_t wait_event_id, void *out_event, void *call_back, uint32_t ms) {
+    return LUAT_ERR_OK;
 }
 
 LUAT_RET luat_queue_create(luat_rtos_queue_t* queue, size_t msgcount, size_t msgsize) {
@@ -83,4 +95,27 @@ int luat_sem_take(luat_sem_t* semaphore,uint32_t timeout){
 
 int luat_sem_release(luat_sem_t* semaphore){
     return tls_os_sem_release((tls_os_sem_t *)(semaphore->userdata));
+}
+
+void *luat_create_rtos_timer(void *cb, void *param, void *task_handle){
+
+}
+
+int luat_start_rtos_timer(void *timer, uint32_t ms, uint8_t is_repeat){
+	return 0;
+}
+
+void luat_stop_rtos_timer(void *timer){
+
+}
+void luat_release_rtos_timer(void *timer){
+
+}
+
+void luat_task_suspend_all(void){
+	vTaskSuspendAll();
+}
+
+void luat_task_resume_all(void){
+	xTaskResumeAll();
 }
