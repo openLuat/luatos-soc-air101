@@ -46,14 +46,6 @@ LUAT_RET luat_thread_delete(luat_thread_t* thread) {
 	return LUAT_ERR_FAIL;
 }
 
-LUAT_RET luat_send_event_to_task(void *task_handle, uint32_t id, uint32_t param1, uint32_t param2, uint32_t param3) {
-    return LUAT_ERR_OK;
-}
-
-LUAT_RET luat_wait_event_from_task(void *task_handle, uint32_t wait_event_id, void *out_event, void *call_back, uint32_t ms) {
-    return LUAT_ERR_OK;
-}
-
 LUAT_RET luat_queue_create(luat_rtos_queue_t* queue, size_t msgcount, size_t msgsize) {
 	queue->userdata = (tls_os_queue_t *)luat_heap_malloc(sizeof(tls_os_queue_t));
 	return tls_os_queue_create((tls_os_queue_t **)&(queue->userdata), msgcount);
@@ -77,6 +69,13 @@ LUAT_RET luat_queue_delete(luat_rtos_queue_t*   queue) {
 	return 0;
 }
 
+LUAT_RET luat_send_event_to_task(void *task_handle, uint32_t id, uint32_t param1, uint32_t param2, uint32_t param3) {
+    return LUAT_ERR_OK;
+}
+
+LUAT_RET luat_wait_event_from_task(void *task_handle, uint32_t wait_event_id, void *out_event, void *call_back, uint32_t ms) {
+    return LUAT_ERR_OK;
+}
 
 int luat_sem_create(luat_sem_t* semaphore){
 	semaphore->userdata = (tls_os_sem_t *)luat_heap_malloc(sizeof(tls_os_sem_t));
@@ -97,19 +96,34 @@ int luat_sem_release(luat_sem_t* semaphore){
     return tls_os_sem_release((tls_os_sem_t *)(semaphore->userdata));
 }
 
-void *luat_create_rtos_timer(void *cb, void *param, void *task_handle){
+typedef struct luat_rtos_timer {
+    tls_os_timer_t *timer;
+	void *cb;
+	void *param;
+}luat_rtos_timer_t;
 
+void *luat_create_rtos_timer(void *cb, void *param, void *task_handle){
+	luat_rtos_timer_t *luat_timer = luat_heap_malloc(sizeof(luat_rtos_timer_t));
+	luat_timer->cb = cb;
+	luat_timer->param = param;
+	return luat_timer;
 }
 
 int luat_start_rtos_timer(void *timer, uint32_t ms, uint8_t is_repeat){
+	luat_rtos_timer_t *luat_timer = (luat_rtos_timer_t *)timer;
+	tls_os_timer_create(&(luat_timer->timer), luat_timer->cb, luat_timer->param,ms, is_repeat, NULL);
+	tls_os_timer_start(luat_timer->timer);
 	return 0;
 }
 
 void luat_stop_rtos_timer(void *timer){
-
+	luat_rtos_timer_t *luat_timer = (luat_rtos_timer_t *)timer;
+	tls_os_timer_stop(luat_timer->timer);
 }
 void luat_release_rtos_timer(void *timer){
-
+	luat_rtos_timer_t *luat_timer = (luat_rtos_timer_t *)timer;
+	tls_os_timer_delete(luat_timer->timer);
+	luat_heap_free(luat_timer);
 }
 
 void luat_task_suspend_all(void){
