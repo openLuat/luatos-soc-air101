@@ -6,11 +6,11 @@
 #include "wm_include.h"
 #include "luat_irq.h"
 
-typedef struct wm_gpio_conf
-{
-    luat_gpio_irq_cb cb;
-    void* args;
-}wm_gpio_conf_t;
+// typedef struct wm_gpio_conf
+// {
+//     luat_gpio_irq_cb cb;
+//     void* args;
+// }wm_gpio_conf_t;
 
 
 // static wm_gpio_conf_t confs[WM_IO_PB_31 + 1];
@@ -18,11 +18,13 @@ typedef struct wm_gpio_conf
 static void luat_gpio_irq_callback(void *ptr)
 {
     int pin = (int)ptr;
+    if (pin < 0 || pin > WM_IO_PB_31)
+        return;
     int ret = tls_get_gpio_irq_status(pin);
 	if(ret)
 	{
 		tls_clr_gpio_irq_status(pin);
-		luat_irq_gpio_cb(pin, NULL);
+		luat_gpio_irq_default(pin, (void*)tls_gpio_read(pin));
 	}
 }
 
@@ -80,10 +82,6 @@ int luat_gpio_setup(luat_gpio_t *gpio){
         }
         tls_clr_gpio_irq_status(gpio->pin);
         tls_gpio_isr_register(gpio->pin, luat_gpio_irq_callback, (void *)gpio->pin);
-        // if (gpio->irq_cb) {
-        //     confs[gpio->pin].cb = gpio->irq_cb;
-        //     confs[gpio->pin].args = gpio->irq_args;
-        // }
         tls_gpio_irq_enable(gpio->pin, irq);
         return 0;
     }
