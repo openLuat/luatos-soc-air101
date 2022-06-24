@@ -341,6 +341,10 @@ target("air10x")
     add_includedirs(luatos.."components/qrcode",{public = true})
     add_files(luatos.."components/qrcode/*.c")
 
+    -- lora
+    add_includedirs(luatos.."components/lora",{public = true})
+    add_files(luatos.."components/lora/**.c")
+
     -- c_common
     add_includedirs(luatos.."components/common",{public = true})
     add_files(luatos.."components/common/*.c")

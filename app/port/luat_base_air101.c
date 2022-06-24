@@ -190,6 +190,9 @@ static const luaL_Reg loadedlibs[] = {
   {"network", luaopen_network_adapter},
   {"w5500",   luaopen_w5500},
 #endif
+#ifdef LUAT_USE_LORA
+  {"lora", luaopen_lora},
+#endif
   {NULL, NULL}
 };
 
