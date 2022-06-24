@@ -77,24 +77,24 @@ LUAT_RET luat_wait_event_from_task(void *task_handle, uint32_t wait_event_id, vo
     return LUAT_ERR_OK;
 }
 
-int luat_sem_create(luat_sem_t* semaphore){
-	semaphore->userdata = (tls_os_sem_t *)luat_heap_malloc(sizeof(tls_os_sem_t));
-	return tls_os_sem_create((tls_os_sem_t **)&(semaphore->userdata),semaphore->value);
-}
+// int luat_sem_create(luat_sem_t* semaphore){
+// 	semaphore->userdata = (tls_os_sem_t *)luat_heap_malloc(sizeof(tls_os_sem_t));
+// 	return tls_os_sem_create((tls_os_sem_t **)&(semaphore->userdata),semaphore->value);
+// }
 
-int luat_sem_delete(luat_sem_t* semaphore){
-	tls_os_sem_delete((tls_os_sem_t *)(semaphore->userdata));
-	luat_heap_free(semaphore->userdata);
-	return 0;
-}
+// int luat_sem_delete(luat_sem_t* semaphore){
+// 	tls_os_sem_delete((tls_os_sem_t *)(semaphore->userdata));
+// 	luat_heap_free(semaphore->userdata);
+// 	return 0;
+// }
 
-int luat_sem_take(luat_sem_t* semaphore,uint32_t timeout){
-	return tls_os_sem_acquire((tls_os_sem_t *)(semaphore->userdata),timeout);
-}
+// int luat_sem_take(luat_sem_t* semaphore,uint32_t timeout){
+// 	return tls_os_sem_acquire((tls_os_sem_t *)(semaphore->userdata),timeout);
+// }
 
-int luat_sem_release(luat_sem_t* semaphore){
-    return tls_os_sem_release((tls_os_sem_t *)(semaphore->userdata));
-}
+// int luat_sem_release(luat_sem_t* semaphore){
+//     return tls_os_sem_release((tls_os_sem_t *)(semaphore->userdata));
+// }
 
 typedef struct luat_rtos_timer {
     tls_os_timer_t *timer;
