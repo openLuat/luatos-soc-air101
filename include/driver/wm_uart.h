@@ -286,6 +286,8 @@ typedef struct tls_uart_port
 {
     rs480_info rs480;
 
+    u8 uart_cb_len;
+
     u32 uart_no;                    /**< uart number: 0 or 1 */
 
     u32 uart_irq_no;             /**< uart interrupt number */

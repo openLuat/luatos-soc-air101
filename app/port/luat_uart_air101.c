@@ -62,6 +62,8 @@ static s16 uart_sent_cb(struct tls_uart_port *port)
     msg.ptr = NULL;
     luat_msgbus_put(&msg, 1);
     if (uart_port[port->uart_no].rs480.rs485_param_bit.is_485used){
+        luat_timer_mdelay(port->uart_cb_len);
+        port->uart_cb_len = 0;
         if (uart_port[port->uart_no].rs480.rs485_param_bit.wait_time)
             luat_timer_us_delay(uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
         luat_gpio_set(uart_port[port->uart_no].rs480.rs485_pin, uart_port[port->uart_no].rs480.rs485_param_bit.rx_level);
@@ -147,6 +149,7 @@ int luat_uart_write(int uartid, void *data, size_t length)
     if (!luat_uart_exist(uartid))return 0;
     if (uart_port[uartid].rs480.rs485_param_bit.is_485used) luat_gpio_set(uart_port[uartid].rs480.rs485_pin, !uart_port[uartid].rs480.rs485_param_bit.rx_level);
     ret = tls_uart_write(uartid, data,length);
+    uart_port[uartid].uart_cb_len = length;
     ret = (ret == 0) ? length : 0;
     return ret;
 }
@@ -189,15 +192,14 @@ int luat_setup_cb(int uartid, int received, int sent)
     return 0;
 }
 
-int luat_uart_wait_485_tx_done(int uartid)
-{
+int luat_uart_wait_485_tx_done(int uartid){
 	int cnt = 0;
     if (luat_uart_exist(uartid)){
         if (uart_port[uartid].rs480.rs485_param_bit.is_485used){
-        if (uart_port[uartid].rs480.rs485_param_bit.wait_time)
-            luat_timer_us_delay(uart_port[uartid].rs480.rs485_param_bit.wait_time);
-        luat_gpio_set(uart_port[uartid].rs480.rs485_pin, uart_port[uartid].rs480.rs485_param_bit.rx_level);
-    }
+            if (uart_port[uartid].rs480.rs485_param_bit.wait_time)
+                luat_timer_us_delay(uart_port[uartid].rs480.rs485_param_bit.wait_time);
+            luat_gpio_set(uart_port[uartid].rs480.rs485_pin, uart_port[uartid].rs480.rs485_param_bit.rx_level);
+        }
     }
     return cnt;
 }
