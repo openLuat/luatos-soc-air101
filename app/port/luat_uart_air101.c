@@ -9,6 +9,7 @@
 #include "wm_uart.h"
 #include "wm_gpio_afsel.h"
 #include "stdio.h"
+#include "wm_timer.h"
 
 //串口数量，编号从0开始
 #define MAX_DEVICE_COUNT TLS_UART_MAX
@@ -16,6 +17,8 @@
 //存放串口设备句柄
 static uint8_t serials_buff_len[MAX_DEVICE_COUNT] ={TLS_UART_RX_BUF_SIZE};
 extern struct tls_uart_port uart_port[TLS_UART_MAX];
+
+static uint8_t serials_timer[5] ={0};
 
 int luat_uart_exist(int uartid)
 {
@@ -61,12 +64,24 @@ static s16 uart_sent_cb(struct tls_uart_port *port)
     msg.arg2 = 0;
     msg.ptr = NULL;
     luat_msgbus_put(&msg, 1);
-    if (uart_port[port->uart_no].rs480.rs485_param_bit.is_485used){
-        luat_timer_us_delay((port->uart_cb_len)*1000-100+uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
-        port->uart_cb_len = 0;
-        luat_gpio_set(uart_port[port->uart_no].rs480.rs485_pin, uart_port[port->uart_no].rs480.rs485_param_bit.rx_level);
-    }
+    // if (uart_port[port->uart_no].rs480.rs485_param_bit.is_485used){
+    //     luat_timer_us_delay((port->uart_cb_len)*1000-100+uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
+    //     port->uart_cb_len = 0;
+    //     luat_gpio_set(uart_port[port->uart_no].rs480.rs485_pin, uart_port[port->uart_no].rs480.rs485_param_bit.rx_level);
+    // }
     return 0;
+}
+
+int luat_uart_wait_485_tx_done(int uartid){
+	int cnt = 0;
+    if (luat_uart_exist(uartid)){
+        if (uart_port[uartid].rs480.rs485_param_bit.is_485used){
+            if (uart_port[uartid].rs480.rs485_param_bit.wait_time)
+                luat_timer_us_delay(uart_port[uartid].rs480.rs485_param_bit.wait_time);
+            luat_gpio_set(uart_port[uartid].rs480.rs485_pin, uart_port[uartid].rs480.rs485_param_bit.rx_level);
+        }
+    }
+    return cnt;
 }
 
 int luat_uart_setup(luat_uart_t *uart)
@@ -133,6 +148,14 @@ int luat_uart_setup(luat_uart_t *uart)
     uart_port[uart->id].rs480.rs485_param_bit.wait_time = uart->delay;
 
     if (uart_port[uart->id].rs480.rs485_param_bit.is_485used){
+        struct tls_timer_cfg cfg = {0};
+        cfg.unit = TLS_TIMER_UNIT_US;
+        cfg.timeout = 100;
+        cfg.is_repeat = 0;
+        cfg.callback = luat_uart_wait_485_tx_done;
+        cfg.arg = uart->id;
+        uint8_t timerid = tls_timer_create(&cfg);
+        serials_timer[uart->id] = timerid;
         luat_gpio_mode(uart_port[uart->id].rs480.rs485_pin, 0, 0, uart_port[uart->id].rs480.rs485_param_bit.rx_level);
     }
 
@@ -145,7 +168,11 @@ int luat_uart_write(int uartid, void *data, size_t length)
     int ret = 0;
     //printf("uid:%d,data:%s,length = %d\r\n",uartid, (char *)data, length);
     if (!luat_uart_exist(uartid))return 0;
-    if (uart_port[uartid].rs480.rs485_param_bit.is_485used) luat_gpio_set(uart_port[uartid].rs480.rs485_pin, !uart_port[uartid].rs480.rs485_param_bit.rx_level);
+    if (uart_port[uartid].rs480.rs485_param_bit.is_485used){
+        luat_hwtimer_change(serials_timer[uartid], length*1000);
+        luat_hwtimer_start(serials_timer[uartid]);
+        luat_gpio_set(uart_port[uartid].rs480.rs485_pin, !uart_port[uartid].rs480.rs485_param_bit.rx_level);
+    } 
     ret = tls_uart_write(uartid, data,length);
     uart_port[uartid].uart_cb_len = length;
     ret = (ret == 0) ? length : 0;
@@ -190,14 +217,4 @@ int luat_setup_cb(int uartid, int received, int sent)
     return 0;
 }
 
-int luat_uart_wait_485_tx_done(int uartid){
-	int cnt = 0;
-    if (luat_uart_exist(uartid)){
-        if (uart_port[uartid].rs480.rs485_param_bit.is_485used){
-            if (uart_port[uartid].rs480.rs485_param_bit.wait_time)
-                luat_timer_us_delay(uart_port[uartid].rs480.rs485_param_bit.wait_time);
-            luat_gpio_set(uart_port[uartid].rs480.rs485_pin, uart_port[uartid].rs480.rs485_param_bit.rx_level);
-        }
-    }
-    return cnt;
-}
+
