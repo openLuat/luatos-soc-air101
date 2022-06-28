@@ -203,6 +203,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	}
 	
 	// 属于全新配置
+	tls_pwm_stop(channel);
 	ret = tls_pwm_init(channel, period, pulse, pnum);
     if(ret != WM_SUCCESS)
         return ret;
