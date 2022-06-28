@@ -62,10 +62,8 @@ static s16 uart_sent_cb(struct tls_uart_port *port)
     msg.ptr = NULL;
     luat_msgbus_put(&msg, 1);
     if (uart_port[port->uart_no].rs480.rs485_param_bit.is_485used){
-        luat_timer_mdelay(port->uart_cb_len);
+        luat_timer_us_delay((port->uart_cb_len-1)*1000+uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
         port->uart_cb_len = 0;
-        if (uart_port[port->uart_no].rs480.rs485_param_bit.wait_time)
-            luat_timer_us_delay(uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
         luat_gpio_set(uart_port[port->uart_no].rs480.rs485_pin, uart_port[port->uart_no].rs480.rs485_param_bit.rx_level);
     }
     return 0;

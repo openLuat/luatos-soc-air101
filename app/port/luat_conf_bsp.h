@@ -71,6 +71,7 @@
 #define LUAT_USE_FDB 1
 #define LUAT_USE_OTA 1
 #define LUAT_USE_I2CTOOLS 1
+// #define LUAT_USE_LORA 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
