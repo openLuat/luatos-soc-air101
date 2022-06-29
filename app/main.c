@@ -99,7 +99,7 @@ static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] =
 
 #endif
 
-uint32_t rst_sta = 0;
+// uint32_t rst_sta = 0;
 
 #ifdef __LUATOS__
 extern unsigned int  TLS_FLASH_PARAM_DEFAULT        ;
@@ -131,8 +131,8 @@ void UserMain(void){
 	// printf("HR_CLK_SEL_CTL %08X\n", value);
 
 	// 读取开机原因
-	rst_sta = tls_reg_read32(HR_CLK_RST_STA);
-	tls_reg_write32(HR_CLK_RST_STA, 0xFF);
+	// rst_sta = tls_reg_read32(HR_CLK_RST_STA);
+	// tls_reg_write32(HR_CLK_RST_STA, 0xFF);
 
 #ifdef LUAT_USE_SHELL
 	luat_shell_poweron(0);

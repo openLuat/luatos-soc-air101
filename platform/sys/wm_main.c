@@ -163,24 +163,32 @@ void task_start_free()
 }
 #endif
 
-// int main(void)
-// {
-// 	tls_sys_clk_set(CPU_CLK_80M);
-
-// 	while (1);
-// }
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+uint32 power_bk_reg = 0;
 
 
 int main(void)
 {
     u32 value = 0;
+
+    value = tls_reg_read32(HR_PMU_BK_REG);
+    power_bk_reg = value;
+    printf("HR_PMU_BK_REG PowerOn %08X\n", value);
+    printf("HR_PMU_BK_REG PowerOn Reson %08X\n", CHECK_BIT(value, 8));
+    printf("HR_PMU_BK_REG PowerOn RTC %08X\n", CHECK_BIT(value, 5));
+    printf("HR_PMU_BK_REG PowerOn Wakeup Pin %08X\n", CHECK_BIT(value, 2));
+    value &= ~(BIT(19));
+    value &= ~(BIT(8));
+    value &= ~(BIT(5));
+    value &= ~(BIT(2));
+    // printf("HR_PMU_BK_REG write %08X\n", value);
+    tls_reg_write32(HR_PMU_BK_REG, value);
+
     /*32K switch to use RC circuit & calibration*/
     tls_pmu_clk_select(1);
 
+    
     /*Switch to DBG*/
-    value = tls_reg_read32(HR_PMU_BK_REG);
-    value &= ~(BIT(19));
-    tls_reg_write32(HR_PMU_BK_REG, value);
     value = tls_reg_read32(HR_PMU_PS_CR);
     value &= ~(BIT(5));
     tls_reg_write32(HR_PMU_PS_CR, value);

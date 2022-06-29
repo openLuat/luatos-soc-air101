@@ -53,19 +53,40 @@ int luat_pm_dtimer_check(int id) {
 
 //void luat_pm_cb(int event, int arg, void* args);
 
-extern int rst_sta;
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+extern int power_bk_reg; // from wm_main.c
 // extern int wake_src;
 int luat_pm_last_state(int *lastState, int *rtcOrPad) {
-    *rtcOrPad = 0; // 暂不支持
-    if (rst_sta & 0x01) { // bit 0 , watchdog 复位
-        *lastState = 8;
-    }
-    else if (rst_sta & 0x02) { // bit 1, 软件重启
-        *lastState = 3;
+    // 实际情况与寄存器手册的描述不符
+    // 复位开机,   是 00D90344
+    // RTC或wakeup 是 00D10240
+    if (CHECK_BIT(power_bk_reg, 8)) {
+        *lastState = 0;
+        *rtcOrPad = 0;
     }
     else {
-        *lastState = 0;
+        *lastState = 1;
+        *rtcOrPad = 4;
     }
+
+    // if (CHECK_BIT(power_bk_reg, 8)) {
+    //     if (CHECK_BIT(power_bk_reg, 5)) {
+    //         *lastState = 3;
+    //         *rtcOrPad = 1;
+    //     }
+    //     else if (CHECK_BIT(power_bk_reg, 2)) {
+    //         *lastState = 3;
+    //         *rtcOrPad = 2;
+    //     }
+    //     else {
+    //         *lastState = 99;
+    //         *rtcOrPad = 0;
+    //     }
+    // }
+    // else {
+    //     *lastState = 0;
+    //     *rtcOrPad = 0;
+    // }
     return 0;
 }
 
