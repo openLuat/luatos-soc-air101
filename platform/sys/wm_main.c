@@ -173,10 +173,10 @@ int main(void)
 
     value = tls_reg_read32(HR_PMU_BK_REG);
     power_bk_reg = value;
-    printf("HR_PMU_BK_REG PowerOn %08X\n", value);
-    printf("HR_PMU_BK_REG PowerOn Reson %08X\n", CHECK_BIT(value, 8));
-    printf("HR_PMU_BK_REG PowerOn RTC %08X\n", CHECK_BIT(value, 5));
-    printf("HR_PMU_BK_REG PowerOn Wakeup Pin %08X\n", CHECK_BIT(value, 2));
+    // printf("HR_PMU_BK_REG PowerOn %08X\n", value);
+    // printf("HR_PMU_BK_REG PowerOn Reson %08X\n", CHECK_BIT(value, 8));
+    // printf("HR_PMU_BK_REG PowerOn RTC %08X\n", CHECK_BIT(value, 5));
+    // printf("HR_PMU_BK_REG PowerOn Wakeup Pin %08X\n", CHECK_BIT(value, 2));
     value &= ~(BIT(19));
     value &= ~(BIT(8));
     value &= ~(BIT(5));
