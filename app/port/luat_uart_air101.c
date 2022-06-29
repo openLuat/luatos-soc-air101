@@ -18,7 +18,12 @@
 static uint8_t serials_buff_len[MAX_DEVICE_COUNT] ={TLS_UART_RX_BUF_SIZE};
 extern struct tls_uart_port uart_port[TLS_UART_MAX];
 
-static uint8_t serials_timer[5] ={0};
+typedef struct serials_timer_info {
+    uint8_t serials_timer;
+	uint16_t timeout;
+}serials_timer_info_t;
+
+static serials_timer_info_t serials_timer_table[5] ={0};
 
 int luat_uart_exist(int uartid)
 {
@@ -64,11 +69,6 @@ static s16 uart_sent_cb(struct tls_uart_port *port)
     msg.arg2 = 0;
     msg.ptr = NULL;
     luat_msgbus_put(&msg, 1);
-    // if (uart_port[port->uart_no].rs480.rs485_param_bit.is_485used){
-    //     luat_timer_us_delay((port->uart_cb_len)*1000-100+uart_port[port->uart_no].rs480.rs485_param_bit.wait_time);
-    //     port->uart_cb_len = 0;
-    //     luat_gpio_set(uart_port[port->uart_no].rs480.rs485_pin, uart_port[port->uart_no].rs480.rs485_param_bit.rx_level);
-    // }
     return 0;
 }
 
@@ -155,7 +155,8 @@ int luat_uart_setup(luat_uart_t *uart)
         cfg.callback = luat_uart_wait_485_tx_done;
         cfg.arg = uart->id;
         uint8_t timerid = tls_timer_create(&cfg);
-        serials_timer[uart->id] = timerid;
+        serials_timer_table[uart->id].serials_timer = timerid;
+        serials_timer_table[uart->id].timeout = 9*1000000/uart->baud_rate;
         luat_gpio_mode(uart_port[uart->id].rs480.rs485_pin, 0, 0, uart_port[uart->id].rs480.rs485_param_bit.rx_level);
     }
 
@@ -169,9 +170,9 @@ int luat_uart_write(int uartid, void *data, size_t length)
     //printf("uid:%d,data:%s,length = %d\r\n",uartid, (char *)data, length);
     if (!luat_uart_exist(uartid))return 0;
     if (uart_port[uartid].rs480.rs485_param_bit.is_485used){
-        luat_hwtimer_change(serials_timer[uartid], length*1000);
-        luat_hwtimer_start(serials_timer[uartid]);
+        luat_hwtimer_change(serials_timer_table[uartid].serials_timer, serials_timer_table[uartid].timeout*length+50);
         luat_gpio_set(uart_port[uartid].rs480.rs485_pin, !uart_port[uartid].rs480.rs485_param_bit.rx_level);
+        luat_hwtimer_start(serials_timer_table[uartid].serials_timer);
     } 
     ret = tls_uart_write(uartid, data,length);
     uart_port[uartid].uart_cb_len = length;
