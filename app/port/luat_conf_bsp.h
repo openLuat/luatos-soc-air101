@@ -2,7 +2,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V0011"
+#define LUAT_BSP_VERSION "V0012"
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 #define AIR101
@@ -71,7 +71,7 @@
 #define LUAT_USE_FDB 1
 #define LUAT_USE_OTA 1
 #define LUAT_USE_I2CTOOLS 1
-// #define LUAT_USE_LORA 1
+#define LUAT_USE_LORA 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
@@ -113,8 +113,8 @@
 /**********U8G2&LCD&EINK FONT*************/
 #define USE_U8G2_OPPOSANSM_ENGLISH 1
 // #define USE_U8G2_OPPOSANSM8_CHINESE
-// #define USE_U8G2_OPPOSANSM10_CHINESE
-#define USE_U8G2_OPPOSANSM12_CHINESE
+#define USE_U8G2_OPPOSANSM10_CHINESE
+// #define USE_U8G2_OPPOSANSM12_CHINESE
 // #define USE_U8G2_OPPOSANSM16_CHINESE
 // #define USE_U8G2_OPPOSANSM24_CHINESE
 // #define USE_U8G2_OPPOSANSM32_CHINESE
