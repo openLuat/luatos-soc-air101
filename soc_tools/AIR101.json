@@ -36,7 +36,8 @@
     },
     "user" : {
         "project" : "",
-        "version" : ""
+        "version" : "",
+        "log_br" : "921600"
     },
 	"download" : {
 		"core_addr" : "0x00000000",
