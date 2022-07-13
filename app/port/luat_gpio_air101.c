@@ -81,7 +81,11 @@ int luat_gpio_setup(luat_gpio_t *gpio){
             irq = WM_GPIO_IRQ_TRIG_DOUBLE_EDGE;
         }
         tls_clr_gpio_irq_status(gpio->pin);
-        tls_gpio_isr_register(gpio->pin, luat_gpio_irq_callback, (void *)gpio->pin);
+        if (gpio->irq_cb) {
+            tls_gpio_isr_register(gpio->pin, gpio->irq_cb, (void *)gpio->pin);
+        }else{
+            tls_gpio_isr_register(gpio->pin, luat_gpio_irq_callback, (void *)gpio->pin);
+        }
         tls_gpio_irq_enable(gpio->pin, irq);
         return 0;
     }
