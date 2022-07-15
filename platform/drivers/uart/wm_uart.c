@@ -154,11 +154,11 @@ static int tls_uart_set_baud_rate_inside(struct tls_uart_port *port, u32 baudrat
 	u32 apbclk;
 	tls_sys_clk sysclk;
 
-    index = tls_uart_check_baudrate(baudrate);
-    if (index < 0)
-    {
-        return WM_FAILED;
-    }
+    // index = tls_uart_check_baudrate(baudrate);
+    // if (index < 0)
+    // {
+    //     return WM_FAILED;
+    // }
     tls_sys_clk_get(&sysclk);
 	apbclk = sysclk.apbclk * 1000000;
     value = (apbclk / (16 * baudrate) - 1) |
