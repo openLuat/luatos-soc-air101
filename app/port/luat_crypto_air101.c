@@ -298,7 +298,15 @@ int l_crypto_cipher_xxx(lua_State *L, uint8_t flags) {
     return 1;
 }
 
+#include "wm_crypto_hard.h"
+static char trng_init = 0;
+
 int luat_crypto_trng(char* buff, size_t len) {
-    return tls_crypto_trng(buff, len);
+    if (trng_init == 0) {
+        trng_init = 1;
+        tls_crypto_random_init(0, CRYPTO_RNG_SWITCH_32);
+    }
+    tls_crypto_random_bytes_range(buff, len, 256);
+    return 0;
 }
 
