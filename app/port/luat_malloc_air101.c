@@ -12,12 +12,12 @@
 #include "wm_mem.h"
 
 
-const uint32_t luat_rom_addr_start = 0x8010000;
-#ifdef AIR103
-const uint32_t luat_rom_addr_end   = 0x80FFFFF;
-#else
-const uint32_t luat_rom_addr_end   = 0x81FFFFF;
-#endif
+// const uint32_t luat_rom_addr_start = 0x8010000;
+// #ifdef AIR103
+// const uint32_t luat_rom_addr_end   = 0x80FFFFF;
+// #else
+// const uint32_t luat_rom_addr_end   = 0x81FFFFF;
+// #endif
 
 //------------------------------------------------
 //  管理系统内存
@@ -72,10 +72,11 @@ void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr,
     	}
         return ptmp;
     }
-#if 0
-    uint32_t ptrv = (uint32_t)ptr;
-    if (ptrv != 0) {
-        if (ptrv >= luat_rom_addr_start && ptrv <= luat_rom_addr_end) {
+// #if 0
+#ifdef LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP
+    if (ptr != NULL) {
+        uint32_t ptrv = (uint32_t)ptr;
+        if (ptrv >= 0X40000000U) {
             // nop 无需释放
         }
         else {
