@@ -8,6 +8,7 @@
 #include "luat_timer.h"
 #include "stdio.h"
 #include "luat_ota.h"
+#include "wm_internal_flash.h"
 
 extern struct lfs_config lfs_cfg;
 extern lfs_t lfs;

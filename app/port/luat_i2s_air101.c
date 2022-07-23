@@ -3,6 +3,7 @@
 
 #include "wm_include.h"
 #include "wm_i2s.h"
+#include "wm_gpio_afsel.h"
 
 #define LUAT_LOG_TAG "i2s"
 #include "luat_log.h"

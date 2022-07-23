@@ -8,6 +8,7 @@
 #include "wm_rtc.h"
 #include "wm_regs.h"
 #include "wm_cpu.h"
+#include "wm_irq.h"
 
 LUAMOD_API int luaopen_gtfont( lua_State *L );
 LUAMOD_API int luaopen_nimble( lua_State *L );

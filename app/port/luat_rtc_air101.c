@@ -48,10 +48,12 @@ int luat_rtc_timer_start(int id, struct tm *tblock) {
     tblock->tm_mon--;
     tls_rtc_isr_register(luat_rtc_cb, NULL);
     tls_rtc_timer_start(tblock);
+    return 0;
 }
 
 int luat_rtc_timer_stop(int id) {
     if (id)
         return -1;
     tls_rtc_timer_stop();
+    return 0;
 }
