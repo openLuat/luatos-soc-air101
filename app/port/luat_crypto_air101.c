@@ -294,6 +294,21 @@ int l_crypto_cipher_xxx(lua_State *L, uint8_t flags) {
             return 1;
         }
     }
+    else if(!strcmp("DES-ECB", cipher)){
+        unsigned char output[1024] = {0};
+        psCipherContext_t ctx;
+        tls_crypto_des_init(&ctx, iv, key, key_size, CRYPTO_MODE_ECB);
+        if (flags) {
+            ret = tls_crypto_des_encrypt_decrypt(&ctx, str, output, str_size, CRYPTO_WAY_ENCRYPT);
+        }
+        else {
+            ret = tls_crypto_des_encrypt_decrypt(&ctx, str, output, str_size, CRYPTO_WAY_DECRYPT);
+        }
+        if (ret == 0) {
+            lua_pushstring(L, output);
+            return 1;
+        }
+    }
     lua_pushstring(L, "");
     return 1;
 }
