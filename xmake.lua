@@ -45,6 +45,7 @@ add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__"
 
 set_warnings("all")
 set_optimize("fastest")
+-- set_optimize("smallest")
 -- set language: c99
 set_languages("c99")
 add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wa,--gdwarf2 -fdata-sections -ffunction-sections")
@@ -265,6 +266,7 @@ target("air10x")
     add_files(luatos.."components/lua-cjson/*.c")
     add_files(luatos.."components/minmea/*.c")
     add_files(luatos.."luat/weak/*.c")
+    add_files(luatos.."components/crypto/*.c")
 
     add_includedirs(luatos.."lua/include",{public = true})
     add_includedirs(luatos.."luat/include",{public = true})
