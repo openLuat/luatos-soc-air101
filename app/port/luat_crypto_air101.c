@@ -305,7 +305,7 @@ int l_crypto_cipher_xxx(lua_State *L, uint8_t flags) {
             ret = tls_crypto_des_encrypt_decrypt(&ctx, str, output, str_size, CRYPTO_WAY_DECRYPT);
         }
         if (ret == 0) {
-            lua_pushstring(L, output);
+            lua_pushlstring(L, output,strlen(output));
             return 1;
         }
     }
