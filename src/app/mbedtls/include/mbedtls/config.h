@@ -267,7 +267,7 @@
  *            digests and ciphers instead.
  *
  */
-//#define MBEDTLS_AES_ALT /* xt804 hard key only 16bytes length */
+#define MBEDTLS_AES_ALT /* xt804 hard key only 16bytes length */
 #define MBEDTLS_ARC4_ALT
 #define MBEDTLS_DES_ALT
 #define MBEDTLS_MD5_ALT
@@ -1680,7 +1680,7 @@
  *            it, and considering stronger ciphers instead.
  *
  */
-#define MBEDTLS_ARC4_C
+// #define MBEDTLS_ARC4_C
 
 /**
  * \def MBEDTLS_ASN1_PARSE_C
@@ -1946,7 +1946,7 @@
  *
  * Requires: MBEDTLS_ECP_C
  */
-#define MBEDTLS_ECDH_C
+// #define MBEDTLS_ECDH_C
 
 /**
  * \def MBEDTLS_ECDSA_C
@@ -1994,7 +1994,7 @@
  *
  * Requires: MBEDTLS_BIGNUM_C and at least one MBEDTLS_ECP_DP_XXX_ENABLED
  */
-#define MBEDTLS_ECP_C
+// #define MBEDTLS_ECP_C
 
 /**
  * \def MBEDTLS_ENTROPY_C
@@ -2034,7 +2034,7 @@
  * This module enables the AES-GCM and CAMELLIA-GCM ciphersuites, if other
  * requisites are enabled as well.
  */
-#define MBEDTLS_GCM_C
+// #define MBEDTLS_GCM_C
 
 /**
  * \def MBEDTLS_HAVEGE_C
