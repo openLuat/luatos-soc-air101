@@ -48,6 +48,7 @@ set_optimize("fastest")
 -- set_optimize("smallest")
 -- set language: c99
 set_languages("c99")
+add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"")
 add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wa,--gdwarf2 -fdata-sections -ffunction-sections")
 add_cflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
@@ -83,6 +84,10 @@ target("app")
     add_includedirs("include/net",{public = true})
     add_includedirs("demo",{public = true})
     add_includedirs("platform/inc",{public = true})
+    add_includedirs(luatos.."components/mbedtls/include")
+
+    -- mbedtls
+    add_files(luatos.."components/mbedtls/library/*.c")
 
 target_end()
 
@@ -232,7 +237,8 @@ target("air10x")
     add_files("src/os/**.S")
     add_files("platform/common/**.c")
 
-    add_includedirs("src/app/mbedtls/include",{public = true})
+    add_includedirs(luatos.."components/mbedtls/include")
+    -- add_includedirs("src/app/mbedtls/include",{public = true})
     add_includedirs("platform/arch",{public = true})
     add_includedirs("include/os",{public = true})
     add_includedirs("include/wifi",{public = true})
@@ -359,6 +365,7 @@ target("air10x")
     add_files(luatos.."components/ethernet/common/*.c")
     add_includedirs(luatos.."components/ethernet/w5500",{public = true})
     add_files(luatos.."components/ethernet/w5500/*.c")
+
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
