@@ -27,6 +27,8 @@ void* luat_heap_malloc(size_t len) {
 }
 
 void luat_heap_free(void* ptr) {
+    if (ptr == NULL)
+        return;
     tls_mem_free(ptr);
 }
 
