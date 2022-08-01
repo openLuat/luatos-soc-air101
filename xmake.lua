@@ -308,6 +308,7 @@ target("air10x")
 
     add_files(luatos.."components/luatfonts/*.c")
     add_includedirs(luatos.."components/luatfonts")
+    add_includedirs(luatos.."components/lvgl/src/lv_font",{public = true})
 
     add_files(luatos.."components/zlib/*.c")
     add_includedirs(luatos.."components/zlib")
