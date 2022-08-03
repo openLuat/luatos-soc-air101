@@ -44,8 +44,8 @@ local flto = ""
 add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 
 set_warnings("all")
-set_optimize("fastest")
--- set_optimize("smallest")
+-- set_optimize("fastest")
+set_optimize("smallest")
 -- set language: c99
 set_languages("c99")
 add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"")
