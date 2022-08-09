@@ -156,7 +156,7 @@ int luat_uart_setup(luat_uart_t *uart)
         cfg.arg = uart->id;
         uint8_t timerid = tls_timer_create(&cfg);
         serials_timer_table[uart->id].serials_timer = timerid;
-        serials_timer_table[uart->id].timeout = 9*1000000/uart->baud_rate;
+        serials_timer_table[uart->id].timeout = 10*1000000/uart->baud_rate;
         luat_gpio_mode(uart_port[uart->id].rs480.rs485_pin, 0, 0, uart_port[uart->id].rs480.rs485_param_bit.rx_level);
     }
 
