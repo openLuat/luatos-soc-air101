@@ -128,14 +128,14 @@ int luat_spi_close(int spi_id) {
 int32_t tls_spi_xfer(const void *data_out, void *data_in, uint32_t num_out, uint32_t num_in);
 int luat_spi_transfer(int spi_id, const char* send_buf, size_t send_length, char* recv_buf, size_t recv_length){
     //tls_spi_read_with_cmd(send_buf, send_length, recv_buf, recv_length);
-    if (luat_spi_mode == 1)
-        tls_spi_xfer(send_buf, recv_buf, send_buf, recv_length);
-    else {
+    // if (luat_spi_mode == 1)
+        // tls_spi_xfer(send_buf, recv_buf, send_buf, recv_length);
+    // else {
         if (send_length > 0)
             tls_spi_write(send_buf, send_length);
         if (recv_length > 0)
             tls_spi_read(recv_buf, recv_length);
-    }
+    // }
     return recv_length;
 }
 //收SPI数据，返回接收字节数
