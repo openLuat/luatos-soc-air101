@@ -139,6 +139,9 @@ void UserMain(void){
 #endif
 
 #ifdef __LUATOS__
+	extern void luat_mcu_tick64_init(void);
+	luat_mcu_tick64_init();
+	
 	tls_fls_read_unique_id(unique_id);
 	if (unique_id[1] == 0x10){
 		printf("I/main auth ok %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X %s\n",
