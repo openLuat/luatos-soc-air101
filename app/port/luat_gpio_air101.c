@@ -76,6 +76,12 @@ int luat_gpio_setup(luat_gpio_t *gpio){
         {
             irq = WM_GPIO_IRQ_TRIG_FALLING_EDGE;
         }
+        else if (gpio->irq == Luat_GPIO_HIGH_IRQ) {
+            irq = WM_GPIO_IRQ_TRIG_HIGH_LEVEL;
+        }
+        else if (gpio->irq == Luat_GPIO_LOW_IRQ) {
+            irq = WM_GPIO_IRQ_TRIG_LOW_LEVEL;
+        }
         else
         {
             irq = WM_GPIO_IRQ_TRIG_DOUBLE_EDGE;
