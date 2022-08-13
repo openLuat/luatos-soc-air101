@@ -83,6 +83,7 @@ void luat_mcu_tick64_init(void) {
     cfg.callback = utimer_cb;
     cfg.arg = NULL;
     u64_tick_timer_id = tls_timer_create(&cfg);
+    tls_timer_start(u64_tick_timer_id);
 }
 
 uint64_t luat_mcu_tick64(void) {
