@@ -2,13 +2,19 @@
 #include "luat_msgbus.h"
 #include "luat_malloc.h"
 #include "wm_osal.h"
-static tls_os_queue_t *queue = NULL;
+#include "FreeRTOS.h"
+#include "rtosqueue.h"
+
+#define QUEUE_MAX_SIZE (1024)
+
+static xQueueHandle queue = NULL;
+static u8 queue_buff[sizeof(rtos_msg_t) * QUEUE_MAX_SIZE];
 
 void luat_msgbus_init(void)
 {
     if (queue == NULL)
     {
-        tls_os_queue_create(&queue, 256);
+        queue = xQueueCreateExt(queue_buff, QUEUE_MAX_SIZE, sizeof(rtos_msg_t));
     }
 }
 uint32_t luat_msgbus_put(rtos_msg_t *msg, size_t timeout)
@@ -17,36 +23,20 @@ uint32_t luat_msgbus_put(rtos_msg_t *msg, size_t timeout)
     {
         return 1;
     }
-    rtos_msg_t* dst = (rtos_msg_t*)luat_heap_malloc(sizeof(rtos_msg_t));
-    if (dst == NULL)
-    {
-        return 1;
-    }
-    
-    memcpy(dst, msg, sizeof(rtos_msg_t));
-    int ret = tls_os_queue_send(queue, (void *)dst, sizeof(rtos_msg_t));
-    return ret;
+    portBASE_TYPE pxHigherPriorityTaskWoken = pdFALSE;
+    xQueueSendFromISR(queue, msg, &pxHigherPriorityTaskWoken);
+    return 0;
 }
-uint32_t luat_msgbus_get(rtos_msg_t *_msg, size_t timeout)
+uint32_t luat_msgbus_get(rtos_msg_t *msg, size_t timeout)
 {
     if (queue == NULL)
     {
         return 1;
     }
-    void* msg;
-    int ret = tls_os_queue_receive(queue, (void **)&msg, sizeof(rtos_msg_t), timeout);
-    if (ret == TLS_OS_SUCCESS) {
-        memcpy(_msg, (rtos_msg_t*)msg, sizeof(rtos_msg_t));
-        luat_heap_free(msg);
-        return 0;
-    }
-    return -1;
+    xQueueReceive(queue, msg, timeout);
+    return 0;
 }
 uint32_t luat_msgbus_freesize(void)
 {
-    if (queue == NULL)
-    {
-        return 1;
-    }
     return 1;
 }
