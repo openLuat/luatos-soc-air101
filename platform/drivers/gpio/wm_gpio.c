@@ -159,11 +159,13 @@ __attribute__((section (".ram_run"))) u8 tls_gpio_read(enum tls_io_name gpio_pin
         pin    = gpio_pin;
         offset = 0;
     }
-
+    u32 cpu_sr = 0;
+    cpu_sr = tls_os_set_critical();
 	// reg_en = tls_reg_read32(HR_GPIO_DATA_EN + offset);
 	// tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en | (1 << pin));
 	reg = tls_reg_read32(HR_GPIO_DATA + offset);
 	// tls_reg_write32(HR_GPIO_DATA_EN + offset, reg_en);
+    tls_os_release_critical(cpu_sr);
 	if(reg & (0x1 << pin))
 		return 1;
 	else
