@@ -182,6 +182,20 @@ target("u8g2")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+target("miniz")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_files(luatos.."components/miniz/*.c")
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+    add_includedirs(luatos.."components/miniz")
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -194,6 +208,7 @@ target("air10x")
         AIR10X_VERSION = conf_data:match("#define LUAT_BSP_VERSION \"(%w+)\"")
         local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
         if LVGL_CONF then target:add("deps", "lvgl") end
+        target:add("deps", "miniz")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end

@@ -73,6 +73,8 @@
 #define LUAT_USE_I2CTOOLS 1
 #define LUAT_USE_LORA 1
 #define LUAT_USE_MLX90640 1
+// zlib压缩,更快更小的实现
+#define LUAT_USE_MINIZ 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
@@ -83,8 +85,8 @@
 
 //----------------------------
 // 高通字体, 需配合芯片使用
-#define LUAT_USE_GTFONT 1
-#define LUAT_USE_GTFONT_UTF8
+// #define LUAT_USE_GTFONT 1
+// #define LUAT_USE_GTFONT_UTF8
 
 //----------------------------
 // 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
