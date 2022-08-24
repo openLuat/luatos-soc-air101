@@ -2,6 +2,7 @@
 #include "wm_gpio_afsel.h"
 #include "wm_psram.h"
 #include "wm_internal_flash.h"
+#include "wm_rtc.h"
 
 #ifdef __LUATOS__
 #include "string.h"
@@ -120,6 +121,12 @@ void UserMain(void){
 	opt.paritytype = TLS_UART_PMODE_DISABLED;
 	opt.stopbits = TLS_UART_ONE_STOPBITS;
 	tls_uart_port_init(0, &opt, 0);
+
+	struct tm tblock = {0};
+	tblock.tm_mday = 1;
+	tblock.tm_mon = 0;
+	tblock.tm_year = 70;
+	tls_set_rtc(&tblock);
 
 	// 完全禁用jtag
 	//u32 value = tls_reg_read32(HR_CLK_SEL_CTL);
