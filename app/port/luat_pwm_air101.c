@@ -182,6 +182,11 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 				// TODO 支持只修改频率
 				//tls_pwm_freq_config(channel, sysclk.apbclk*UNIT_MHZ/256/period, period);
 			}
+			if (conf->pnum != 0) {
+				// 按次输出的时候, 总是重置pwm配置
+				// refer https://gitee.com/openLuat/LuatOS/issues/I5OAQN
+				break;
+			}
 			if (pwm_confs[channel].pnum != conf->pnum) {
 				break;
 			}
