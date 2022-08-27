@@ -174,18 +174,14 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	
 	tls_sys_clk_get(&sysclk);
 
-	// 判断一下是否只修改了占空比
-	if (memcmp(&pwm_confs[channel], conf, sizeof(luat_pwm_conf_t))) {
+	if (pnum != 0){
+		// 按次输出的时候, 总是重置pwm配置
+	}else if(memcmp(&pwm_confs[channel], conf, sizeof(luat_pwm_conf_t))) {// 判断一下是否只修改了占空比
 		while (1) {
 			if (pwm_confs[channel].period != conf->period) {
 				break;
 				// TODO 支持只修改频率
 				//tls_pwm_freq_config(channel, sysclk.apbclk*UNIT_MHZ/256/period, period);
-			}
-			if (conf->pnum != 0) {
-				// 按次输出的时候, 总是重置pwm配置
-				// refer https://gitee.com/openLuat/LuatOS/issues/I5OAQN
-				break;
 			}
 			if (pwm_confs[channel].pnum != conf->pnum) {
 				break;
@@ -206,7 +202,6 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		// 完全相同, 那不需要重新配置了
 		return 0;
 	}
-	
 	// 属于全新配置
 	tls_pwm_stop(channel);
 	ret = tls_pwm_init(channel, period, pulse, pnum);
