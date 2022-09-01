@@ -50,6 +50,8 @@ unsigned long __t = (x); memcpy(y, &__t, 4); \
 //extern volatile uint32_t sys_count;
 #define sys_count tls_os_get_time()
 
+extern 	void delay_cnt(int count);
+
 struct wm_crypto_ctx  g_crypto_ctx = {0,0
 #ifndef CONFIG_KERNEL_NONE
 	,NULL
@@ -59,6 +61,7 @@ struct wm_crypto_ctx  g_crypto_ctx = {0,0
 #if 1
 typedef s32 psPool_t;
 #include "libtommath.h"
+extern int wpa_mp_init (mp_int * a);
 #define pstm_set(a, b) mp_set((mp_int *)a, b)
 #define pstm_init(pool, a) wpa_mp_init((mp_int *)a)
 #define pstm_count_bits(a) mp_count_bits((mp_int *)a)
@@ -247,6 +250,7 @@ int tls_crypto_random_bytes(unsigned char *out, u32 len)
     uint32 inLen = len;
     int randomBytes = 2;
 #if USE_TRNG
+	delay_cnt(1000);
 	randomBytes = 4;
 #else
     val = tls_reg_read32(HR_CRYPTO_SEC_CFG);
@@ -274,7 +278,7 @@ int tls_crypto_random_bytes(unsigned char *out, u32 len)
             inLen = 0;
         }
     }
-    tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
+    //tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
     return ERR_CRY_OK;
 }
 
@@ -298,6 +302,7 @@ int tls_crypto_trng(unsigned char *out, u32 len)
 	tls_crypto_sem_lock();	
 	tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_GPSEC);	
 	sec_cfg = (1 << TRNG_INT_MASK) | (4 << TRNG_CP) | (1 << TRNG_SEL) | (1 << TRNG_EN);
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, sec_cfg);
 	sec_cfg &= ~(1 << TRNG_INT_MASK);
 	tls_reg_write32(HR_CRYPTO_TRNG_CR, sec_cfg);		
 	delay_cnt(1000);
@@ -1222,8 +1227,10 @@ static int rsaMulModRead(unsigned char w, hstm_int *a)
     }
     return 0;
 }
+#if 0
 static void rsaMulModDump(unsigned char w)
 {
+	extern void dumpUint32(char *name, uint32_t* buffer, int len);
 	int addr = 0;
     switch(w)
     {
@@ -1240,7 +1247,7 @@ static void rsaMulModDump(unsigned char w)
 	printf("%c", w);
 	dumpUint32(" Val:",((volatile u32*) (RSA_BASE_ADDRESS + addr )), RSAN);
 }
-
+#endif
 static void rsaMulModWrite(unsigned char w, hstm_int *a)
 {
     u32 in[64];
@@ -1473,4 +1480,32 @@ int tls_crypto_init(void)
     tls_irq_enable(CRYPTION_IRQn);
 	return 0;
 }
+
+
+/**
+ * @brief        	This function is used to generate true random number seed.
+ *
+ * @param[in]   	None
+ *
+ * @retval  		random number
+ *
+ * @note         	None
+ */
+unsigned int tls_random_seed_generation(void)
+{
+#if 0
+	extern void delay_cnt(int count);
+	unsigned int val;
+	unsigned int seed;
+	val = tls_reg_read32(HR_CRYPTO_TRNG_CR);
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, val|(1 << TRNG_SEL));
+	delay_cnt(2000);
+	seed = tls_reg_read32(HR_CRYPTO_RNG_RESULT);
+	tls_reg_write32(HR_CRYPTO_TRNG_CR, val);
+	return seed;
+#else
+	return csi_coret_get_value();
+#endif	
+}
+
 

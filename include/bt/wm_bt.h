@@ -411,6 +411,42 @@ tls_bt_status_t enable_bt_test_mode(tls_bt_hci_if_t *p_hci_if);
 void tls_rf_bt_mode(uint8_t enable);
 
 /**
+ * @brief          this function enable controller to running in mesh mode or not
+ *
+ * @param[in]       1, mesh mode, 0 normal mode
+ *
+ * @retval         None
+ *
+ * @note           None
+ */
+
+tls_bt_status_t tls_bt_set_mesh_mode(uint8_t enable);
+
+/**
+ * @brief          this function register callback function when controller entering or exiting sleep mode 
+ *
+ * @param[in]      sleep_enter, sleep starting callback;sleep_exit, sleep exiting callback
+ *
+ * @retval         TLS_BT_STATUS_SUCCESS or TLS_BT_STATUS_UNSUPPORTED;
+ *
+ * @note           None
+ */
+
+tls_bt_status_t tls_bt_register_sleep_callback(tls_bt_controller_sleep_enter_func_ptr sleep_enter, tls_bt_controller_sleep_exit_func_ptr sleep_exit);
+
+/**
+ * @brief          this function register blocking operation function(eg. flash read/write).
+ *
+ * @param[in]      process_ptr blocking operation function pointer
+ *
+ * @retval         always TLS_BT_STATUS_SUCCESS;
+ *
+ * @note           if the function is running, the system interrupt will be holded. so we have to do ti when bt is in idle state
+ */
+
+tls_bt_status_t tls_bt_register_pending_process_callback(tls_bt_app_pending_process_func_ptr process_ptr);
+
+/**
  * @}
  */
 

@@ -9,6 +9,11 @@
 #define CONFIG_IRQ_VECTOR_SIZE   256
 #define USE_UART0_PRINT            1
 
+/*for dsp function used*/
+#define SAVE_VR_REGISTERS          1
+/*for float function used*/
+#define SAVE_HIGH_REGISTERS     1
+
 #ifdef CONFIG_KERNEL_NONE
 #define CONFIG_SYSTEM_SECURE  1
 #endif

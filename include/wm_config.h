@@ -20,11 +20,14 @@
 #define TLS_CONFIG_LS_SPI          						CFG_ON /*Low Speed SPI*/
 #define TLS_CONFIG_UART									CFG_ON  /*UART*/
 
+/**Only Factory Test At Command**/
+#define TLS_CONFIG_ONLY_FACTORY_ATCMD                   CFG_OFF
+
 /**Host Interface&Command**/
 #define TLS_CONFIG_HOSTIF 								CFG_ON
 #define TLS_CONFIG_AT_CMD								(CFG_OFF && TLS_CONFIG_HOSTIF)
 #define TLS_CONFIG_RI_CMD								(CFG_OFF && TLS_CONFIG_HOSTIF)
-#define TLS_CONFIG_RMMS									CFG_OFF
+#define TLS_CONFIG_RMMS									(CFG_OFF && TLS_CONFIG_HOSTIF)
 
 //LWIP CONFIG
 #define TLS_CONFIG_IPV4                 				CFG_ON      //must ON
@@ -72,9 +75,13 @@ CRYPTO
 
 #define TLS_CONFIG_NTP 									CFG_OFF
 
-
-#define TLS_CONFIG_BR_EDR								CFG_OFF
+#if NIMBLE_FTR
 #define TLS_CONFIG_BLE                                  CFG_ON
+#define TLS_CONFIG_BR_EDR								CFG_OFF
+#else
+#define TLS_CONFIG_BLE                                  CFG_OFF
+#define TLS_CONFIG_BR_EDR								CFG_ON
+#endif
 
 #define TLS_CONFIG_BT                                  (TLS_CONFIG_BR_EDR || TLS_CONFIG_BLE)
 

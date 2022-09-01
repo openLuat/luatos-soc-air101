@@ -13,8 +13,8 @@
  * See README and COPYING for more details.
  */
 
-#ifndef LIST_H
-#define LIST_H
+#ifndef COMMON_LIST_H
+#define COMMON_LIST_H
 
 #include <stdio.h>
 

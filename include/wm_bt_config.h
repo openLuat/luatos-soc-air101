@@ -18,6 +18,8 @@
     #define WM_BTA_HFP_HSP_INCLUDED    CFG_ON
     #define WM_BTA_SPPS_INCLUDED       CFG_ON
     #define WM_BTA_SPPC_INCLUDED       CFG_ON
+    #define WM_AUDIO_BOARD_INCLUDED    CFG_OFF
+
 #else
     #define WM_BTA_AV_SINK_INCLUDED    CFG_OFF
     #define WM_BTA_HFP_HSP_INCLUDED    CFG_OFF
@@ -29,9 +31,11 @@
 #if (TLS_CONFIG_BLE == CFG_ON)
     #define WM_BLE_PERIPHERAL_INCLUDED CFG_ON
     #define WM_BLE_CENTRAL_INCLUDED    CFG_ON
+    #define WM_MESH_INCLUDED           CFG_OFF
 #else
     #define WM_BLE_PERIPHERAL_INCLUDED CFG_OFF
     #define WM_BLE_CENTRAL_INCLUDED    CFG_OFF
+    #define WM_MESH_INCLUDED           CFG_OFF
 #endif
 
 #if (WM_BTA_AV_SINK_INCLUDED == CFG_ON) || (WM_BTA_HFP_HSP_INCLUDED == CFG_ON) || (WM_BTA_SPPS_INCLUDED == CFG_ON) || (WM_BTA_SPPC_INCLUDED == CFG_ON)
@@ -58,7 +62,7 @@
 #endif
 
 #if (WM_BLE_CENTRAL_INCLUDED == CFG_ON)
-    #if (WM_BT_INCLUDED == CFG_ON)
+    #if (WM_BT_INCLUDED == CFG_ON || WM_MESH_INCLUDED == CFG_ON)
     #define WM_BLE_MAX_CONNECTION       1
     #else
     #define WM_BLE_MAX_CONNECTION       7

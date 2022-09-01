@@ -80,7 +80,7 @@ void tls_set_test_channel(u8 channel, u8 bandwidth);
 void tls_tx_litepoint_test_start(u32 tempcomp,u32 Packetcnt, u16 Psdulen, u32 Gain, u32 TxRate, u8 GiMode, u8 Gf, u8 Rifs);
 void tls_txrx_litepoint_test_stop(void);
 void tls_txrx_litepoint_clear_data(void);
-int tls_tx_litepoint_test_get_totalsnd(void);
+int  tls_tx_litepoint_test_get_totalsnd(void);
 void tls_rx_litepoint_test_start(u32 Channel, u32 BandWidth);
 void tls_rx_litepoint_test_result(u32 *total, u32 *goodcnt, u32 *badcnt);
 void tls_tx_litepoint_param_update(u8 Gain, u8 TxRate);
@@ -89,4 +89,5 @@ void tls_rx_litepoint_pwr_result(u32 *valid, u32 *snr, u32 *rcpi);
 void tls_tx_litepoint_period(u32 period);
 u32  tls_get_tx_litepoint_period(void);
 void tls_set_tx_litepoint_period(u32 period);
+void tls_lp_notify_lp_tx_data(void);
 #endif

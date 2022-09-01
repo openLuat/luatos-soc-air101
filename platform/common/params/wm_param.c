@@ -21,6 +21,7 @@
 #include "wm_mem.h"
 #include "utils.h"
 #include "wm_flash_map.h"
+#include "wm_crypto_hard.h"
 
 #define USE_TWO_RAM_FOR_PARAMETER  0
 static struct tls_param_flash flash_param;
@@ -383,6 +384,10 @@ int tls_param_init(void)
 	int err;
 	signed short i;
 	u16 tryrestore = 0;
+	u32 crckey = 0xFFFFFFFF;
+	psCrcContext_t ctx;
+	u32 crcvalue = 0;
+	
 	struct tls_param_flash *flash;
 
 	if(flash_param.magic == TLS_PARAM_MAGIC)
@@ -425,18 +430,27 @@ int tls_param_init(void)
 			TLS_DBGPRT_INFO("read parameter partition - %d.\n", i);
 			tls_fls_read((i == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, (u8 *)flash, sizeof(*flash));
 			TLS_DBGPRT_INFO("patition %d magic - 0x%x, crc -0x%x .\n", i, flash->magic, flash->crc32);
+			
+			if (flash->magic == TLS_PARAM_MAGIC)
+			{
+				crckey = 0xFFFFFFFF;
+				tls_crypto_crc_init(&ctx, crckey, CRYPTO_CRC_TYPE_32, 3);
+				tls_crypto_crc_update(&ctx, (u8 *)flash, flash->length - 4);
+				tls_crypto_crc_final(&ctx, &crcvalue);
+			}
+
 			if (flash->magic != TLS_PARAM_MAGIC)
 			{
 				TLS_DBGPRT_WARNING("parameter partition - %d has been damaged.\n", i);
 				is_damage[i] = TRUE;
 				damaged++;
-				//continue;
+				continue;
 			}
-			else if (get_crc32((u8 *)flash, flash->length - 4) != *(u32*)((u8*)flash + flash->length - 4))
+			else if ((~crcvalue) != *(u32*)((u8*)flash + flash->length - 4))
 			{
 				is_damage[i] = TRUE;
 				damaged++;
-				//continue;
+				continue;
 			}
 			else
 			{
@@ -993,6 +1007,54 @@ exit:
 	tls_os_sem_release(sys_param_lock);
 
 	return err;
+}
+/**********************************************************************************************************
+* Description: 	This function is used to get bt param address offset in system param area.
+*
+* Arguments  : 	id		param id,from TLS_PARAM_ID_BT_REMOTE_DEVICE_1 to TLS_PARAM_ID_BT_REMOTE_DEVICE_5
+*				from_flash	whether the parameter is readed from flash,1 read from flash(invalid for now), 0 read from ram
+
+* Returns    :		address offset(>0) in system param area	success
+*				-1	invalid param
+**********************************************************************************************************/
+
+int tls_param_get_bt_param_address(int id, int from_flash)
+{
+    int addr_offset = 0;
+	struct tls_sys_param *src = NULL;
+
+	if ((id < TLS_PARAM_ID_ALL) || (id >= TLS_PARAM_ID_MAX)) {return TLS_PARAM_STATUS_EINVALID;}  
+
+    if(from_flash)
+    {
+        /*!!unsupport for now!!*/
+        return -1;
+    }
+
+    src = &flash_param.parameters;
+    tls_os_sem_acquire(sys_param_lock, 0);
+    switch (id) {
+
+	case TLS_PARAM_ID_BT_REMOTE_DEVICE_1:
+        addr_offset = (int)&src->remote_device1;
+		break;
+	case TLS_PARAM_ID_BT_REMOTE_DEVICE_2:
+		addr_offset = (int)&src->remote_device2;
+		break;
+	case TLS_PARAM_ID_BT_REMOTE_DEVICE_3:
+		addr_offset = (int)&src->remote_device3;
+		break;
+	case TLS_PARAM_ID_BT_REMOTE_DEVICE_4:
+		addr_offset = (int)&src->remote_device4;
+		break;
+	case TLS_PARAM_ID_BT_REMOTE_DEVICE_5:
+		addr_offset = (int)&src->remote_device5;
+		break;
+    }
+    
+    tls_os_sem_release(sys_param_lock);
+
+    return addr_offset;
 }
 
 /**********************************************************************************************************

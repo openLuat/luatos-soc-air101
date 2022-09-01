@@ -9,11 +9,15 @@
 #include "wm_pmu.h"
 #include "wm_crypto_hard.h"
 #include "wm_crypto_hard_mbed.h"
+#include "wm_internal_flash.h"
+#include "libtommath.h"
+
 
 #define ciL    (sizeof(mbedtls_mpi_uint))         /* chars in limb  */
 #define biL    (ciL << 3)               /* bits  in limb  */
 #define biH    (ciL << 2)               /* half limb size */
 
+extern int mbedtls_mpi_write_binary_nr( const mbedtls_mpi *X,unsigned char *buf, size_t buflen );
 extern struct wm_crypto_ctx  g_crypto_ctx;
 static void rsaMonMulSetLen(const u32 len)
 {
@@ -79,6 +83,8 @@ static int rsaMulModRead(unsigned char w, mbedtls_mpi *a)
     }
     return 0;
 }
+
+#if 0
 static void rsaMulModDump(unsigned char w)
 {
 	int addr = 0;
@@ -97,7 +103,7 @@ static void rsaMulModDump(unsigned char w)
 	printf("%c", w);
 	dumpUint32(" Val:",((volatile u32*) (RSA_BASE_ADDRESS + addr )), RSAN);
 }
-
+#endif
 static void rsaMulModWrite(unsigned char w, mbedtls_mpi *a)
 {
     u32 in[64];
@@ -190,7 +196,7 @@ int tls_crypto_mbedtls_exptmod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbed
     u32 k = 0, mc = 0, dp0;
     volatile u8 monmulFlag = 0;
     mbedtls_mpi R, X1, Y;
-	mbedtls_mpi T;
+//	mbedtls_mpi T;
 	int ret = 0;
 	size_t max_len;
 
@@ -205,7 +211,7 @@ int tls_crypto_mbedtls_exptmod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbed
     mbedtls_mpi_init(&X1);
     mbedtls_mpi_init(&Y);
     mbedtls_mpi_init(&R);
-	MBEDTLS_MPI_CHK( mbedtls_mpi_shrink( N, max_len ) );
+	MBEDTLS_MPI_CHK( mbedtls_mpi_shrink((mbedtls_mpi *)N, max_len ) );
 	
     MBEDTLS_MPI_CHK( mbedtls_mpi_lset( &R, 1 ) );
     MBEDTLS_MPI_CHK( mbedtls_mpi_shift_l( &R, N->n * biL ) );
@@ -222,9 +228,9 @@ int tls_crypto_mbedtls_exptmod( mbedtls_mpi *X, const mbedtls_mpi *A, const mbed
     
     dp0 = (u32)N->p[0];
     rsaCalMc(&mc, dp0);
-    rsaMonMulSetLen(N->n);
+    rsaMonMulSetLen((const u32)N->n);
     rsaMonMulWriteMc(mc);
-    rsaMulModWrite('M', N);
+    rsaMulModWrite('M', (mbedtls_mpi *)N);
     rsaMulModWrite('B', &X1);
     rsaMulModWrite('A', &Y);
 	

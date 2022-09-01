@@ -126,6 +126,8 @@ typedef signed long             LONG;
 #define HTTP_CLIENT_ERROR_TLS_NEGO			30
 /** Feature is not (yet) implemented */
 #define HTTP_CLIENT_ERROR_NOT_IMPLEMENTED   64
+/** Connection closed.       */
+#define HTTP_CLIENT_ERROR_CONNECTION_CLOSE	500
 /** HTTP end of stream message */
 #define HTTP_CLIENT_EOS                     1000
 

@@ -671,6 +671,23 @@ int tls_param_get_program_param(u32 *pBase);
 int tls_param_set_program_param(u32 base, u32 totallen, u32 checksum);
 
 /**
+ * @brief          This function is used to get bt param offset located in system param area
+ *
+ * @param[in]      id        from TLS_PARAM_ID_BT_REMOTE_DEVICE_1 to TLS_PARAM_ID_BT_REMOTE_DEVICE_5
+ * @param[in]      from_flash    whether the parameter is readed from flash,
+                                  1 read from flash(invalid for now),0 read from memory
+
+ *
+ * @retval         >0     success
+ * @retval         other failed
+ *
+ * @note           None
+ */
+
+int tls_param_get_bt_param_address(int id, int from_flash);
+
+
+/**
  * @}
  */
 

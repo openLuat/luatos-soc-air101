@@ -24,6 +24,49 @@
 int tls_touchsensor_init_config(u32 sensorno, u8 scan_period, u8 window, u32 enable);
 
 /**
+ * @brief          This function is used to initialize touch scan channel.
+ *
+ * @param[in]      sensorno    is the touch sensor number from 1-15
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_chan_config(u32 sensorno);
+
+/**
+ * @brief          This function is used to initialize touch general configuration.
+ *
+ * @param[in]      scanperiod  is scan period for per touch sensor ,unit:16ms, >0
+ * @param[in]      window      is count window, window must be greater than 2.Real count window is window - 2.
+ * @param[in]      bias        is touch sensor bias current
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_config(u8 scanperiod, u8 window, u8 bias);
+
+/**
+ * @brief          This function is used to start touch scan
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_start(void);
+
+/**
+ * @brief          This function is used to stop touch scan
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_stop(void);
+
+
+/**
  * @brief          This function is used to deinit touch sensor's selection and disable touch.
  *
  * @param[in]      sensorno    is the touch sensor number from 1-15

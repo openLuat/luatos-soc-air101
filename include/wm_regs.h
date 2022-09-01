@@ -119,6 +119,8 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_FLASH_CMD_START          (HR_FLASH_BASE_ADDR + 0x004)
 #define HR_FLASH_CR                 (HR_FLASH_BASE_ADDR + 0x008)
 #define HR_FLASH_ADDR               (HR_FLASH_BASE_ADDR + 0x010)
+#define HR_FLASH_ENCRYPT_CTRL       (HR_FLASH_BASE_ADDR + 0x014)
+#define HR_FLASH_KEY_STATUS         (HR_FLASH_BASE_ADDR + 0x018)
 /***************************************************************
  * SDIO WRAPPER Register
  ***************************************************************/
@@ -252,7 +254,7 @@ typedef volatile unsigned int TLS_REG;    /* Hardware register definition */
 #define HR_CLK_RST_STA			(HR_CLK_BASE_ADDR + 0x1C)
 
 /***************************************************************
- * �ڴ�ģ��Ĵ�������
+ * \C4ڴ\E6ģ\BF\E9\BCĴ\E6\C6\F7\B6\A8\D2\E5
  ***************************************************************/
 #define HR_MEM_BASE_ADDR        	(DEVICE_BASE_ADDR + 0xF00)
 #define HR_MEM_TXBUF_BASE_ADDR      (HR_MEM_BASE_ADDR + 0x00)

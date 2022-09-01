@@ -6,3 +6,4 @@ lib/build/
 lib/bin/
 tools/xt804/AIR101_secboot.img
 tools/xt804/wm_tool
+releases/

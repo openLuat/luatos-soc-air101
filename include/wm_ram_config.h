@@ -11,6 +11,9 @@
 #define __WM_RAM_CONFIG_H__
 #include "wm_config.h"
 
+/*see gcc_csky.ld in directory ld,__heap_end must be bigger than 0x20028000
+if __heap_end is lower than 0x20028000,then SLAVE_HSPI_SDIO_ADDR must be changed to 0x20028000 or bigger.
+*/
 extern unsigned int __heap_end;
 extern unsigned int __heap_start;
 
@@ -26,6 +29,18 @@ extern unsigned int __heap_start;
 /*Wi-Fi use buffer to exchange data*/
 #define WIFI_MEM_START_ADDR		(SLAVE_HSPI_SDIO_ADDR + SLAVE_HSPI_MAX_SIZE)
 
+/*Store reboot reason by RAM's Last Word*/
+#define SYS_REBOOT_REASON_ADDRESS (0x20047EFC)
+
+enum SYS_REBOOT_REASON
+{
+	REBOOT_REASON_POWER_ON 	   = 0,   /*power on or reset button*/
+	REBOOT_REASON_STANDBY	   = 1,   /*chip standby*/
+	REBOOT_REASON_EXCEPTION    = 2,   /*exception reset*/
+	REBOOT_REASON_WDG_TIMEOUT  = 3,   /*watchdog timeout*/
+	REBOOT_REASON_ACTIVE       = 4,   /*user active reset*/
+	REBOOT_REASON_MAX
+};
 
 #endif /*__WM_RAM_CONFIG_H__*/
 

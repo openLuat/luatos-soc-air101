@@ -235,6 +235,7 @@ typedef enum{
 #define WM_BLE_GAP_EVENT_PERIODIC_SYNC_LOST    (0x01<<22)
 #define WM_BLE_GAP_EVENT_SCAN_REQ_RCVD         (0x01<<23)
 #define WM_BLE_GAP_EVENT_PERIODIC_TRANSFER     (0x01<<24)
+#define WM_BLE_GAP_EVENT_HOST_SHUTDOWN         (0x01<<31)
 
 
 /** Bluetooth Address */
@@ -872,6 +873,7 @@ typedef enum
 	WM_BLE_DM_SEC_EVT               = (0x01<<7),
 	WM_BLE_DM_ADV_STARTED_EVT       = (0x01<<8),
     WM_BLE_DM_ADV_STOPPED_EVT       = (0x01<<9),
+	WM_BLE_DM_HOST_SHUTDOWN_EVT     = (0x01<<31),
 	
 } tls_ble_dm_evt_t;
 
@@ -1880,7 +1882,167 @@ typedef enum
     BLE_UART_UNKNOWN_MODE,
 } tls_ble_uart_mode_t;
 
-typedef void (*tls_ble_output_func_ptr)(uint8_t *p_data, uint32_t length);
+typedef enum{
+    UART_OUTPUT_DATA=0,
+    UART_OUTPUT_CMD_ADVERTISING,
+    UART_OUTPUT_CMD_CONNECTED,
+    UART_OUTPUT_CMD_DISCONNECTED,
+} tls_uart_msg_out_t;
+
+/**uart output function pointer, ble server send the received data to uart */
+typedef void (*tls_ble_uart_output_ptr)(tls_uart_msg_out_t type,uint8_t *payload, int length);
+
+/**uart sent function pointer, after ble server sending the uart data, it will be called */
+typedef void (*tls_ble_uart_sent_ptr)(tls_ble_uart_mode_t mode, int status);
+
+
+/**WM Mesh definition*/
+
+typedef enum{
+    MESH_ROLE_UNKNOWN = 0x00,
+    MESH_ROLE_NODE,
+    MESH_ROLE_PROVISIONER
+} tls_bt_mesh_role_t;
+
+#ifndef BIT
+#define BIT(n)  (1UL << (n))
+#endif
+
+#define BIT_MASK(n) (BIT(n) - 1)
+
+#define TLS_BT_MESH_TRANSMIT_INT(transmit) ((((transmit) >> 3) + 1) * 10)
+
+#define TLS_BT_MESH_TRANSMIT_COUNT(transmit) (((transmit) & (uint8_t)BIT_MASK(3)))
+
+#define TLS_BT_MESH_TRANSMIT(count, int_ms) ((count) | (((int_ms / 10) - 1) << 3))
+
+#define TLS_BT_MESH_PUB_TRANSMIT(count, int_ms) TLS_BT_MESH_TRANSMIT(count,           \
+                                 (int_ms) / 5)
+
+#define TLS_BT_MESH_PUB_TRANSMIT_INT(transmit) ((((transmit) >> 3) + 1) * 50)
+#define TLS_BT_MESH_PUB_TRANSMIT_COUNT(transmit) TLS_BT_MESH_TRANSMIT_COUNT(transmit)
+
+typedef struct {
+    uint8_t net_transmit_count;         /* Network Transmit state */
+    uint8_t net_transmit_intvl;         /* Network Transmit state */
+    uint8_t relay;                /* Relay Mode state */
+    uint8_t relay_retransmit_count;     /* Relay Retransmit state */
+    uint8_t relay_retransmit_intvl;     /* Relay Retransmit state */
+    uint8_t beacon;               /* Secure Network Beacon state */
+    uint8_t gatt_proxy;           /* GATT Proxy state */
+    uint8_t frnd;                 /* Friend state */
+    uint8_t default_ttl;          /* Default TTL */
+} tls_mesh_primary_cfg_t;
+
+typedef struct {
+    uint16_t  addr;
+    uint16_t  app_idx;
+    uint8_t   cred_flag;
+    uint8_t   ttl;
+    uint8_t   period;
+    uint8_t   transmit;
+} tls_bt_mesh_cfg_mod_pub ;
+
+typedef struct {
+    uint16_t dst;
+    uint8_t  count;
+    uint8_t  period;
+    uint8_t  ttl;
+    uint16_t feat;
+    uint16_t net_idx;
+} tls_bt_mesh_cfg_hb_pub;
+
+typedef struct  {
+    uint16_t src;
+    uint16_t dst;
+    uint8_t  period;
+    uint8_t  count;
+    uint8_t  min;
+    uint8_t  max;
+} tls_bt_mesh_cfg_hb_sub;
+
+typedef struct{
+    uint8_t addr[6];
+    uint8_t addr_type;
+    uint8_t uuid[16];
+    uint32_t oob_info;
+    uint32_t uri_hash;
+    
+} tls_mesh_unprov_msg_t;
+
+typedef struct{
+    uint16_t net_idx;
+    uint16_t addr;
+    uint8_t num_elem;
+
+} tls_mesh_node_added_msg_t;
+
+typedef struct{
+    uint16_t net_idx;
+    uint16_t addr;
+
+} tls_mesh_prov_complete_msg_t;
+
+typedef struct{
+    char *str;
+} tls_mesh_oob_output_str_msg_t;
+
+typedef struct{
+    uint32_t number;
+} tls_mesh_oob_output_number_msg_t;
+
+typedef struct{
+    uint32_t act;
+} tls_mesh_oob_input_msg_t;
+
+typedef struct{
+    bool success;
+    uint16_t net_idx;
+    uint16_t addr;
+    uint8_t num_elem;    
+    
+} tls_mesh_prov_end_msg_t;
+
+typedef union
+{
+    tls_mesh_unprov_msg_t                  unprov_msg;
+    tls_mesh_node_added_msg_t              node_added_msg;
+    tls_mesh_oob_output_str_msg_t          oob_output_string_msg;
+    tls_mesh_oob_output_number_msg_t       oob_output_number_msg;
+    tls_mesh_prov_complete_msg_t           prov_cmplt_msg;
+    tls_mesh_oob_input_msg_t               oob_input_msg;
+    tls_mesh_prov_end_msg_t                prov_end_msg;
+    
+} tls_mesh_msg_t;
+
+
+typedef enum{
+    WM_MESH_UNPROVISION_BEACON_EVT = (0x01<<1),
+    WM_MESH_SECURE_BEACON_EVT      = (0x01<<2),
+    WM_MESH_NODE_ADDED_EVT         = (0x01<<3),
+    WM_MESH_OOB_STRING_EVT         = (0x01<<4),
+    WM_MESH_OOB_NUMBER_EVT         = (0x01<<5),    
+    WM_MESH_PROV_CMPLT_EVT         = (0x01<<6),
+    WM_MESH_OOB_INPUT_EVT          = (0x01<<7),
+    WM_MESH_PROV_END_EVT           = (0x01<<8),
+    
+} tls_mesh_event_t;
+
+typedef void (*tls_bt_mesh_at_callback_t)(tls_mesh_event_t event, tls_mesh_msg_t *p_data);
+
+typedef void (*tls_bt_controller_sleep_enter_func_ptr)(uint32_t sleep_duration_ms);
+
+typedef void (*tls_bt_controller_sleep_exit_func_ptr)(void);
+
+typedef void (*tls_bt_app_pending_process_func_ptr)(void);
+
+#define TLS_HAL_AT_NOTIFY(P_CB, PARAM1, PARAM2)\
+    if (P_CB) {                             \
+        P_CB(PARAM1, PARAM2);               \
+    } 
+
+
+
 #define TLS_HAL_CBACK(P_CB, P_CBACK, ...)\
     if (P_CB && P_CB->P_CBACK) {            \
         P_CB->P_CBACK(__VA_ARGS__);         \
