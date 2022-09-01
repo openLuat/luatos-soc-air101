@@ -23,7 +23,7 @@ typedef struct serials_timer_info {
 	uint16_t timeout;
 }serials_timer_info_t;
 
-static serials_timer_info_t serials_timer_table[5] ={0};
+static serials_timer_info_t serials_timer_table[TLS_UART_MAX] ={0};
 
 int luat_uart_exist(int uartid)
 {
@@ -121,12 +121,10 @@ int luat_uart_setup(luat_uart_t *uart)
         wm_uart4_rx_config(WM_IO_PB_05);
         wm_uart4_tx_config(WM_IO_PB_04);
         break;
-#ifdef AIR103
     case TLS_UART_5:
         wm_uart5_rx_config(WM_IO_PA_13);
         wm_uart5_tx_config(WM_IO_PA_12);
         break;
-#endif
     default:
         break;
     }

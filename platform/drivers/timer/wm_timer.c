@@ -33,7 +33,7 @@ struct timer_irq_context {
 
 static struct timer_irq_context timer_context[TLS_TIMER_ID_MAX] = {{0,0}};
 static u8 wm_timer_bitmap = 0;
-
+#if 0
 static void timer_clear_irq(int timer_id)
 {
     volatile u8 i;
@@ -47,7 +47,7 @@ static void timer_clear_irq(int timer_id)
 
     tls_reg_write32(HR_TIMER0_5_CSR, value | TLS_TIMER_INT_CLR(timer_id));
 }
-
+#endif
 static void timer_irq_callback(void *p)
 {
     u8 timer_id;
@@ -136,7 +136,7 @@ u8 tls_timer_create(struct tls_timer_cfg *cfg)
 
     wm_timer_bitmap  |= BIT(i);
     timer_context[i].callback = cfg->callback;
-    timer_context[i].arg = cfg->arg == NULL ? (void*)i : cfg->arg;
+    timer_context[i].arg = cfg->arg;
 
 	tls_sys_clk sysclk;	
 
