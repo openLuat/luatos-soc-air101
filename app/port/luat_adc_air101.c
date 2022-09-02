@@ -97,3 +97,7 @@ int luat_adc_close(int ch)
     }
     return 0;
 }
+
+int luat_adc_global_config(int tp, int val) {
+    return 0;
+}
