@@ -495,11 +495,22 @@ int cal_voltage(double vol)
 	}
 	else
 	{
-		return (int)((double)(vol - 46134) / (double)(32.196));
-		voltage = ((double)vol - (double)adc_offset)/4.0;
-		voltage = 1.196 + voltage*(126363/1000.0)/1000000;
+		int val = 0;
+		if (vol < 46134) {
+			val = 0;
+		}
+		else if (vol > 123405) {
+			val = 2300;
+		}
+		else {
+			val = (int)((double)(vol - 46134) / (double)(32.196));
+		}
+		return val;
+
+		// voltage = ((double)vol - (double)adc_offset)/4.0;
+		// voltage = 1.196 + voltage*(126363/1000.0)/1000000;
 		
-	    y1 = voltage*10000;
+	    // y1 = voltage*10000;
 	}
 
 	return (int)(y1/10);
