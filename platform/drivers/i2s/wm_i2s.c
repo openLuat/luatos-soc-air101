@@ -20,6 +20,7 @@ static void wm_i2s_set_mode(bool bl)
 }
 
 //master or slave
+#if 0
 static uint32_t wm_i2s_get_mode(void)
 {
 	uint32_t reg;
@@ -29,6 +30,7 @@ static uint32_t wm_i2s_get_mode(void)
 	
 	return (reg & 0x1);
 }
+#endif
 
 //i2s_stardard
 static void wm_i2s_set_format(uint32_t format)

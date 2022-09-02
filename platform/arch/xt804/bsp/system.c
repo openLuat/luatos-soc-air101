@@ -69,6 +69,25 @@ void mdelay(uint32_t ms)
 }
 
 /**
+  * @brief  initialize c++ constructor
+  * @param  None
+  * @return None
+  */
+extern int __dtor_end__;
+extern int __ctor_end__;
+extern int __ctor_start__;
+typedef void (*func_ptr)(void);
+__attribute__((weak)) void cxx_system_init(void)
+{
+    func_ptr *p;
+    for (p = (func_ptr *)&__ctor_end__ -1; p >= (func_ptr *)&__ctor_start__; p--)
+    {
+        (*p)();
+    }
+}
+
+
+/**
   * @brief  initialize the system
   *         Initialize the psr and vbr.
   * @param  None
@@ -94,6 +113,9 @@ void SystemInit(void)
 #ifdef CONFIG_KERNEL_NONE
     __enable_excp_irq();
 #endif
+
+	/*c++ variable init*/
+	cxx_system_init();
 
     //csi_coret_config(g_system_clock / CONFIG_SYSTICK_HZ, SYS_TICK_IRQn);    //10ms
 //#ifndef CONFIG_KERNEL_NONE

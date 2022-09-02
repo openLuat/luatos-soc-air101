@@ -12,6 +12,7 @@
 #include "wm_irq.h"
 #include "wm_cpu.h"
 #include "wm_watchdog.h"
+#include "wm_ram_config.h"
 
 #define WDG_LOAD_VALUE_MAX  (0xFFFFFFFF / 40)
 #define WDG_LOAD_VALUE_DEF  (20 * 1000 * 1000)
@@ -28,6 +29,7 @@ ATTRIBUTE_ISR void WDG_IRQHandler(void)
     	csi_kernel_intrpt_exit();
         return;
     }
+	tls_sys_set_reboot_reason(REBOOT_REASON_WDG_TIMEOUT);
 	csi_kernel_intrpt_exit();	
 }
 
@@ -185,5 +187,42 @@ void tls_sys_reset(void)
 	tls_reg_write32(HR_WDG_CTRL, 0x3);
 	tls_reg_write32(HR_WDG_LOCK, 1);
 	while(1);
+}
+
+/**
+ * @brief          This function is used to set reboot reason
+ *
+ * @param          reason (enum SYS_REBOOT_REASON)
+ *
+ * @return         None
+ *
+ * @note           used with tls_sys_reset
+ */
+void tls_sys_set_reboot_reason(u32 reason)
+{
+	tls_reg_write32(SYS_REBOOT_REASON_ADDRESS, reason);
+}
+
+/**
+ * @brief          This function is used to get reboot reason
+ *
+ * @param          None
+ *
+ * @return         reason (enum SYS_REBOOT_REASON)
+ *
+ * @note           None
+ */
+int tls_sys_get_reboot_reason(void)
+{
+	u32 rebootval = 0;
+	rebootval = tls_reg_read32(SYS_REBOOT_REASON_ADDRESS);
+	if (rebootval >= REBOOT_REASON_MAX)
+	{
+		return REBOOT_REASON_POWER_ON;
+	}
+	else
+	{
+		return rebootval;
+	}
 }
 

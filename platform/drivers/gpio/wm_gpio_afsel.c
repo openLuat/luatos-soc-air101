@@ -219,10 +219,10 @@ void wm_psram_config(uint8_t numsel)
 		case 1://air103
 			tls_io_cfg_set(WM_IO_PA_15, WM_IO_OPTION1);/*CK*/
 			tls_io_cfg_set(WM_IO_PB_27, WM_IO_OPTION1);/*CS*/
-			tls_io_cfg_set(WM_IO_PB_02, WM_IO_OPTION4);/*D0*/
-			tls_io_cfg_set(WM_IO_PB_03, WM_IO_OPTION4);/*D1*/
-			tls_io_cfg_set(WM_IO_PB_04, WM_IO_OPTION4);/*D2*/
-			tls_io_cfg_set(WM_IO_PB_05, WM_IO_OPTION4);/*D3*/
+			tls_io_cfg_set(WM_IO_PB_28, WM_IO_OPTION1);/*D0*/
+			tls_io_cfg_set(WM_IO_PB_29, WM_IO_OPTION1);/*D1*/
+			tls_io_cfg_set(WM_IO_PB_30, WM_IO_OPTION1);/*D2*/
+			tls_io_cfg_set(WM_IO_PB_31, WM_IO_OPTION1);/*D3*/
 			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);			
 			break;
 

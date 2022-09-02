@@ -377,16 +377,24 @@ void tls_gpio_irq_disable(enum tls_io_name gpio_pin)
         pin    = gpio_pin - WM_IO_PB_00;
         offset = TLS_IO_AB_OFFSET;
 		reg = tls_reg_read32(HR_GPIO_IE + offset);
-		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */		
-		// tls_irq_disable(GPIOB_IRQn);
+		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */
+		reg = reg&(~(0x1 << pin));
+		if (reg == 0)
+		{
+			tls_irq_disable(GPIOB_IRQn);
+		}
     }
     else
     {
         pin    = gpio_pin;
         offset = 0;
 		reg = tls_reg_read32(HR_GPIO_IE + offset);
-		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */		
-		// tls_irq_disable(GPIOA_IRQn);
+		tls_reg_write32(HR_GPIO_IE + offset, reg & (~(0x1 << pin)));	/* disable interrupt */	
+		reg = (reg&(~(0x1 << pin)))&0xFFFF;
+		if (reg == 0)
+		{
+			tls_irq_disable(GPIOA_IRQn);
+		}
     }
 
 }

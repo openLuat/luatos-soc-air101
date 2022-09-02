@@ -325,9 +325,6 @@ struct tls_wl_event_ops {
 	int (*net_fail)(struct tls_wif *wif);
     int (*net_up)(struct tls_wif *wif);
     int (*update_stat)(struct tls_wif *wif, void *cur_bss);/* struct ieee80211_bss *cur_bss */
-#if TLS_PS_MODE_NEW_FTR		
-	int (*sleep_func)(struct tls_wif *wif);
-#endif
 };
 
 /* sk_buff allocated by wlan driver  */

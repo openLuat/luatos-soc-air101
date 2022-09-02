@@ -21,10 +21,18 @@
 #include "wm_io.h"
 #include "wm_irq.h"
 #include "wm_mem.h"
+#include "wm_efuse.h"
 
 #define  ATTRIBUTE_ISR __attribute__((isr))
 
+typedef struct 
+{
+	int poly_n;
+	double a[3];
+}ST_ADC_POLYFIT_PARAM;
 
+ST_ADC_POLYFIT_PARAM _polyfit_param = {0};
+extern void polyfit(int n,double x[],double y[],int poly_n,double a[]);
 //TODO
 #define HR_SD_ADC_CONFIG_REG 0
 static int adc_offset = 0;
@@ -69,10 +77,45 @@ static void adc_dma_isr_callbk(void)
 		}
 	}
 }
+int adc_polyfit_init(ST_ADC_POLYFIT_PARAM *polyfit_param)
+{
+	FT_ADC_CAL_ST adc_st;
+	double x[16] = {0};
+	double y[16] = {0};
+	int n = 4, poly_n = 1; // or = 2
 
+	int i;
+
+
+	polyfit_param->poly_n = 0;
+	memset(&adc_st, 0, sizeof(adc_st));
+	tls_get_adc_cal_param(&adc_st);
+	//dumpBuffer("adc_st",(char *)&adc_st, sizeof(adc_st));
+	n = adc_st.valid_cnt;
+	if(n >= 4 && n <= 8)
+	{
+		for(i = 0; i < n; i++)
+		{
+			x[i] = (double)adc_st.units[i].real_val;
+			y[i] = (double)adc_st.units[i].ref_val;
+		}
+		polyfit_param->poly_n = poly_n;
+		polyfit(n,x,y,poly_n,polyfit_param->a);
+	}
+
+	return 0;
+}
 
 void tls_adc_init(u8 ifusedma,u8 dmachannel)
 {
+	/*ADC LDO ON here, after 90ns, ADC can work to avoid ADC affect those ADC IOs that are multiplexed GPIO input to capture irq*/
+	u32 value = 0;
+	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
+	value |= CONFIG_EN_LDO_ADC_VAL(1);
+	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);
+
+	memset(&_polyfit_param, 0, sizeof(_polyfit_param));
+	adc_polyfit_init(&_polyfit_param);
 	tls_reg_write32(HR_SD_ADC_CTRL, ANALOG_SWITCH_TIME_VAL(0x50)|ANALOG_INIT_TIME_VAL(0x50)|ADC_IRQ_EN_VAL(0x1));
 	tls_irq_enable(ADC_IRQn);
 
@@ -144,7 +187,7 @@ void tls_adc_start_with_cpu(int Channel)
 	/* Stop adc first */
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value |= CONFIG_PD_ADC_VAL(1);
-	value &= ~(CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));
+	value &= ~(CONFIG_RSTN_ADC_VAL(1));
 	value &= ~(CONFIG_ADC_CHL_SEL_MASK);
 	value |= CONFIG_ADC_CHL_SEL(Channel);
 
@@ -152,7 +195,7 @@ void tls_adc_start_with_cpu(int Channel)
 	
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value &= ~(CONFIG_PD_ADC_VAL(1));
-	value |= (CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));
+	value |= (CONFIG_RSTN_ADC_VAL(1));
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);
 }
 
@@ -181,7 +224,7 @@ void tls_adc_start_with_dma(int Channel, int Length)
 	adc_dma_buffer = tls_mem_alloc(len*4);
 	if (adc_dma_buffer == NULL)
 	{
-		wm_printf("adc dma buffer alloc failed\r\n");
+		//wm_printf("adc dma buffer alloc failed\r\n");
 		return;
 	}
 
@@ -190,7 +233,7 @@ void tls_adc_start_with_dma(int Channel, int Length)
 	/*disable adc:set adc pd, rstn and ldo disable*/
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value |= CONFIG_PD_ADC_VAL(1);
-	value &= ~(CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));	
+	value &= ~(CONFIG_RSTN_ADC_VAL(1));	
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);	
 	
 	/* Stop dma if necessary */
@@ -200,9 +243,9 @@ void tls_adc_start_with_dma(int Channel, int Length)
 	}
 
     DMA_SRCADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
-	DMA_DESTADDR_REG(gst_adc.dmachannel) = adc_dma_buffer;
+	DMA_DESTADDR_REG(gst_adc.dmachannel) = (u32)adc_dma_buffer;
 	DMA_SRCWRAPADDR_REG(gst_adc.dmachannel) = HR_SD_ADC_RESULT_REG;
-	DMA_DESTWRAPADDR_REG(gst_adc.dmachannel) = adc_dma_buffer;
+	DMA_DESTWRAPADDR_REG(gst_adc.dmachannel) = (u32)adc_dma_buffer;
     DMA_WRAPSIZE_REG(gst_adc.dmachannel) = (len*4) << 16;
 
 	/* Dest_add_inc, halfword,  */
@@ -219,7 +262,7 @@ void tls_adc_start_with_dma(int Channel, int Length)
     value &= ~(CONFIG_ADC_CHL_SEL_MASK);
 	value |= CONFIG_ADC_CHL_SEL(Channel);
 	value &= ~(CONFIG_PD_ADC_VAL(1));
-	value |= (CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));	
+	value |= (CONFIG_RSTN_ADC_VAL(1));	
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);		/*start adc*/
 
 }
@@ -280,7 +323,7 @@ void tls_adc_cmp_start(int Channel, int cmp_data, int cmp_pol)
 	/* Stop adc first */
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value |= CONFIG_PD_ADC_VAL(1);
-	value &= ~(CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));		
+	value &= ~(CONFIG_RSTN_ADC_VAL(1));		
 	value |= CONFIG_ADC_CHL_SEL(Channel);
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);
 
@@ -288,7 +331,7 @@ void tls_adc_cmp_start(int Channel, int cmp_data, int cmp_pol)
 	
 	value = tls_reg_read32(HR_SD_ADC_ANA_CTRL);
 	value &= ~(CONFIG_PD_ADC_VAL(1));
-	value |= (CONFIG_RSTN_ADC_VAL(1)|CONFIG_EN_LDO_ADC_VAL(1));	
+	value |= (CONFIG_RSTN_ADC_VAL(1));	
 	tls_reg_write32(HR_SD_ADC_ANA_CTRL, value);		/*start adc*/
 
 	/*Enable compare function and compare irq*/
@@ -426,6 +469,41 @@ static void waitForAdcDone(void)
 	tls_irq_enable(ADC_IRQn);
 }
 
+int cal_voltage(double vol)
+{
+	double y1, voltage;
+
+	double vol_30mV;
+	int average = ((int)vol >> 2) & 0xFFFF;
+
+	if(_polyfit_param.poly_n == 2)
+	{
+		y1 = _polyfit_param.a[2]*average*average + _polyfit_param.a[1]*average + _polyfit_param.a[0];
+	}
+	else if(_polyfit_param.poly_n == 1)
+	{
+		y1 = _polyfit_param.a[1]*average + _polyfit_param.a[0];
+		vol_30mV = ((double)300.0L - _polyfit_param.a[0]) / _polyfit_param.a[1];
+		if(average + 170 < vol_30mV)
+		{
+			return 0;
+		}
+		else if(average < vol_30mV)
+		{
+			y1 = 300.0L - 200.0L*(vol_30mV - average) / 170.0L;
+		}
+	}
+	else
+	{
+		voltage = ((double)vol - (double)adc_offset)/4.0;
+		voltage = 1.196 + voltage*(126363/1000.0)/1000000;
+		
+	    y1 = voltage*10000;
+	}
+
+	return (int)(y1/10);
+}
+
 u32 adc_get_offset(void)
 { 
 	adc_offset = 0;
@@ -439,7 +517,7 @@ u32 adc_get_offset(void)
 	adc_offset = tls_read_adc_result(); //获取adc转换结果
 	signedToUnsignedData(&adc_offset);
 	tls_adc_stop(0);
-
+//printf("adc_offset: 0x%x\r\n", adc_offset);
     return adc_offset;
 }
 
@@ -452,9 +530,12 @@ int adc_get_inputVolt(u8 channel)
 {
 	int average = 0;
 	double voltage = 0.0;
-	
-	adc_get_offset();
 
+	if(_polyfit_param.poly_n == 0 || (channel == 8) || (channel == 9))
+	{
+		adc_get_offset();
+	}
+	
 	tls_adc_init(0, 0); 
 	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
 	tls_adc_set_pga(1,1);
@@ -473,53 +554,18 @@ int adc_get_inputVolt(u8 channel)
 	}
 	else
 	{
-		voltage = ((double)average - (double)adc_offset)/4.0;
-		voltage = 1.196 + voltage*(126363/1000.0)/1000000;
+		return cal_voltage((double)average);
 	}
 
 	average = (int)(voltage*1000);
     return average;
-}
-
-int adc_get_inputVolt2(u8 channel, int* origin) {
-	int average = 0;
-	double voltage = 0.0;
-	
-	adc_get_offset();
-
-	tls_adc_init(0, 0); 
-	tls_adc_reference_sel(ADC_REFERENCE_INTERNAL);
-	tls_adc_set_pga(1,1);
-	tls_adc_set_clk(0x28);	
-	tls_adc_start_with_cpu(channel);
-
-	waitForAdcDone();
-	average = tls_read_adc_result();
-	tls_adc_stop(0);
-	signedToUnsignedData(&average);
-	*origin = average;	
-
-	if ((channel == 8) || (channel == 9))
-	{
-		voltage = ((double)average - (double)adc_offset)/4.0;
-		voltage = voltage*(126363/1000)/1000000;
-	}
-	else
-	{
-		voltage = ((double)average - (double)adc_offset)/4.0;
-		voltage = 1.196 + voltage*(126363/1000.0)/1000000;
-	}
-
-	average = (int)(voltage*1000);
-    return average;
-
 }
 
 u32 adc_get_interVolt(void)
 {
 	u32 voltValue;
 	u32 value = 0;
-	u32 code = 0;	
+	//u32 code = 0;	
 	int i = 0;
 	adc_get_offset();
 
@@ -533,11 +579,11 @@ u32 adc_get_interVolt(void)
 	{
 		waitForAdcDone();
 		value = tls_read_adc_result();
-		signedToUnsignedData(&value);
+		signedToUnsignedData((int *)&value);
 		voltValue += value;
 	}
 	voltValue = voltValue/10;
-	code = voltValue;
+	//code = voltValue;
 	voltValue = voltValue;
 	adc_offset = adc_offset;
 	tls_adc_stop(0);

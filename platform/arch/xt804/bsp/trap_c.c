@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <csi_config.h>
 #include "wm_debug.h"
+#include "wm_ram_config.h"
 #include "wm_watchdog.h"
 
 void trap_c(uint32_t *regs)
@@ -53,6 +54,8 @@ void trap_c(uint32_t *regs)
     printf("epsr: %8x\n", regs[16]);
     printf("epc : %8x\n", regs[17]);
 
-    tls_sys_reset();
+	tls_sys_set_reboot_reason(REBOOT_REASON_EXCEPTION);
+	tls_sys_reset();
+    while (1);
 }
 

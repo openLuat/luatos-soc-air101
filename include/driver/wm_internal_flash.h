@@ -42,6 +42,7 @@ enum TYPE_FLASH_ID{
 	SPIFLASH_MID_XMC		= 0x20,
 	SPIFLASH_MID_XTX        = 0x0B,
 	SPIFLASH_MID_TSINGTENG    = 0xEB, /*UNIGROUP TSINGTENG*/	
+	SPIFLASH_MID_TSINGTENG_1MB    = 0xCD, /*UNIGROUP TSINGTENG*/
 };
 
 typedef union {
@@ -258,6 +259,22 @@ int tls_fls_read(u32 addr, u8 * buf, u32 len);
  * @note           None
  */
 int tls_fls_write(u32 addr, u8 * buf, u32 len);
+
+/**
+ * @brief          This function is used to write data into the flash without erase.
+ *
+ * @param[in]      addr     Specifies the starting address to write to
+ * @param[in]      buf      Pointer to a byte array that is to be written
+ * @param[in]      len      Specifies the length of the data to be written
+ *
+ * @retval         TLS_FLS_STATUS_OK	        if write flash success
+ * @retval         TLS_FLS_STATUS_EPERM	        if flash struct point is null
+ * @retval         TLS_FLS_STATUS_ENODRV	    if flash driver is not installed
+ * @retval         TLS_FLS_STATUS_EINVAL	    if argument is invalid
+ *
+ * @note           Erase action should be excuted by API tls_fls_erase in user layer.
+ */
+int tls_fls_write_without_erase(u32 addr, u8 *buf, u32 len);
 
 
 /**

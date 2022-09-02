@@ -1565,5 +1565,19 @@ __attribute__((weak)) void __assert_fail(const char *file,
 	   func ? ", function: " : "", func ? func : "");
     while(1);
 }
+
+/*For CPP type used, you first call this function in main entry*/
+extern int __dtor_end__;
+extern int __ctor_end__;
+extern int __ctor_start__;
+typedef void (*func_ptr)(void);
+__attribute__((weak)) void cxx_system_init(void)
+{
+    func_ptr *p;
+    for (p = (func_ptr *)&__ctor_end__ -1; p >= (func_ptr *)&__ctor_start__; p--)
+    {
+        (*p)();
+    }
+}
 #endif
 

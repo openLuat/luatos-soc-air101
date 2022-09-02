@@ -28,6 +28,7 @@
 
 
 /**System parameter defined in wm_internal_fls.c*/
+extern unsigned int TLS_FLASH_MESH_PARAM_ADDR;
 extern unsigned int TLS_FLASH_PARAM_DEFAULT;
 extern unsigned int TLS_FLASH_PARAM1_ADDR;
 extern unsigned int TLS_FLASH_PARAM2_ADDR;

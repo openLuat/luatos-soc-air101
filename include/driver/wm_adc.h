@@ -21,7 +21,7 @@
 
 
 /*ADC Result*/
-#define ADC_RESULT_MASK					(0x3FFFC)
+#define ADC_RESULT_MASK					(0x3FFFF)
 #define ADC_RESULT_VAL(n)				((n)&ADC_RESULT_MASK)
 
 /*ADC_ANALOG_CTRL*/
@@ -271,8 +271,6 @@ int adc_get_interTemp(void);
  * @note            None
  */
 int adc_get_inputVolt(u8 channel);
-
-int adc_get_inputVolt2(u8 channel, int* origin);
 
 /**
  * @brief           This function is used to read internal voltage.

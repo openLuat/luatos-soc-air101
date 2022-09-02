@@ -74,16 +74,20 @@ SECTIONS
   *(.rodata*)
   *(.rodata.*)
   *(.rodata.str1.4)
+  . = ALIGN(0x4) ;
+  __ctor_start__ = .;
   KEEP (*crtbegin.o(.ctors))
   KEEP (*crtbegin?.o(.ctors))
   KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
   KEEP (*(SORT(.ctors.*)))
   KEEP (*(.ctors))
+  __ctor_end__ = .;
   KEEP (*crtbegin.o(.dtors))
   KEEP (*crtbegin?.o(.dtors))
   KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
   KEEP (*(SORT(.dtors.*)))
   KEEP (*(.dtors))
+  __dtor_end__ = .;
   . = ALIGN(0x4) ;
   __erodata = .;
  } > REGION_RODATA
@@ -99,11 +103,9 @@ SECTIONS
   __sdata = . ;
   __data_start__ = . ;
   data_start = . ;
-  *(.ram_run)
   *(.got.plt)
   *(.got)
   *(.gnu.linkonce.r*)
-  *(.ram_run)
   *(.data)
   *(.data*)
   *(.data1)
@@ -112,7 +114,6 @@ SECTIONS
   *(.data1)
   *(.gcc_except_table)
   *(.gcc_except_table*)
- 
   __start_init_call = .;
   *(.initcall.init)
   __stop_init_call = .;
@@ -148,8 +149,6 @@ SECTIONS
   __end = . ;
   end = . ;
   __bss_end__ = .;
-  . = ALIGN(0x4) ;
-  *(.heap4)
  } > REGION_BSS
  ._user_heap : {
   . = ALIGN(0x4) ;
