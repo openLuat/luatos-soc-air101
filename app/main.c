@@ -123,10 +123,22 @@ void UserMain(void){
 	tls_uart_port_init(0, &opt, 0);
 
 	struct tm tblock = {0};
-	tblock.tm_mday = 1;
-	tblock.tm_mon = 0;
-	tblock.tm_year = 70;
-	tls_set_rtc(&tblock);
+	
+	uint32_t rtc_ctrl1 = tls_reg_read32(HR_PMU_RTC_CTRL1);
+	// 如果RTC计数少于1, 那肯定是第一次开机, 启动RTC并设置到1970年.
+	// uint32_t rtc_ctrl2 = tls_reg_read32(HR_PMU_RTC_CTRL2);
+	if (0x2 > rtc_ctrl1) {
+		tblock.tm_mday = 1;
+		tblock.tm_mon = 0;
+		tblock.tm_year = 70;
+		tls_set_rtc(&tblock);
+	}
+	else {
+		// 只需要确保RTC启用
+		int ctrl2  = tls_reg_read32(HR_PMU_RTC_CTRL2);		/* enable */
+		ctrl2 |= (1 << 16);
+		tls_reg_write32(HR_PMU_RTC_CTRL2, ctrl2);
+	}
 
 	// 完全禁用jtag
 	//u32 value = tls_reg_read32(HR_CLK_SEL_CTL);
