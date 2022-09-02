@@ -526,7 +526,7 @@ int adc_get_interTemp(void)
 	return adc_temp();
 }
 
-int adc_get_inputVolt(u8 channel)
+int adc_get_inputVolt(u8 channel, int* origin)
 {
 	int average = 0;
 	double voltage = 0.0;
@@ -544,7 +544,8 @@ int adc_get_inputVolt(u8 channel)
 
 	waitForAdcDone();
 	average = tls_read_adc_result();
-	signedToUnsignedData(&average); 	
+	signedToUnsignedData(&average);
+	*origin = average; 	
 	tls_adc_stop(0);
 
 	if ((channel == 8) || (channel == 9))

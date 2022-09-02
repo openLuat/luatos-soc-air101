@@ -270,7 +270,7 @@ int adc_get_interTemp(void);
  *
  * @note            None
  */
-int adc_get_inputVolt(u8 channel);
+int adc_get_inputVolt(u8 channel, int* origin);
 
 /**
  * @brief           This function is used to read internal voltage.

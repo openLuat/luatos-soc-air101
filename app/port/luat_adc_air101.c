@@ -42,27 +42,28 @@ int luat_adc_read(int ch, int *val, int *val2)
     switch (ch)
     {
     case 0:
-        voltage = adc_get_inputVolt(ch);
+        voltage = adc_get_inputVolt(ch, val);
         break;
     case 1:
-        voltage = adc_get_inputVolt(ch);
+        voltage = adc_get_inputVolt(ch, val);
         break;
     case 2:
-        voltage = adc_get_inputVolt(ch);
+        voltage = adc_get_inputVolt(ch, val);
         break;
     case 3:
-        voltage = adc_get_inputVolt(ch);
+        voltage = adc_get_inputVolt(ch, val);
         break;
     case 10:
         voltage = adc_temp();
+        *val = voltage;
         return 0;
     case 11:
         voltage = adc_get_interVolt();
+        *val = voltage;
         return 0;
     default:
         return 1;
     }
-    *val = voltage;
     *val2 = voltage;
     if (*val < 46134) {
         *val2 = 0;
@@ -70,9 +71,9 @@ int luat_adc_read(int ch, int *val, int *val2)
     else if (*val > 123405) {
         *val2 = 2300;
     }
-    else {
-        *val2 = (int)((double)(*val - 46134) / (double)(32.196));
-    }
+    // else {
+    //     *val2 = (int)((double)(*val - 46134) / (double)(32.196));
+    // }
     return 0;
 }
 
