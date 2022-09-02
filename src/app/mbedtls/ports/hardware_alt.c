@@ -37,7 +37,10 @@ int mbedtls_hardware_poll( void *data, unsigned char *output, size_t len, size_t
     tls_crypto_random_bytes(output, len);
     tls_crypto_random_stop();
 #else
-    random_get_bytes(output, len);
+	{
+		extern int random_get_bytes(void *buf, size_t len);
+	    random_get_bytes(output, len);
+	}
 #endif
     *olen = len;
     return 0;
