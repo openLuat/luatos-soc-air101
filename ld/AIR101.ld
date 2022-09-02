@@ -103,9 +103,11 @@ SECTIONS
   __sdata = . ;
   __data_start__ = . ;
   data_start = . ;
+  *(.ram_run)
   *(.got.plt)
   *(.got)
   *(.gnu.linkonce.r*)
+  *(.ram_run)
   *(.data)
   *(.data*)
   *(.data1)
