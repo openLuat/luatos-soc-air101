@@ -107,7 +107,6 @@ SECTIONS
   *(.got.plt)
   *(.got)
   *(.gnu.linkonce.r*)
-  *(.ram_run)
   *(.data)
   *(.data*)
   *(.data1)

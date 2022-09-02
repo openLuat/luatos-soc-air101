@@ -495,6 +495,7 @@ int cal_voltage(double vol)
 	}
 	else
 	{
+		return (int)((double)(vol - 46134) / (double)(32.196));
 		voltage = ((double)vol - (double)adc_offset)/4.0;
 		voltage = 1.196 + voltage*(126363/1000.0)/1000000;
 		
