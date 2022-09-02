@@ -56,24 +56,17 @@ int luat_adc_read(int ch, int *val, int *val2)
     case 10:
         voltage = adc_temp();
         *val = voltage;
+        *val2 = voltage;
         return 0;
     case 11:
         voltage = adc_get_interVolt();
         *val = voltage;
+        *val2 = voltage;
         return 0;
     default:
         return 1;
     }
     *val2 = voltage;
-    if (*val < 46134) {
-        *val2 = 0;
-    }
-    else if (*val > 123405) {
-        *val2 = 2300;
-    }
-    // else {
-    //     *val2 = (int)((double)(*val - 46134) / (double)(32.196));
-    // }
     return 0;
 }
 
