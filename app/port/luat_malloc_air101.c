@@ -43,6 +43,44 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 
 //------------------------------------------------
 // ---------- 管理 LuaVM所使用的内存----------------
+#ifdef LUAT_USE_TLSF
+#include "tlsf.h"
+
+extern tlsf_t luavm_tlsf;
+extern pool_t luavm_tlsf_ext;
+
+void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+    return tlsf_realloc(luavm_tlsf, ptr, nsize);
+}
+
+typedef struct walker_ctx
+{
+    size_t total;
+    size_t used;
+}walker_ctx_t;
+
+static void luat_tlsf_walker(void* ptr, size_t size, int used, void* user) {
+    walker_ctx_t *ctx = (walker_ctx_t*)user;
+    ctx->total = ctx->total + size;
+    if (used != 0)
+        ctx->used = ctx->used + size;
+    //printf(">> %p %04X %d\n", ptr, size, used);
+}
+
+void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
+    pool_t pool = tlsf_get_pool(luavm_tlsf);
+    walker_ctx_t ctx = {0};
+	tlsf_walk_pool(pool, luat_tlsf_walker, &ctx);
+    if (luavm_tlsf_ext) {
+        tlsf_walk_pool(luavm_tlsf_ext, luat_tlsf_walker, &ctx);
+    }
+    *total = ctx.total;
+    *used = ctx.used;
+    *max_used = ctx.used;
+    //printf("why ??\n");
+}
+
+#else
 void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
     if (0) {
         if (ptr) {
@@ -99,5 +137,5 @@ void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
 	*max_used = bstatsmaxget();
     *total = curalloc + totfree;
 }
-
+#endif
 //-----------------------------------------------------------------------------

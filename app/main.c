@@ -38,30 +38,48 @@
  __attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - 128*1024) / 8];
 #endif
 
+#ifdef LUAT_USE_TLSF
+#include "tlsf.h"
+tlsf_t luavm_tlsf;
+pool_t luavm_tlsf_ext;
+#endif
 
 static void luat_start(void *sdata){
 	// 毕竟sram还是快很多的, 优先sram吧
+#ifndef LUAT_USE_TLSF
 	bpool((void*)0x20028000, 128*1024);
+#else
+	luavm_tlsf = tlsf_create_with_pool((void*)0x20028000, 128*1024);
+#endif
+
 #ifdef LUAT_USE_PSRAM
 	char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
 	char* psram_ptr = (void*)0x30010000;
 	LLOGD("check psram ...");
 	memcpy(psram_ptr, test, 4);
 	if (memcmp(psram_ptr, test, 4)) {
-		LLOGW("psram is enable, but can't access!!");
+		LLOGE("psram is enable, but can't access!!");
 	}
 	else {
 		LLOGD("psram is ok");
 		memset(psram_ptr, 0, 1024);
 		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
+		#ifdef LUAT_USE_TLSF
+		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - 128*1024);
+		#else
 		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
+		#endif
 		luat_main();
 		return;
 	}
 #else
 	// 暂时还是放在这里吧, 考虑改到0x20028000之前
 	#if (LUAT_HEAP_SIZE > 128*1024)
+#ifndef LUAT_USE_TLSF
 	bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
+#else
+	luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - 128*1024);
+#endif
 	#endif
 #endif
 	luat_main();
