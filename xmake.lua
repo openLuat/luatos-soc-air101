@@ -385,6 +385,9 @@ target("air10x")
     
     add_includedirs(luatos.."components/mempool/tlsf3")
     add_files(luatos.."components/mempool/tlsf3/*.c")
+    
+    add_includedirs(luatos.."components/serialization/protobuf")
+    add_files(luatos.."components/serialization/protobuf/*.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"

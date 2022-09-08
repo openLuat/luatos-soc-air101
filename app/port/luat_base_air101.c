@@ -197,6 +197,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_MINIZ
   {"miniz", luaopen_miniz},
 #endif
+#ifdef LUAT_USE_PROTOBUF
+  {"protobuf", luaopen_protobuf},
+#endif
   {NULL, NULL}
 };
 
