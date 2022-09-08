@@ -53,31 +53,14 @@ void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr,
     return tlsf_realloc(luavm_tlsf, ptr, nsize);
 }
 
-typedef struct walker_ctx
-{
-    size_t total;
-    size_t used;
-}walker_ctx_t;
-
-static void luat_tlsf_walker(void* ptr, size_t size, int used, void* user) {
-    walker_ctx_t *ctx = (walker_ctx_t*)user;
-    ctx->total = ctx->total + size;
-    if (used != 0)
-        ctx->used = ctx->used + size;
-    //printf(">> %p %04X %d\n", ptr, size, used);
-}
-
 void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
-    pool_t pool = tlsf_get_pool(luavm_tlsf);
-    walker_ctx_t ctx = {0};
-	tlsf_walk_pool(pool, luat_tlsf_walker, &ctx);
+    *total = 0;
+    *used = 0;
+    *max_used = 0;
+    tlsf_stat(tlsf_get_pool(luavm_tlsf), total, used, max_used);
     if (luavm_tlsf_ext) {
-        tlsf_walk_pool(luavm_tlsf_ext, luat_tlsf_walker, &ctx);
+        tlsf_stat(luavm_tlsf_ext, total, used, max_used);
     }
-    *total = ctx.total;
-    *used = ctx.used;
-    *max_used = ctx.used;
-    //printf("why ??\n");
 }
 
 #else
