@@ -251,10 +251,13 @@ const char* luat_os_bsp(void)
 #endif
 }
 
+#include "wm_watchdog.h"
 void luat_os_reboot(int code)
 {
-   tls_sys_reset();
+  tls_sys_set_reboot_reason(REBOOT_REASON_ACTIVE);
+  tls_sys_reset();
 }
+
 
 static void pmu_timer0_irq(u8 *arg){}
 void luat_os_standy(int timeout)
