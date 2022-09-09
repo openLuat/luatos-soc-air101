@@ -372,6 +372,9 @@ target("air10x")
     add_includedirs(luatos.."components/common",{public = true})
     add_files(luatos.."components/common/*.c")
 
+    -- iotauth
+    add_files(luatos.."components/iotauth/luat_lib_iotauth.c")
+
     -- -- network
     -- add_includedirs(luatos.."components/network/adapter",{public = true})
     -- add_files(luatos.."components/network/adapter/*.c")

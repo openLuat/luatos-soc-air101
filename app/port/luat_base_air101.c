@@ -200,6 +200,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_PROTOBUF
   {"protobuf", luaopen_protobuf},
 #endif
+#ifdef LUAT_USE_IOTAUTH
+  {"iotauth", luaopen_iotauth},
+#endif
   {NULL, NULL}
 };
 
