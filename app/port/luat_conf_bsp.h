@@ -101,6 +101,7 @@
 // #define LUAT_USE_NIMBLE 1
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
+#define LUAT_USE_PROTOBUF 1
 
 //---------------------
 // UI

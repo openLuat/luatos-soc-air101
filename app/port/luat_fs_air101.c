@@ -41,6 +41,11 @@ void luat_lv_fs_init(void);
 void lv_split_jpeg_init(void);
 #endif
 
+// 调整LUADB文件系统大小, 必须是 48+64*N, N为整数. 例如 48+64, 48+128
+#ifndef LUAT_LUADB_ZONE_SIZE
+#define LUAT_LUADB_ZONE_SIZE (48)
+#endif
+
 int luat_fs_init(void) {
     //luat_timer_mdelay(1000);
 #ifdef AIR103
@@ -68,11 +73,11 @@ int luat_fs_init(void) {
     // else {
         //LLOGI("Using LuaDB as script zone format %p", ptr);
 #ifdef AIR103
-        lfs_addr = 0x0F0000;
-        lfs_size_kb = 48;
+        lfs_addr = 0x0FC000 - (LUAT_LUADB_ZONE_SIZE*1024);
+        lfs_size_kb = LUAT_LUADB_ZONE_SIZE;
 #else
-        lfs_addr = 0x1F0000;
-        lfs_size_kb = 48;
+        lfs_addr = 0x1FC000 - (LUAT_LUADB_ZONE_SIZE*1024);
+        lfs_size_kb = LUAT_LUADB_ZONE_SIZE;
 #endif
         kv_addr = luadb_addr - kv_size_kb*1024U;
     // }
