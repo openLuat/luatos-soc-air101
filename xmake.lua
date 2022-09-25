@@ -463,16 +463,20 @@ target("air10x")
                 if AIR10X_FLASH_FS_REGION_SIZE then
                     print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
-                    local LVGL_CONF = info_data:gsub("\"size\" : 112\n","\"size\" : "..AIR10X_FLASH_FS_REGION_SIZE.."\n")
-                    local offset,LVGL_JSON
+                    import("core.base.json")
+                    local data = json.decode(info_data)
+                    data.rom.fs.script.size = tonumber(AIR10X_FLASH_FS_REGION_SIZE)
                     if TARGET_NAME == "AIR101" then
                         offset = string.format("%X",0x81FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
-                        LVGL_JSON = LVGL_CONF:gsub("\"offset\" : \"81E0000\",\n","\"offset\" : \""..offset.."\",\n")
+                        data.download.script_addr = offset
+                        data.rom.fs.script.offset = offset
                     else
                         offset = string.format("%X",0x80FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
-                        LVGL_JSON = LVGL_CONF:gsub("\"offset\" : \"80E0000\",\n","\"offset\" : \""..offset.."\",\n")
+                        data.download.script_addr = offset
+                        data.rom.fs.script.offset = offset
                     end
-                    io.writefile("./soc_tools/info.json", LVGL_JSON)
+                    io.writefile("./soc_tools/info.json", json.encode(data))
+                    print(json.encode(data))
                 else
                     print("AIR10X_FLASH_FS_REGION_SIZE", "default", 112)
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
