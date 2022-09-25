@@ -196,6 +196,28 @@ target("miniz")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+target("eink")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+
+    add_files(luatos.."components/eink/*.c")
+    add_files(luatos.."components/epaper/*.c")
+    remove_files(luatos.."components/epaper/GUI_Paint.c")
+    
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+    add_includedirs(luatos.."components/eink")
+    add_includedirs(luatos.."components/epaper")
+    add_includedirs(luatos.."components/u8g2")
+    add_includedirs(luatos.."components/gtfont")
+    add_includedirs(luatos.."components/qrcode")
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -241,6 +263,7 @@ target("air10x")
     -- add_deps("wmarch")
     add_deps("blehost")
     add_deps("u8g2")
+    add_deps("eink")
 
     -- add files
     add_files("app/*.c")
@@ -279,9 +302,7 @@ target("air10x")
     add_files(luatos.."components/sfd/*.c")
     add_files(luatos.."components/nr_micro_shell/*.c")
     add_files(luatos.."components/luf/*.c")
-    add_files(luatos.."components/eink/*.c")
-    add_files(luatos.."components/epaper/*.c")
-    remove_files(luatos.."components/epaper/GUI_Paint.c")
+
     add_files(luatos.."components/iconv/*.c")
     add_files(luatos.."components/lfs/*.c")
     add_files(luatos.."components/lua-cjson/*.c")
@@ -298,8 +319,6 @@ target("air10x")
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
 
-    add_includedirs(luatos.."components/eink")
-    add_includedirs(luatos.."components/epaper")
     add_includedirs(luatos.."components/iconv")
     add_includedirs(luatos.."components/lfs")
     add_includedirs(luatos.."components/lua-cjson")
@@ -316,6 +335,10 @@ target("air10x")
 
     add_files(luatos.."components/cjson/*.c")
     add_includedirs(luatos.."components/cjson")
+    
+    -- eink
+    add_includedirs(luatos.."components/eink")
+    add_includedirs(luatos.."components/epaper")
 
     -- gtfont
     add_includedirs(luatos.."components/gtfont")
