@@ -12,8 +12,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-static char trng_init = 0;
-
 int luat_crypto_trng(char* buff, size_t len) {
     tls_crypto_random_init(0, CRYPTO_RNG_SWITCH_32);
     vTaskDelay(1);
