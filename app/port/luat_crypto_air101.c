@@ -9,14 +9,16 @@
 #define LUAT_LOG_TAG "crypto"
 #include "luat_log.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 static char trng_init = 0;
 
 int luat_crypto_trng(char* buff, size_t len) {
-    if (trng_init == 0) {
-        trng_init = 1;
-        tls_crypto_random_init(0, CRYPTO_RNG_SWITCH_32);
-    }
+    tls_crypto_random_init(0, CRYPTO_RNG_SWITCH_32);
+    vTaskDelay(1);
     tls_crypto_random_bytes_range(buff, len, 256);
+    tls_crypto_random_stop();
     return 0;
 }
 
