@@ -50,6 +50,18 @@ extern tlsf_t luavm_tlsf;
 extern pool_t luavm_tlsf_ext;
 
 void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+    if (ptr == NULL && nsize == 0)
+        return NULL;
+#ifdef LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP
+    if (ptr != NULL) {
+        uint32_t ptrv = (uint32_t)ptr;
+        if (ptrv >= 0x08000000 && ptrv < 0x08200000) {
+            //LLOGD("??? %p %d %d", ptr, osize, nsize);
+            if (nsize == 0)
+                return NULL;
+        }
+    }
+#endif
     return tlsf_realloc(luavm_tlsf, ptr, nsize);
 }
 
@@ -65,6 +77,17 @@ void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
 
 #else
 void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+    if (ptr == NULL && nsize == 0)
+        return NULL;
+#ifdef LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP
+    if (ptr != NULL) {
+        uint32_t ptrv = (uint32_t)ptr;
+        if (ptrv >= 0x08000000 && ptrv < 0x08200000) {
+            // LLOGD("??? %p %d %d", ptr, osize, nsize);
+            return NULL;
+        }
+    }
+#endif
     if (0) {
         if (ptr) {
             if (nsize) {
@@ -95,20 +118,8 @@ void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr,
     	}
         return ptmp;
     }
-// #if 0
-#ifdef LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP
-    if (ptr != NULL) {
-        uint32_t ptrv = (uint32_t)ptr;
-        if (ptrv >= 0X40000000U) {
-            // nop 无需释放
-        }
-        else {
-            brel(ptr);
-        }
-    }
-#else
+
     brel(ptr);
-#endif
     return NULL;
 }
 
