@@ -3,13 +3,18 @@
 
 #include "wm_pmu.h"
 #include "wm_regs.h"
+#include "wm_timer.h"
 
 #define LUAT_LOG_TAG "pm"
 #include "luat_log.h"
 
+extern u8 u64_tick_timer_id;
+
 int luat_pm_request(int mode) {
     if (mode == LUAT_PM_SLEEP_MODE_LIGHT) {
+        tls_timer_stop(u64_tick_timer_id);
         tls_pmu_sleep_start();
+        tls_timer_start(u64_tick_timer_id);
         return 0;
     }
     else if (mode == LUAT_PM_SLEEP_MODE_DEEP || mode == LUAT_PM_SLEEP_MODE_STANDBY) {
