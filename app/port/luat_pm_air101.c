@@ -8,13 +8,11 @@
 #define LUAT_LOG_TAG "pm"
 #include "luat_log.h"
 
-extern u8 u64_tick_timer_id;
-
 int luat_pm_request(int mode) {
     if (mode == LUAT_PM_SLEEP_MODE_LIGHT) {
-        tls_timer_stop(u64_tick_timer_id);
+        tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
         tls_pmu_sleep_start();
-        tls_timer_start(u64_tick_timer_id);
+        tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
         return 0;
     }
     else if (mode == LUAT_PM_SLEEP_MODE_DEEP || mode == LUAT_PM_SLEEP_MODE_STANDBY) {
