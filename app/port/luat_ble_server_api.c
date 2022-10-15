@@ -185,6 +185,7 @@ static int l_ble_chr_write_cb(lua_State* L, void* ptr) {
         lua_pushlstring(L, wmsg->buff, wmsg->len);
         lua_call(L, 3, 0);
     }
+    luat_heap_free(wmsg);
     return 0;
 }
 
