@@ -206,6 +206,10 @@ void wm_psram_config(uint8_t numsel)
 {
 	switch(numsel)
 	{
+        //------------------------------------------------------
+        // --------------- by wendal, FIXED, DONOT MODIFY ------
+        // numsel = 0 and numsel = 1 , using FIXED pin
+        //------------------------------------------------------
 		case 0:
 			tls_io_cfg_set(WM_IO_PB_00, WM_IO_OPTION4);/*CK*/
 			tls_io_cfg_set(WM_IO_PB_01, WM_IO_OPTION4);/*CS*/
@@ -216,14 +220,27 @@ void wm_psram_config(uint8_t numsel)
 			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);			
 			break;
 			
-		case 1://air103
+		case 1: //air103, by wendal, FIXED, DONOT MODIFY
+			tls_io_cfg_set(WM_IO_PA_15, WM_IO_OPTION1);/*CK*/
+			tls_io_cfg_set(WM_IO_PB_27, WM_IO_OPTION1);/*CS*/
+			tls_io_cfg_set(WM_IO_PB_02, WM_IO_OPTION4);/*D0*/
+			tls_io_cfg_set(WM_IO_PB_03, WM_IO_OPTION4);/*D1*/
+			tls_io_cfg_set(WM_IO_PB_04, WM_IO_OPTION4);/*D2*/
+			tls_io_cfg_set(WM_IO_PB_05, WM_IO_OPTION4);/*D3*/
+			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);
+			break;
+        // --------------- by wendal, FIXED, DONOT MODIFY ------
+        //------------------------------------------------------
+
+        // allow change for other chips
+		case 2://w861
 			tls_io_cfg_set(WM_IO_PA_15, WM_IO_OPTION1);/*CK*/
 			tls_io_cfg_set(WM_IO_PB_27, WM_IO_OPTION1);/*CS*/
 			tls_io_cfg_set(WM_IO_PB_28, WM_IO_OPTION1);/*D0*/
 			tls_io_cfg_set(WM_IO_PB_29, WM_IO_OPTION1);/*D1*/
 			tls_io_cfg_set(WM_IO_PB_30, WM_IO_OPTION1);/*D2*/
 			tls_io_cfg_set(WM_IO_PB_31, WM_IO_OPTION1);/*D3*/
-			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);			
+			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);
 			break;
 
 		default:
