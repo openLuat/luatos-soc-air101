@@ -413,7 +413,14 @@ target("air10x")
     add_files(luatos.."components/mempool/tlsf3/*.c")
     
     add_includedirs(luatos.."components/serialization/protobuf")
+    add_includedirs("src/bt/blehost/nimble/host/services/gap/include")
+    add_includedirs("src/bt/blehost/nimble/host/services/gatt/include")
     add_files(luatos.."components/serialization/protobuf/*.c")
+
+    
+    
+    add_includedirs(luatos.."components/nimble/inc")
+    add_files(luatos.."components/nimble/src/*.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
