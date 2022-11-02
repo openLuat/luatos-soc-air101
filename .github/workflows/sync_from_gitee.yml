@@ -17,7 +17,8 @@ jobs:
     - name: sync from gitee
       run: |
         git remote add gitee https://gitee.com/openLuat/luatos-soc-air101.git
-        git pull gitee master
+        sudo sh -c "curl https://raw.githubusercontent.com/kadwanev/retry/master/retry -o /usr/local/bin/retry && chmod +x /usr/local/bin/retry"
+        retry 'git pull gitee master'
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
