@@ -1038,7 +1038,7 @@
  *
  * This enables support for PKCS#1 v1.5 operations.
  */
-// #define MBEDTLS_PKCS1_V15
+#define MBEDTLS_PKCS1_V15
 
 /**
  * \def MBEDTLS_PKCS1_V21
@@ -1694,7 +1694,7 @@
  *          library/pkcs5.c
  *          library/pkparse.c
  */
-// #define MBEDTLS_ASN1_PARSE_C
+#define MBEDTLS_ASN1_PARSE_C
 
 /**
  * \def MBEDTLS_ASN1_WRITE_C
@@ -2229,7 +2229,7 @@
  *
  * This modules adds support for decoding / parsing PEM files.
  */
-// #define MBEDTLS_PEM_PARSE_C
+#define MBEDTLS_PEM_PARSE_C
 
 /**
  * \def MBEDTLS_PEM_WRITE_C
@@ -2261,7 +2261,7 @@
  *
  * Uncomment to enable generic public key wrappers.
  */
-// #define MBEDTLS_PK_C
+#define MBEDTLS_PK_C
 
 /**
  * \def MBEDTLS_PK_PARSE_C
@@ -2276,7 +2276,7 @@
  *
  * Uncomment to enable generic public key parse functions.
  */
-// #define MBEDTLS_PK_PARSE_C
+#define MBEDTLS_PK_PARSE_C
 
 /**
  * \def MBEDTLS_PK_WRITE_C
@@ -2384,7 +2384,7 @@
  *
  * Requires: MBEDTLS_BIGNUM_C, MBEDTLS_OID_C
  */
-// #define MBEDTLS_RSA_C
+#define MBEDTLS_RSA_C
 
 /**
  * \def MBEDTLS_SHA1_C

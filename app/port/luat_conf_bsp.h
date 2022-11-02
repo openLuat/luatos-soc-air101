@@ -78,6 +78,8 @@
 // zlib压缩,更快更小的实现
 #define LUAT_USE_MINIZ 1
 
+#define LUAT_USE_RSA 1
+
 // // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
 // #define LUAT_USE_TLSF 1
 

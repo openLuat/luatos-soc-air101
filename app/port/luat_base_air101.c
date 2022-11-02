@@ -203,6 +203,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_IOTAUTH
   {"iotauth", luaopen_iotauth},
 #endif
+#ifdef LUAT_USE_RSA
+  {"rsa", luaopen_rsa},
+#endif
   {NULL, NULL}
 };
 
