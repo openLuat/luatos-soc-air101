@@ -46,26 +46,32 @@ LUAT_RET luat_thread_delete(luat_thread_t* thread) {
 	return LUAT_ERR_FAIL;
 }
 
-LUAT_RET luat_queue_create(luat_rtos_queue_t* queue, size_t msgcount, size_t msgsize) {
-	queue->userdata = (tls_os_queue_t *)luat_heap_malloc(sizeof(tls_os_queue_t));
-	return tls_os_queue_create((tls_os_queue_t **)&(queue->userdata), msgcount);
+
+
+void *luat_queue_create(size_t msgcount, size_t msgsize){
+	tls_os_queue_t *queue = (tls_os_queue_t *)luat_heap_malloc(sizeof(tls_os_queue_t));
+	tls_os_queue_create(&queue, msgcount);
+	return queue;
 }
 
-LUAT_RET luat_queue_send(luat_rtos_queue_t*   queue, void* msg,  size_t msg_size, size_t timeout) {
-	return tls_os_queue_send((tls_os_queue_t *)(queue->userdata), msg, msg_size);
+LUAT_RET luat_queue_send(void*   queue, void* msg,  size_t msg_size, size_t timeout){
+	return tls_os_queue_send((tls_os_queue_t *)queue, msg, msg_size);
 }
 
-LUAT_RET luat_queue_recv(luat_rtos_queue_t*   queue, void* msg, size_t msg_size, size_t timeout) {
-	return tls_os_queue_receive((tls_os_queue_t *)(queue->userdata), (void **) &msg, msg_size, timeout);
+LUAT_RET luat_queue_recv(void*   queue, void* msg, size_t msg_size, size_t timeout){
+	return tls_os_queue_receive((tls_os_queue_t *)queue, (void **) &msg, msg_size, timeout);
 }
 
-LUAT_RET luat_queue_reset(luat_rtos_queue_t*   queue) {
-	return tls_os_queue_flush((tls_os_queue_t *)(queue->userdata));
+LUAT_RET luat_queue_reset(void*   queue){
+	return tls_os_queue_flush((tls_os_queue_t *)queue);
 }
 
-LUAT_RET luat_queue_delete(luat_rtos_queue_t*   queue) {
-	tls_os_queue_delete((tls_os_queue_t *)(queue->userdata));
-	luat_heap_free(queue->userdata);
+LUAT_RET luat_queue_delete(void*   queue){
+	return tls_os_queue_delete((tls_os_queue_t *)queue);
+}
+
+LUAT_RET luat_queue_free(void*   queue){
+	luat_heap_free((tls_os_queue_t *)queue);
 	return 0;
 }
 
