@@ -14,7 +14,7 @@ int luat_i2c_exist(int id) {
     return id == 0;
 }
 
-int luat_i2c_setup(int id, int speed, int slaveaddr) {
+int luat_i2c_setup(int id, int speed) {
     //if (luat_i2c_exist(id) != 0) return -1;
     if (speed == 0)
         speed = 100 * 1000; // SLOW
