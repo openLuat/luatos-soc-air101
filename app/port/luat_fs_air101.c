@@ -95,11 +95,6 @@ int luat_fs_init(void) {
 		.mount_point = "/"
 	};
 	luat_fs_mount(&conf);
-
-    #ifdef LUAT_USE_OTA
-    //OTA检测升级
-    luat_ota(luadb_addr);
-    #endif
     
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
@@ -119,9 +114,3 @@ int luat_fs_init(void) {
 
 	return 0;
 }
-
-#ifdef LUAT_USE_OTA
-int luat_flash_write(uint32_t addr, uint8_t * buf, uint32_t len){
-    return tls_fls_write(addr, buf, len);
-}
-#endif
