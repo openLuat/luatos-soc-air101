@@ -5,6 +5,7 @@ set_xmakever("2.6.3")
 add_rules("mode.debug", "mode.release")
 
 local AIR10X_VERSION
+local VM_64BIT = nil
 local luatos = "../LuatOS/"
 local TARGET_NAME
 local AIR10X_FLASH_FS_REGION_SIZE
@@ -231,6 +232,7 @@ target("air10x")
         local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
         if LVGL_CONF then target:add("deps", "lvgl") end
         target:add("deps", "miniz")
+        VM_64BIT = conf_data:find("\r#define LUAT_CONF_VM_64bit") or conf_data:find("\n#define LUAT_CONF_VM_64bit")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("\r#define AIR101") or custom_data:find("\n#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
@@ -470,7 +472,7 @@ target("air10x")
                 end
             end
             if path7z then
-                if AIR10X_FLASH_FS_REGION_SIZE then
+                if AIR10X_FLASH_FS_REGION_SIZE or VM_64BIT then
                     print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
                     import("core.base.json")
@@ -485,12 +487,16 @@ target("air10x")
                         data.download.script_addr = offset
                         data.rom.fs.script.offset = offset
                     end
+                    if VM_64BIT then
+                        data.script.bitw = 64
+                    end
                     io.writefile("./soc_tools/info.json", json.encode(data))
                     print(json.encode(data))
                 else
                     print("AIR10X_FLASH_FS_REGION_SIZE", "default", 112)
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
+
                 os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
                 os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
