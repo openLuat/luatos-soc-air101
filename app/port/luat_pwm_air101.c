@@ -111,6 +111,10 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		case 30:
 			wm_pwm0_config(WM_IO_PA_02);
 			break;
+		case 40:
+			wm_pwm0_config(WM_IO_PB_19);
+			break;
+
 		case 01:
 			wm_pwm1_config(WM_IO_PB_01);
 			break;
@@ -123,6 +127,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		case 31:
 			wm_pwm1_config(WM_IO_PA_03);
 			break;
+
 		case 02:
 			wm_pwm2_config(WM_IO_PB_02);
 			break;
@@ -135,6 +140,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		case 32:
 			wm_pwm2_config(WM_IO_PB_24);
 			break;
+
 		case 03:
 			wm_pwm3_config(WM_IO_PB_03);
 			break;
@@ -147,6 +153,7 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		case 33:
 			wm_pwm3_config(WM_IO_PB_25);
 			break;
+
 		case 04:
 			wm_pwm4_config(WM_IO_PA_07);
 			break;
@@ -158,6 +165,9 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 			break;
 		case 34:
 			wm_pwm4_config(WM_IO_PB_26);
+			break;
+		case 44:
+			wm_pwm4_config(WM_IO_PA_04);
 			break;
 // #endif
 		// TODO 再选一组PWM0~PWM4
@@ -270,7 +280,7 @@ int luat_pwm_capture(int channel,int freq) {
 		case 10:
 			channel = channel%10;
 			memset(pwmDmaCap0, 0, sizeof(pwmDmaCap0)/sizeof(char));
-			wm_pwm0_config(WM_IO_PB_19);
+			wm_pwm0_config(WM_IO_PA_10);
 			tls_pwm_stop(channel);
 			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
 			DmaDesc.src_addr = HR_PWM_CAPDAT;
@@ -285,7 +295,7 @@ int luat_pwm_capture(int channel,int freq) {
 			return 0;
 		case 20:
 			memset(pwmDmaCap0, 0, sizeof(pwmDmaCap0)/sizeof(char));
-			wm_pwm0_config(WM_IO_PA_02);
+			wm_pwm0_config(WM_IO_PB_12);
 			tls_pwm_stop(channel);
 			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
 			DmaDesc.src_addr = HR_PWM_CAPDAT;
@@ -301,7 +311,7 @@ int luat_pwm_capture(int channel,int freq) {
 		case 30:
 			channel = channel%10;
 			memset(pwmDmaCap0, 0, sizeof(pwmDmaCap0)/sizeof(char));
-			wm_pwm0_config(WM_IO_PA_10);
+			wm_pwm0_config(WM_IO_PA_02);
 			tls_pwm_stop(channel);
 			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
 			DmaDesc.src_addr = HR_PWM_CAPDAT;
@@ -317,7 +327,7 @@ int luat_pwm_capture(int channel,int freq) {
 		case 40:
 			channel = channel%10;
 			memset(pwmDmaCap0, 0, sizeof(pwmDmaCap0)/sizeof(char));
-			wm_pwm0_config(WM_IO_PB_12);
+			wm_pwm0_config(WM_IO_PB_19);
 			tls_pwm_stop(channel);
 			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
 			DmaDesc.src_addr = HR_PWM_CAPDAT;
@@ -330,23 +340,8 @@ int luat_pwm_capture(int channel,int freq) {
 			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
 			tls_pwm_start(channel); 
 			return 0;
+
 		case 04:
-			channel = channel%10;
-			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
-			wm_pwm4_config(WM_IO_PA_04);
-			tls_pwm_stop(channel);
-			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
-			DmaDesc.src_addr = HR_PWM_CAPDAT;
-			DmaDesc.dest_addr = (unsigned int)pwmDmaCap4;
-			DmaDesc.dma_ctrl = TLS_DMA_DESC_CTRL_DEST_ADD_INC | TLS_DMA_DESC_CTRL_BURST_SIZE1 | TLS_DMA_DESC_CTRL_DATA_SIZE_WORD | TLS_DMA_DESC_CTRL_TOTAL_BYTES(400);
-			DmaDesc.valid = TLS_DMA_DESC_VALID;
-			DmaDesc.next = NULL;
-			tls_dma_start(dmaCh, &DmaDesc, 0);
-			tls_dma_irq_register(dmaCh, pwm_dma_callback, (void*)channel, TLS_DMA_IRQ_TRANSFER_DONE);
-			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
-			tls_pwm_start(channel); 
-			return 0;
-		case 14:
 			channel = channel%10;
 			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
 			wm_pwm4_config(WM_IO_PA_07);
@@ -362,7 +357,7 @@ int luat_pwm_capture(int channel,int freq) {
 			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
 			tls_pwm_start(channel); 
 			return 0;
-		case 24:
+		case 14:
 			channel = channel%10;
 			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
 			wm_pwm4_config(WM_IO_PA_14);
@@ -378,7 +373,7 @@ int luat_pwm_capture(int channel,int freq) {
 			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
 			tls_pwm_start(channel); 
 			return 0;
-		case 34:
+		case 24:
 			channel = channel%10;
 			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
 			wm_pwm4_config(WM_IO_PB_16);
@@ -394,10 +389,26 @@ int luat_pwm_capture(int channel,int freq) {
 			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
 			tls_pwm_start(channel); 
 			return 0;
-		case 44:
+		case 34:
 			channel = channel%10;
 			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
 			wm_pwm4_config(WM_IO_PB_26);
+			tls_pwm_stop(channel);
+			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
+			DmaDesc.src_addr = HR_PWM_CAPDAT;
+			DmaDesc.dest_addr = (unsigned int)pwmDmaCap4;
+			DmaDesc.dma_ctrl = TLS_DMA_DESC_CTRL_DEST_ADD_INC | TLS_DMA_DESC_CTRL_BURST_SIZE1 | TLS_DMA_DESC_CTRL_DATA_SIZE_WORD | TLS_DMA_DESC_CTRL_TOTAL_BYTES(400);
+			DmaDesc.valid = TLS_DMA_DESC_VALID;
+			DmaDesc.next = NULL;
+			tls_dma_start(dmaCh, &DmaDesc, 0);
+			tls_dma_irq_register(dmaCh, pwm_dma_callback, (void*)channel, TLS_DMA_IRQ_TRANSFER_DONE);
+			tls_pwm_cap_init(channel, sysclk.apbclk*UNIT_MHZ/256/freq, DISABLE, WM_PWM_CAP_DMA_INT);
+			tls_pwm_start(channel); 
+			return 0;
+		case 44:
+			channel = channel%10;
+			memset(pwmDmaCap4, 0, sizeof(pwmDmaCap4)/sizeof(char));
+			wm_pwm4_config(WM_IO_PA_04);
 			tls_pwm_stop(channel);
 			dmaCh = tls_dma_request(1, TLS_DMA_FLAGS_CHANNEL_SEL(TLS_DMA_SEL_PWM_CAP0) | TLS_DMA_FLAGS_HARD_MODE);
 			DmaDesc.src_addr = HR_PWM_CAPDAT;
