@@ -148,6 +148,7 @@ target("lvgl")
     end)
 
     add_files(luatos.."components/lvgl/**.c")
+    remove_files(luatos.."components/lvgl/lv_demos/**.c")
 
     add_includedirs("app/port",{public = true})
     add_includedirs("include",{public = true})
@@ -286,10 +287,10 @@ target("air10x")
     add_includedirs("include/arch/xt804/csi_core",{public = true})
     add_includedirs("include/app",{public = true})
     add_includedirs("include/net",{public = true})
-    add_includedirs("demo",{public = true})
+    -- add_includedirs("demo",{public = true})
     add_includedirs("platform/inc",{public = true})
 
-    add_includedirs("demo/console")
+    -- add_includedirs("demo/console")
     add_includedirs("include/arch/xt804/csi_dsp")
     add_includedirs("platform/sys")
     add_includedirs("src/app/mbedtls/ports")
@@ -302,8 +303,8 @@ target("air10x")
 
     add_files(luatos.."components/lcd/*.c")
     add_files(luatos.."components/sfd/*.c")
-    add_files(luatos.."components/nr_micro_shell/*.c")
-    add_files(luatos.."components/luf/*.c")
+    -- add_files(luatos.."components/nr_micro_shell/*.c")
+    -- add_files(luatos.."components/luf/*.c")
 
     add_files(luatos.."components/iconv/*.c")
     add_files(luatos.."components/lfs/*.c")
@@ -430,8 +431,9 @@ target("air10x")
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
-        io.writefile("$(buildir)/out/"..TARGET_NAME..".asm", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -d $(buildir)/out/"..TARGET_NAME..".elf"))
-        io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
+        -- 默认不生成.asm和.list,调试的时候自行打开吧
+        -- io.writefile("$(buildir)/out/"..TARGET_NAME..".asm", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -d $(buildir)/out/"..TARGET_NAME..".elf"))
+        -- io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
         io.writefile("$(buildir)/out/"..TARGET_NAME..".size", os.iorun(sdk_dir .. "bin/csky-elfabiv2-size $(buildir)/out/"..TARGET_NAME..".elf"))
         io.cat("$(buildir)/out/"..TARGET_NAME..".size")
         -- if TARGET_NAME == "AIR101" then
