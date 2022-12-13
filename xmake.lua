@@ -49,10 +49,13 @@ set_warnings("all")
 set_optimize("smallest")
 -- set language: c99
 set_languages("c99")
-add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"")
+add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config_air101.h\"")
 add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wa,--gdwarf2 -fdata-sections -ffunction-sections")
 add_cflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
+
+
+add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strlen -fno-builtin-calloc")
 
 set_dependir("$(buildir)/.deps")
 set_objectdir("$(buildir)/.objs")
