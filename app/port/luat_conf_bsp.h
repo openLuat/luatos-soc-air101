@@ -202,4 +202,8 @@
 
 #define LV_COLOR_16_SWAP   1
 
+#define LUAT_RET int
+#define LUAT_RT_RET_TYPE	void
+#define LUAT_RT_CB_PARAM void *param
+
 #endif
