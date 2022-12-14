@@ -33,47 +33,119 @@
 #define LUAT_LOG_TAG "luat.rtos"
 #include "luat_log.h"
 
-// int luat_thread_start(luat_thread_t* thread){
-// 	thread->task_stk = luat_heap_malloc((thread->stack_size)*sizeof(uint32_t));
-// 	return tls_os_task_create(NULL, thread->name,(void (*)(void *param))thread->entry,NULL,thread->task_stk,(thread->stack_size)*sizeof(uint32_t),thread->priority,0);
-// }
 
-// LUAT_RET luat_thread_stop(luat_thread_t* thread) {
-//     return LUAT_ERR_FAIL;
-// }
+int luat_rtos_task_create(luat_rtos_task_handle *task_handle, uint32_t stack_size, uint8_t priority, const char *task_name, luat_rtos_task_entry task_fun, void* user_data, uint16_t event_cout)
+{
+	if (!task_handle) return -1;
+	return xTaskCreate(task_fun,
+		task_name,
+		stack_size/sizeof(uint32_t),
+		user_data,
+		priority,
+		task_handle	);
+}
 
-// LUAT_RET luat_thread_delete(luat_thread_t* thread) {
-// 	return LUAT_ERR_FAIL;
-// }
+int luat_rtos_task_delete(luat_rtos_task_handle task_handle)
+{
+	if (!task_handle) return -1;
+	vTaskDelete(task_handle);
+	return 0;
+}
+
+int luat_rtos_task_suspend(luat_rtos_task_handle task_handle)
+{
+	if (!task_handle) return -1;
+	vTaskSuspend(task_handle);
+	return 0;
+}
+
+int luat_rtos_task_resume(luat_rtos_task_handle task_handle)
+{
+	if (!task_handle) return -1;
+	vTaskResume(task_handle);
+	return 0;
+}
+uint32_t luat_rtos_task_HighWaterMark(luat_rtos_task_handle task_handle)
+{
+	if (!task_handle) return -1;
+	return uxTaskGetStackHighWaterMark(task_handle);
+}
+void luat_rtos_task_sleep(uint32_t ms)
+{
+	vTaskDelay(ms);
+}
+
+void luat_task_suspend_all(void)
+{
+	vTaskSuspendAll();
+}
+void luat_task_resume_all(void)
+{
+	xTaskResumeAll();
+}
+
+void *luat_get_current_task(void)
+{
+	return xTaskGetCurrentTaskHandle();
+}
 
 
+int luat_rtos_queue_create(luat_rtos_queue_t *queue_handle, uint32_t item_count, uint32_t item_size)
+{
+	if (!queue_handle) return -1;
+	xQueueHandle pxNewQueue;
+	pxNewQueue = xQueueCreate(item_count, item_size);
+	if (!pxNewQueue)
+		return -1;
+	*queue_handle = pxNewQueue;
+	return 0;
+}
 
-// void *luat_queue_create(size_t msgcount, size_t msgsize){
-// 	tls_os_queue_t *queue = (tls_os_queue_t *)luat_heap_malloc(sizeof(tls_os_queue_t));
-// 	tls_os_queue_create(&queue, msgcount);
-// 	return queue;
-// }
+int luat_rtos_queue_delete(luat_rtos_queue_t queue_handle)
+{
+	if (!queue_handle) return -1;
+    vQueueDelete ((xQueueHandle)queue_handle);
+	return 0;
+}
 
-// LUAT_RET luat_queue_send(void*   queue, void* msg,  size_t msg_size, size_t timeout){
-// 	return tls_os_queue_send((tls_os_queue_t *)queue, msg, msg_size);
-// }
+int luat_rtos_queue_send(luat_rtos_queue_t queue_handle, void *item, uint32_t item_size, uint32_t timeout)
+{
+	if (!queue_handle || !item) return -1;
+	if (tls_get_isr_count()>0)
+	{
+		BaseType_t pxHigherPriorityTaskWoken;
+		if (xQueueSendToBackFromISR(queue_handle, item, &pxHigherPriorityTaskWoken) != pdPASS)
+			return -1;
+		portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
+		return 0;
+	}
+	else
+	{
+		if (xQueueSendToBack (queue_handle, item, timeout) != pdPASS)
+			return -1;
+	}
+	return 0;
+}
 
-// LUAT_RET luat_queue_recv(void*   queue, void* msg, size_t msg_size, size_t timeout){
-// 	return tls_os_queue_receive((tls_os_queue_t *)queue, (void **) &msg, msg_size, timeout);
-// }
-
-// LUAT_RET luat_queue_reset(void*   queue){
-// 	return tls_os_queue_flush((tls_os_queue_t *)queue);
-// }
-
-// LUAT_RET luat_queue_delete(void*   queue){
-// 	return tls_os_queue_delete((tls_os_queue_t *)queue);
-// }
-
-// LUAT_RET luat_queue_free(void*   queue){
-// 	luat_heap_free((tls_os_queue_t *)queue);
-// 	return 0;
-// }
+int luat_rtos_queue_recv(luat_rtos_queue_t queue_handle, void *item, uint32_t item_size, uint32_t timeout)
+{
+	if (!queue_handle || !item)
+		return -1;
+	BaseType_t yield = pdFALSE;
+	if (tls_get_isr_count()>0)
+	{
+		if (xQueueReceiveFromISR(queue_handle, item, &yield) != pdPASS)
+			return -1;
+		portYIELD_FROM_ISR(yield);
+		return 0;
+	}
+	else
+	{
+		if (xQueueReceive(queue_handle, item, timeout) != pdPASS)
+			return -1;
+	}
+	return 0;
+}
 
 // LUAT_RET luat_send_event_to_task(void *task_handle, uint32_t id, uint32_t param1, uint32_t param2, uint32_t param3) {
 //     return LUAT_ERR_OK;
@@ -132,10 +204,3 @@ void luat_release_rtos_timer(void *timer){
 	luat_heap_free(luat_timer);
 }
 
-void luat_task_suspend_all(void){
-	vTaskSuspendAll();
-}
-
-void luat_task_resume_all(void){
-	xTaskResumeAll();
-}
