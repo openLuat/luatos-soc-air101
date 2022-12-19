@@ -179,7 +179,7 @@ void UserMain(void){
 	extern void luat_mcu_tick64_init(void);
 	luat_mcu_tick64_init();
 	
-	(unique_id);
+	tls_fls_read_unique_id(unique_id);
 	if (unique_id[1] == 0x10){
 		printf("I/main auth ok %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X %s\n",
 			unique_id[0], unique_id[1], unique_id[2], unique_id[3], unique_id[4],
