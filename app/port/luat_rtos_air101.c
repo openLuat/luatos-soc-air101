@@ -147,6 +147,7 @@ int luat_rtos_queue_recv(luat_rtos_queue_t queue_handle, void *item, uint32_t it
 	return 0;
 }
 
+
 // LUAT_RET luat_send_event_to_task(void *task_handle, uint32_t id, uint32_t param1, uint32_t param2, uint32_t param3) {
 //     return LUAT_ERR_OK;
 // }
@@ -178,10 +179,14 @@ typedef struct luat_rtos_timer {
     tls_os_timer_t *timer;
 	void *cb;
 	void *param;
+	luat_rtos_timer_callback_t rtos_cb;
 }air101_timer;
 
 void *luat_create_rtos_timer(void *cb, void *param, void *task_handle){
 	air101_timer *luat_timer = luat_heap_malloc(sizeof(air101_timer));
+	if (luat_timer == NULL)
+		return NULL;
+	luat_timer->timer = NULL;
 	luat_timer->cb = cb;
 	luat_timer->param = param;
 	return luat_timer;
@@ -204,3 +209,66 @@ void luat_release_rtos_timer(void *timer){
 	luat_heap_free(luat_timer);
 }
 
+int luat_rtos_timer_create(luat_rtos_timer_t *timer_handle) {
+	*timer_handle = luat_heap_malloc(sizeof(air101_timer));
+	if (*timer_handle != NULL)
+		return 0;
+	return -1;
+}
+
+/**
+ * @brief 删除软件定时器
+ * 
+ * @param timer_handle 定时器句柄
+ * @return int =0成功，其他失败
+ */
+int luat_rtos_timer_delete(luat_rtos_timer_t timer_handle) {
+	if (timer_handle != NULL) {
+		luat_heap_free(timer_handle);
+		return 0;
+	}
+	return -1;
+}
+
+static void rtos_cb(void*ptimer, void* args) {
+	air101_timer* timer = (air101_timer*)args;
+	if (timer != NULL)
+		timer->rtos_cb(timer->param);
+}
+
+/**
+ * @brief 启动软件定时器
+ * 
+ * @param timer_handle 定时器句柄
+ * @param timeout 超时时间，单位ms，没有特殊值
+ * @param repeat 0不重复，其他重复
+ * @param callback_fun 定时时间到后的回调函数
+ * @param user_param 回调函数时的最后一个输入参数
+ * @return int =0成功，其他失败
+ */
+int luat_rtos_timer_start(luat_rtos_timer_t timer_handle, uint32_t timeout, uint8_t repeat, luat_rtos_timer_callback_t callback_fun, void *user_param) {
+	air101_timer* timer = (air101_timer*)timer_handle;
+	if (timer->timer != NULL) {
+		tls_os_timer_stop(timer->timer);
+		tls_os_timer_delete(timer->timer);
+		timer->timer = NULL;
+	}
+	timer->param = user_param;
+	timer->rtos_cb = callback_fun;
+	tls_os_timer_create(&(timer->timer), rtos_cb, timer, timeout, repeat, NULL);
+	tls_os_timer_start(timer->timer);
+	return 0;
+}
+/**
+ * @brief 停止软件定时器
+ * 
+ * @param timer_handle 定时器句柄
+ * @return int =0成功，其他失败
+ */
+int luat_rtos_timer_stop(luat_rtos_timer_t timer_handle) {
+	air101_timer* timer = (air101_timer*)timer_handle;
+	tls_os_timer_stop(timer->timer);
+	tls_os_timer_delete(timer->timer);
+	timer->timer = NULL;
+	return 0;
+}
