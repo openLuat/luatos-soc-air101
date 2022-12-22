@@ -109,3 +109,8 @@ int luat_pm_dtimer_list(size_t* count, size_t* list) {
     *count = 0;
     return 0;
 }
+
+int luat_pm_power_ctrl(int id, uint8_t onoff) {
+    LLOGW("not support yet");
+    return -1;
+}
