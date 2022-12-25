@@ -428,7 +428,7 @@ target("air10x")
     add_includedirs(luatos.."components/nimble/inc")
     add_files(luatos.."components/nimble/src/*.c")
     
-    add_includedirs(luatos.."components/rsa/inc")
+    -- add_includedirs(luatos.."components/rsa/inc")
     add_files(luatos.."components/rsa/**.c")
 
 	after_build(function(target)
