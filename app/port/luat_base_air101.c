@@ -157,6 +157,13 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_NIMBLE
   {"nimble",    luaopen_nimble},
 #endif
+#ifdef LUAT_USE_FSKV
+  {"fskv", luaopen_fskv},
+// 启用FSKV的时候,自动禁用FDB
+#ifdef LUAT_USE_FDB
+#undef LUAT_USE_FDB
+#endif
+#endif
 #ifdef LUAT_USE_FDB
   {"fdb",       luaopen_fdb},
 #endif

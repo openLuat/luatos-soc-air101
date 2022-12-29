@@ -431,6 +431,13 @@ target("air10x")
     -- add_includedirs(luatos.."components/rsa/inc")
     add_files(luatos.."components/rsa/**.c")
 
+    -- 添加rtos的统一实现
+    -- add_files(luatos.."components/rtos/freertos/*.c")
+
+    -- 添加fskv
+    add_includedirs(luatos.."components/fskv")
+    add_files(luatos.."components/fskv/*.c")
+
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
