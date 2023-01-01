@@ -26,8 +26,6 @@ static void luat_rtc_cb(void *arg) {
 int luat_rtc_set(struct tm *tblock) {
     if (tblock == NULL)
         return -1;
-    tblock->tm_year -= Base_year;
-    tblock->tm_mon--;
     tls_set_rtc(tblock);
     return 0;
 }
@@ -36,16 +34,12 @@ int luat_rtc_get(struct tm *tblock) {
     if (tblock == NULL)
         return -1;
     tls_get_rtc(tblock);
-    tblock->tm_year += Base_year;
-    tblock->tm_mon++;
     return 0;
 }
 
 int luat_rtc_timer_start(int id, struct tm *tblock) {
     if (id || tblock == NULL)
         return -1;
-    tblock->tm_year -= Base_year;
-    tblock->tm_mon--;
     tls_rtc_isr_register(luat_rtc_cb, NULL);
     tls_rtc_timer_start(tblock);
     return 0;
