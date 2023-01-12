@@ -25,9 +25,9 @@ int luat_adc_open(int ch, void *args)
         wm_adc_config(ch);
         break;
 // #endif
-    case 10:
+    case LUAT_ADC_CH_CPU:
         return 0; // 温度传感器
-    case 11:
+    case LUAT_ADC_CH_VBAT:
         return 0; // VBAT电压
     default:
         return 1;
@@ -53,12 +53,12 @@ int luat_adc_read(int ch, int *val, int *val2)
     case 3:
         voltage = adc_get_inputVolt(ch, val);
         break;
-    case 10:
+    case LUAT_ADC_CH_CPU:
         voltage = adc_temp();
         *val = voltage;
         *val2 = voltage;
         return 0;
-    case 11:
+    case LUAT_ADC_CH_VBAT:
         voltage = adc_get_interVolt();
         *val = voltage;
         *val2 = voltage;
@@ -88,9 +88,9 @@ int luat_adc_close(int ch)
         tls_io_cfg_set(WM_IO_PA_02, WM_IO_OPTION5);
         break;
 // #endif
-    case 10:
+    case LUAT_ADC_CH_CPU:
         break; // 温度
-    case 11:
+    case LUAT_ADC_CH_VBAT:
         break; // 内部电压
     default:
         return 1;
