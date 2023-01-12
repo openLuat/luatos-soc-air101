@@ -32,6 +32,7 @@ uint32_t lfs_size_kb;
 extern const struct luat_vfs_filesystem vfs_fs_lfs2;
 extern const char luadb_inline_sys[];
 extern const struct luat_vfs_filesystem vfs_fs_luadb;
+extern const struct luat_vfs_filesystem vfs_fs_ram;
 
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
@@ -95,6 +96,15 @@ int luat_fs_init(void) {
 		.mount_point = "/"
 	};
 	luat_fs_mount(&conf);
+
+    luat_vfs_reg(&vfs_fs_ram);
+    luat_fs_conf_t conf3 = {
+		.busname = NULL,
+		.type = "ram",
+		.filesystem = "ram",
+		.mount_point = "/ram/"
+	};
+	luat_fs_mount(&conf3);
     
 	luat_vfs_reg(&vfs_fs_luadb);
 	luat_fs_conf_t conf2 = {
