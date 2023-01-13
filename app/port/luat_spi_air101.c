@@ -75,10 +75,10 @@ int luat_spi_setup(luat_spi_t* spi) {
 #endif
 	    // 兼容CS=0,默认配置, 也兼容CS为GPIO20的配置,其他配置不受控,自然不应该配置CS脚
         if (spi->cs == 0 || spi->cs == WM_IO_PB_04)
-	        wm_spi_cs_config(WM_IO_PB_04);
-            wm_spi_ck_config(WM_IO_PB_02);
-            wm_spi_di_config(WM_IO_PB_03);
-            wm_spi_do_config(WM_IO_PB_05);
+            wm_spi_cs_config(WM_IO_PB_04);
+        wm_spi_ck_config(WM_IO_PB_02);
+        wm_spi_di_config(WM_IO_PB_03);
+        wm_spi_do_config(WM_IO_PB_05);
     }
     // #ifdef AIR103
     else if (spi->id == 1) { // 本质上是mode=1,不是spi1,该模式下psram可用
