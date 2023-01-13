@@ -30,7 +30,8 @@ int luat_nimble_trace_level(int level) {
     return 0;
 }
 
-int luat_nimble_init_server(uint8_t uart_idx, char* name, int mode);
+int luat_nimble_init_peripheral(uint8_t uart_idx, char* name, int mode);
+int luat_nimble_init_central(uint8_t uart_idx, char* name, int mode);
 
 int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
 
@@ -46,7 +47,17 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
     ble_hs_cfg.sm_our_key_dist = MYNEWT_VAL(BLE_SM_OUR_KEY_DIST),
     ble_hs_cfg.sm_their_key_dist = MYNEWT_VAL(BLE_SM_THEIR_KEY_DIST);
 
-    ret = luat_nimble_init_server(uart_idx, name, mode);
+    if (mode == 0) {
+        LLOGD("CALL luat_nimble_init_peripheral");
+        ret = luat_nimble_init_peripheral(uart_idx, name, mode);
+    }
+    else if (mode == 1) {
+        LLOGD("CALL luat_nimble_init_central");
+        ret = luat_nimble_init_central(uart_idx, name, mode);
+    }
+    else {
+        return -1;
+    }
     if (ret == 0) {
         /*Initialize the vuart interface and enable controller*/
         ble_hci_vuart_init(0xFF);
