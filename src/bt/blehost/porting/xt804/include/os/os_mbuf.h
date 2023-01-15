@@ -182,15 +182,14 @@ _os_mbuf_leadingspace(struct os_mbuf *om)
 {
     uint16_t startoff;
     uint16_t leadingspace;
-
     startoff = 0;
-    if (OS_MBUF_IS_PKTHDR(om)) {
+
+    if(OS_MBUF_IS_PKTHDR(om)) {
         startoff = om->om_pkthdr_len;
     }
 
-    leadingspace = (uint16_t) (OS_MBUF_DATA(om, uint8_t *) -
-        ((uint8_t *) &om->om_databuf[0] + startoff));
-
+    leadingspace = (uint16_t)(OS_MBUF_DATA(om, uint8_t *) -
+                              ((uint8_t *) &om->om_databuf[0] + startoff));
     return (leadingspace);
 }
 
@@ -216,11 +215,9 @@ static inline uint16_t
 _os_mbuf_trailingspace(struct os_mbuf *om)
 {
     struct os_mbuf_pool *omp;
-
     omp = om->om_omp;
-
     return (&om->om_databuf[0] + omp->omp_databuf_len) -
-      (om->om_data + om->om_len);
+           (om->om_data + om->om_len);
 }
 
 /** @endcond */
@@ -347,7 +344,7 @@ int os_msys_num_free(void);
  * @return 0 on success, error code on failure.
  */
 int os_mbuf_pool_init(struct os_mbuf_pool *, struct os_mempool *mp,
-        uint16_t, uint16_t);
+                      uint16_t, uint16_t);
 
 /**
  * Get an mbuf from the mbuf pool.  The mbuf is allocated, and initialized
@@ -362,6 +359,20 @@ int os_mbuf_pool_init(struct os_mbuf_pool *, struct os_mempool *mp,
 struct os_mbuf *os_mbuf_get(struct os_mbuf_pool *omp, uint16_t);
 
 /**
+* Retrieve the left block of a mbuf.
+*
+*/
+int os_mbuf_num_free(struct os_mbuf_pool *omp);
+
+/**
+* Retrieve the total block of a mbuf.
+*
+*/
+
+int os_mbuf_num_total(struct os_mbuf_pool *omp);
+
+
+/**
  * Allocate a new packet header mbuf out of the os_mbuf_pool.
  *
  * @param omp The mbuf pool to allocate out of
@@ -370,7 +381,7 @@ struct os_mbuf *os_mbuf_get(struct os_mbuf_pool *omp, uint16_t);
  * @return A freshly allocated mbuf on success, NULL on failure.
  */
 struct os_mbuf *os_mbuf_get_pkthdr(struct os_mbuf_pool *omp,
-        uint8_t pkthdr_len);
+                                   uint8_t pkthdr_len);
 
 /**
  * Duplicate a chain of mbufs.  Return the start of the duplicated chain.

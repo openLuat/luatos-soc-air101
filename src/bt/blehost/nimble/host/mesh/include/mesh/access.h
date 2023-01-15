@@ -34,7 +34,7 @@ extern "C" {
 #define BT_MESH_KEY_DEV_ANY       0xfffc
 
 #define BT_MESH_IS_DEV_KEY(key) (key == BT_MESH_KEY_DEV_LOCAL || \
-				 key == BT_MESH_KEY_DEV_REMOTE)
+                 key == BT_MESH_KEY_DEV_REMOTE)
 
 /** Helper to define a mesh element within an array.
  *
@@ -47,26 +47,26 @@ extern "C" {
  */
 #define BT_MESH_ELEM(_loc, _mods, _vnd_mods)        \
 {                                                   \
-	.loc              = (_loc),                 \
-	.model_count      = ARRAY_SIZE(_mods),      \
-	.models           = (_mods),                \
-	.vnd_model_count  = ARRAY_SIZE(_vnd_mods),  \
-	.vnd_models       = (_vnd_mods),            \
+    .loc              = (_loc),                 \
+    .model_count      = ARRAY_SIZE(_mods),      \
+    .models           = (_mods),                \
+    .vnd_model_count  = ARRAY_SIZE(_vnd_mods),  \
+    .vnd_models       = (_vnd_mods),            \
 }
 
 /** Abstraction that describes a Mesh Element */
 struct bt_mesh_elem {
-	/* Unicast Address. Set at runtime during provisioning. */
-	u16_t addr;
+    /* Unicast Address. Set at runtime during provisioning. */
+    u16_t addr;
 
-	/* Location Descriptor (GATT Bluetooth Namespace Descriptors) */
-	const u16_t loc;
+    /* Location Descriptor (GATT Bluetooth Namespace Descriptors) */
+    const u16_t loc;
 
-	const u8_t model_count;
-	const u8_t vnd_model_count;
+    const u8_t model_count;
+    const u8_t vnd_model_count;
 
-	struct bt_mesh_model * const models;
-	struct bt_mesh_model * const vnd_models;
+    struct bt_mesh_model *const models;
+    struct bt_mesh_model *const vnd_models;
 };
 
 /* Foundation Models */
@@ -131,42 +131,42 @@ struct bt_mesh_elem {
 
 /** Message sending context. */
 struct bt_mesh_msg_ctx {
-	/** NetKey Index of the subnet to send the message on. */
-	u16_t net_idx;
+    /** NetKey Index of the subnet to send the message on. */
+    u16_t net_idx;
 
-	/** AppKey Index to encrypt the message with. */
-	u16_t app_idx;
+    /** AppKey Index to encrypt the message with. */
+    u16_t app_idx;
 
-	/** Remote address. */
-	u16_t addr;
+    /** Remote address. */
+    u16_t addr;
 
-	/** Destination address of a received message. Not used for sending. */
-	u16_t recv_dst;
+    /** Destination address of a received message. Not used for sending. */
+    u16_t recv_dst;
 
-	/** RSSI of received packet. Not used for sending. */
-	s8_t  recv_rssi;
+    /** RSSI of received packet. Not used for sending. */
+    s8_t  recv_rssi;
 
-	/** Received TTL value. Not used for sending. */
-	u8_t  recv_ttl;
+    /** Received TTL value. Not used for sending. */
+    u8_t  recv_ttl;
 
-	/** Force sending reliably by using segment acknowledgement */
-	bool  send_rel;
+    /** Force sending reliably by using segment acknowledgement */
+    bool  send_rel;
 
-	/** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
-	u8_t  send_ttl;
+    /** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
+    u8_t  send_ttl;
 };
 
 struct bt_mesh_model_op {
-	/* OpCode encoded using the BT_MESH_MODEL_OP_* macros */
-	const u32_t  opcode;
+    /* OpCode encoded using the BT_MESH_MODEL_OP_* macros */
+    const u32_t  opcode;
 
-	/* Minimum required message length */
-	const size_t min_len;
+    /* Minimum required message length */
+    const size_t min_len;
 
-	/* Message handler for the opcode */
-	void (*const func)(struct bt_mesh_model *model,
-			   struct bt_mesh_msg_ctx *ctx,
-			   struct os_mbuf *buf);
+    /* Message handler for the opcode */
+    void (*const func)(struct bt_mesh_model *model,
+                       struct bt_mesh_msg_ctx *ctx,
+                       struct os_mbuf *buf);
 };
 
 #define BT_MESH_MODEL_OP_1(b0) (b0)
@@ -175,7 +175,7 @@ struct bt_mesh_model_op {
 
 #define BT_MESH_MODEL_OP_END { 0, 0, NULL }
 #define BT_MESH_MODEL_NO_OPS ((struct bt_mesh_model_op []) \
-			      { BT_MESH_MODEL_OP_END })
+                  { BT_MESH_MODEL_OP_END })
 
 /** Helper to define an empty model array */
 #define BT_MESH_MODEL_NONE ((struct bt_mesh_model []){})
@@ -204,7 +204,7 @@ struct bt_mesh_model_op {
  * @param _payload_len Length of the model payload.
  */
 #define BT_MESH_MODEL_BUF_LEN(_op, _payload_len)                               \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_SHORT)
+    (BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_SHORT)
 
 /** @def BT_MESH_MODEL_BUF_LEN_LONG_MIC
  *
@@ -217,7 +217,7 @@ struct bt_mesh_model_op {
  * @param _payload_len Length of the model payload.
  */
 #define BT_MESH_MODEL_BUF_LEN_LONG_MIC(_op, _payload_len)                      \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_LONG)
+    (BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_LONG)
 
 /** @def BT_MESH_MODEL_BUF_DEFINE
  *
@@ -227,7 +227,7 @@ struct bt_mesh_model_op {
  * @param _payload_len Length of the model message payload.
  */
 #define BT_MESH_MODEL_BUF(_op, _payload_len)                      \
-	NET_BUF_SIMPLE(BT_MESH_MODEL_BUF_LEN(_op, (_payload_len)))
+    NET_BUF_SIMPLE(BT_MESH_MODEL_BUF_LEN(_op, (_payload_len)))
 
 /** @def BT_MESH_MODEL_CB
  *
@@ -241,15 +241,15 @@ struct bt_mesh_model_op {
  */
 #define BT_MESH_MODEL_CB(_id, _op, _pub, _user_data, _cb)                    \
 {                                                                            \
-	.id = (_id),                                                         \
-	.op = _op,                                                           \
-	.keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
-			BT_MESH_KEY_UNUSED },                                \
-	.pub = _pub,                                                         \
-	.groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
-			BT_MESH_ADDR_UNASSIGNED },                           \
-	.user_data = _user_data,                                             \
-	.cb = _cb,                                                           \
+    .id = (_id),                                                         \
+    .op = _op,                                                           \
+    .keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
+            BT_MESH_KEY_UNUSED },                                \
+    .pub = _pub,                                                         \
+    .groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
+            BT_MESH_ADDR_UNASSIGNED },                           \
+    .user_data = _user_data,                                             \
+    .cb = _cb,                                                           \
 }
 
 /** @def BT_MESH_MODEL_VND_CB
@@ -265,16 +265,16 @@ struct bt_mesh_model_op {
  */
 #define BT_MESH_MODEL_VND_CB(_company, _id, _op, _pub, _user_data, _cb)      \
 {                                                                            \
-	.vnd.company = (_company),                                           \
-	.vnd.id = (_id),                                                     \
-	.op = _op,                                                           \
-	.pub = _pub,                                                         \
-	.keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
-			BT_MESH_KEY_UNUSED },                                \
-	.groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
-			BT_MESH_ADDR_UNASSIGNED },                           \
-	.user_data = _user_data,                                             \
-	.cb = _cb,                                                           \
+    .vnd.company = (_company),                                           \
+    .vnd.id = (_id),                                                     \
+    .op = _op,                                                           \
+    .pub = _pub,                                                         \
+    .keys = { [0 ... (CONFIG_BT_MESH_MODEL_KEY_COUNT - 1)] =             \
+            BT_MESH_KEY_UNUSED },                                \
+    .groups = { [0 ... (CONFIG_BT_MESH_MODEL_GROUP_COUNT - 1)] =         \
+            BT_MESH_ADDR_UNASSIGNED },                           \
+    .user_data = _user_data,                                             \
+    .cb = _cb,                                                           \
 }
 
 
@@ -288,7 +288,7 @@ struct bt_mesh_model_op {
  * @param _user_data User data for the model.
  */
 #define BT_MESH_MODEL(_id, _op, _pub, _user_data)                              \
-	BT_MESH_MODEL_CB(_id, _op, _pub, _user_data, NULL)
+    BT_MESH_MODEL_CB(_id, _op, _pub, _user_data, NULL)
 
 /** @def BT_MESH_MODEL_VND
  *
@@ -301,7 +301,7 @@ struct bt_mesh_model_op {
  * @param _user_data User data for the model.
  */
 #define BT_MESH_MODEL_VND(_company, _id, _op, _pub, _user_data)                \
-	BT_MESH_MODEL_VND_CB(_company, _id, _op, _pub, _user_data, NULL)
+    BT_MESH_MODEL_VND_CB(_company, _id, _op, _pub, _user_data, NULL)
 
 /** @def BT_MESH_TRANSMIT
  *
@@ -348,7 +348,7 @@ struct bt_mesh_model_op {
  *          values of the configuration model data.
  */
 #define BT_MESH_PUB_TRANSMIT(count, int_ms) BT_MESH_TRANSMIT(count,           \
-							     (int_ms) / 5)
+                                 (int_ms) / 5)
 
 /** @def BT_MESH_PUB_TRANSMIT_COUNT
  *
@@ -372,147 +372,154 @@ struct bt_mesh_model_op {
 
 /** Model publication context. */
 struct bt_mesh_model_pub {
-	/** The model the context belongs to. Initialized by the stack. */
-	struct bt_mesh_model *mod;
+    /** The model the context belongs to. Initialized by the stack. */
+    struct bt_mesh_model *mod;
 
-	u16_t addr;         /**< Publish Address. */
-	u16_t key;          /**< Publish AppKey Index. */
+    u16_t addr;         /**< Publish Address. */
+    u16_t key;          /**< Publish AppKey Index. */
 
-	u8_t  ttl;          /**< Publish Time to Live. */
-	u8_t  retransmit;   /**< Retransmit Count & Interval Steps. */
-	u8_t  period;       /**< Publish Period. */
-	u8_t  period_div:4, /**< Divisor for the Period. */
-	      cred:1,       /**< Friendship Credentials Flag. */
-	      fast_period:1,/**< Use FastPeriodDivisor */
-	      count:3;      /**< Retransmissions left. */
+    u8_t  ttl;          /**< Publish Time to Live. */
+    u8_t  retransmit;   /**< Retransmit Count & Interval Steps. */
+    u8_t  period;       /**< Publish Period. */
+    u8_t  period_div: 4, /**< Divisor for the Period. */
+          cred: 1,      /**< Friendship Credentials Flag. */
+          fast_period: 1, /**< Use FastPeriodDivisor */
+          count: 3;     /**< Retransmissions left. */
 
-	u32_t period_start; /**< Start of the current period. */
+    u32_t period_start; /**< Start of the current period. */
 
-	/** @brief Publication buffer, containing the publication message.
-	 *
-	 *  The application is expected to initialize this with
-	 *  a valid net_buf_simple pointer, with the help of e.g.
-	 *  the NET_BUF_SIMPLE() macro. The publication buffer must
-	 *  contain a valid publication message before calling the
-	 *  bt_mesh_model_publish() API or after the publication's
-	 *  @ref bt_mesh_model_pub.update callback has been called
-	 *  and returned success. The buffer must be created outside
-	 *  of function context, i.e. it must not be on the stack.
-	 *  This is most conveniently acheived by creating it inline
-	 *  when declaring the publication context:
-	 *
-	 *      static struct bt_mesh_model_pub my_pub = {
-	 *              .msg = NET_BUF_SIMPLE(size),
-	 *      };
-	 */
-	struct os_mbuf *msg;
+    /** @brief Publication buffer, containing the publication message.
+     *
+     *  The application is expected to initialize this with
+     *  a valid net_buf_simple pointer, with the help of e.g.
+     *  the NET_BUF_SIMPLE() macro. The publication buffer must
+     *  contain a valid publication message before calling the
+     *  bt_mesh_model_publish() API or after the publication's
+     *  @ref bt_mesh_model_pub.update callback has been called
+     *  and returned success. The buffer must be created outside
+     *  of function context, i.e. it must not be on the stack.
+     *  This is most conveniently acheived by creating it inline
+     *  when declaring the publication context:
+     *
+     *      static struct bt_mesh_model_pub my_pub = {
+     *              .msg = NET_BUF_SIMPLE(size),
+     *      };
+     */
+    struct os_mbuf *msg;
 
-	/** @brief Callback for updating the publication buffer.
-	 *
-	 *  When set to NULL, the model is assumed not to support
-	 *  periodic publishing. When set to non-NULL the callback
-	 *  will be called periodically and is expected to update
-	 *  @ref bt_mesh_model_pub.msg with a valid publication
-	 *  message.
-	 *
-	 *  @param mod The Model the Publication Context belogs to.
-	 *
-	 *  @return Zero on success or (negative) error code otherwise.
-	 */
-	int (*update)(struct bt_mesh_model *mod);
+    /** @brief Callback for updating the publication buffer.
+     *
+     *  When set to NULL, the model is assumed not to support
+     *  periodic publishing. When set to non-NULL the callback
+     *  will be called periodically and is expected to update
+     *  @ref bt_mesh_model_pub.msg with a valid publication
+     *  message.
+     *
+     *  @param mod The Model the Publication Context belogs to.
+     *
+     *  @return Zero on success or (negative) error code otherwise.
+     */
+    int (*update)(struct bt_mesh_model *mod);
 
-	/** Publish Period Timer. Only for stack-internal use. */
-	struct k_delayed_work timer;
+    /** Publish Period Timer. Only for stack-internal use. */
+    struct k_delayed_work timer;
 };
 
 /** Model callback functions. */
 struct bt_mesh_model_cb {
-	/** @brief Set value handler of user data tied to the model.
-	 *
-	 * @sa settings_handler::h_set
-	 *
-	 * @param model Model to set the persistent data of.
-	 * @param val Data from the backend.
-	 *
-	 * @return 0 on success, error otherwise.
-	 */
-	int (*const settings_set)(struct bt_mesh_model *model, char *val);
+    /** @brief Set value handler of user data tied to the model.
+     *
+     * @sa settings_handler::h_set
+     *
+     * @param model Model to set the persistent data of.
+     * @param val Data from the backend.
+     *
+     * @return 0 on success, error otherwise.
+     */
+    int (*const settings_set)(struct bt_mesh_model *model, char *val);
 
-	/** @brief Callback called when all settings have been loaded.
-	 *
-	 * This handler gets called after the settings have been loaded in
-	 * full.
-	 *
-	 * @sa settings_handler::h_commit
-	 *
-	 * @param model Model this callback belongs to.
-	 *
-	 * @return 0 on success, error otherwise.
-	 */
-	int (*const settings_commit)(struct bt_mesh_model *model);
+    /** @brief Callback called when all settings have been loaded.
+     *
+     * This handler gets called after the settings have been loaded in
+     * full.
+     *
+     * @sa settings_handler::h_commit
+     *
+     * @param model Model this callback belongs to.
+     *
+     * @return 0 on success, error otherwise.
+     */
+    int (*const settings_commit)(struct bt_mesh_model *model);
 
-	/** @brief Model init callback.
-	 *
-	 * Called on every model instance during mesh initialization.
-	 *
-	 * @param model Model to be initialized.
-	 *
-	 * @return 0 on success, error otherwise.
-	 */
-	int (*const init)(struct bt_mesh_model *model);
+    /** @brief Model init callback.
+     *
+     * Called on every model instance during mesh initialization.
+     *
+     * @param model Model to be initialized.
+     *
+     * @return 0 on success, error otherwise.
+     */
+    int (*const init)(struct bt_mesh_model *model);
 
-	/** @brief Model reset callback.
-	 *
-	 * Called when the mesh node is reset. All model data is deleted on
-	 * reset, and the model should clear its state.
-	 *
-	 * @param model Model this callback belongs to.
-	 */
-	void (*const reset)(struct bt_mesh_model *model);
+    /** @brief Model reset callback.
+     *
+     * Called when the mesh node is reset. All model data is deleted on
+     * reset, and the model should clear its state.
+     *
+     * @param model Model this callback belongs to.
+     */
+    void (*const reset)(struct bt_mesh_model *model);
+
+    /**Called when the mesh node is deinitialized, All the model resouce
+        * will be freed, and the model should clear its state.
+     *
+     * @param model Model this callback belongs to.
+     */
+    int (*const deinit)(struct bt_mesh_model *model);
 };
 
 /** Abstraction that describes a Mesh Model instance */
 struct bt_mesh_model {
-	union {
-		const u16_t id;
-		struct {
-			u16_t company;
-			u16_t id;
-		} vnd;
-	};
+    union {
+        const u16_t id;
+        struct {
+            u16_t company;
+            u16_t id;
+        } vnd;
+    };
 
-	/* Internal information, mainly for persistent storage */
-	u8_t  elem_idx;   /* Belongs to Nth element */
-	u8_t  mod_idx;    /* Is the Nth model in the element */
-	u16_t flags;      /* Model flags for internal bookkeeping */
+    /* Internal information, mainly for persistent storage */
+    u8_t  elem_idx;   /* Belongs to Nth element */
+    u8_t  mod_idx;    /* Is the Nth model in the element */
+    u16_t flags;      /* Model flags for internal bookkeeping */
 
-	/* Model Publication */
-	struct bt_mesh_model_pub * const pub;
+    /* Model Publication */
+    struct bt_mesh_model_pub *const pub;
 
-	/* AppKey List */
-	u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT];
+    /* AppKey List */
+    u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT];
 
-	/* Subscription List (group or virtual addresses) */
-	u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
+    /* Subscription List (group or virtual addresses) */
+    u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
 
-	const struct bt_mesh_model_op * const op;
+    const struct bt_mesh_model_op *const op;
 
-	/* Model callback structure. */
-	const struct bt_mesh_model_cb * const cb;
+    /* Model callback structure. */
+    const struct bt_mesh_model_cb *const cb;
 
 #if MYNEWT_VAL(BLE_MESH_MODEL_EXTENSIONS)
-	/* Pointer to the next model in a model extension tree. */
-	struct bt_mesh_model *next;
-	/* Pointer to the first model this model extends. */
-	struct bt_mesh_model *extends;
+    /* Pointer to the next model in a model extension tree. */
+    struct bt_mesh_model *next;
+    /* Pointer to the first model this model extends. */
+    struct bt_mesh_model *extends;
 #endif
-	/* Model-specific user data */
-	void *user_data;
+    /* Model-specific user data */
+    void *user_data;
 };
 
 struct bt_mesh_send_cb {
-	void (*start)(u16_t duration, int err, void *cb_data);
-	void (*end)(int err, void *cb_data);
+    void (*start)(u16_t duration, int err, void *cb_data);
+    void (*end)(int err, void *cb_data);
 };
 
 void bt_mesh_model_msg_init(struct os_mbuf *msg, u32_t opcode);
@@ -535,10 +542,10 @@ void bt_mesh_model_msg_init(struct os_mbuf *msg, u32_t opcode);
  * @return 0 on success, or (negative) error code on failure.
  */
 int bt_mesh_model_send(struct bt_mesh_model *model,
-		       struct bt_mesh_msg_ctx *ctx,
-		       struct os_mbuf *msg,
-		       const struct bt_mesh_send_cb *cb,
-		       void *cb_data);
+                       struct bt_mesh_msg_ctx *ctx,
+                       struct os_mbuf *msg,
+                       const struct bt_mesh_send_cb *cb,
+                       void *cb_data);
 
 /**
  * @brief Send a model publication message.
@@ -574,7 +581,7 @@ struct bt_mesh_elem *bt_mesh_model_elem(struct bt_mesh_model *mod);
  * if no SIG model with the given ID exists in the given element.
  */
 struct bt_mesh_model *bt_mesh_model_find(const struct bt_mesh_elem *elem,
-					 u16_t id);
+        u16_t id);
 
 /** @brief Find a vendor model.
  *
@@ -586,7 +593,7 @@ struct bt_mesh_model *bt_mesh_model_find(const struct bt_mesh_elem *elem,
  * if no vendor model with the given ID exists in the given element.
  */
 struct bt_mesh_model *bt_mesh_model_find_vnd(const struct bt_mesh_elem *elem,
-					     u16_t company, u16_t id);
+        u16_t company, u16_t id);
 
 /** @brief Get whether the model is in the primary element of the device.
  *
@@ -596,7 +603,7 @@ struct bt_mesh_model *bt_mesh_model_find_vnd(const struct bt_mesh_elem *elem,
  */
 static inline bool bt_mesh_model_in_primary(const struct bt_mesh_model *mod)
 {
-	return (mod->elem_idx == 0);
+    return (mod->elem_idx == 0);
 }
 
 /** @brief Immediately store the model's user data in persistent storage.
@@ -609,7 +616,7 @@ static inline bool bt_mesh_model_in_primary(const struct bt_mesh_model *mod)
  * @return 0 on success, or (negative) error code on failure.
  */
 int bt_mesh_model_data_store(struct bt_mesh_model *mod, bool vnd,
-			     const void *data, size_t data_len);
+                             const void *data, size_t data_len);
 
 /** @brief Let a model extend another.
  *
@@ -633,16 +640,16 @@ int bt_mesh_model_data_store(struct bt_mesh_model *mod, bool vnd,
  * @retval -EALREADY The base_mod model is already extended.
  */
 int bt_mesh_model_extend(struct bt_mesh_model *mod,
-			 struct bt_mesh_model *base_mod);
+                         struct bt_mesh_model *base_mod);
 
 /** Node Composition */
 struct bt_mesh_comp {
-	u16_t cid;
-	u16_t pid;
-	u16_t vid;
+    u16_t cid;
+    u16_t pid;
+    u16_t vid;
 
-	size_t elem_count;
-	struct bt_mesh_elem *elem;
+    size_t elem_count;
+    struct bt_mesh_elem *elem;
 };
 
 #ifdef __cplusplus

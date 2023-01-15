@@ -36,14 +36,16 @@ static const struct ble_gatt_svc_def ble_svc_gatt_defs[] = {
         /*** Service: GATT */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = BLE_UUID16_DECLARE(BLE_GATT_SVC_UUID16),
-        .characteristics = (struct ble_gatt_chr_def[]) { {
-            .uuid = BLE_UUID16_DECLARE(BLE_SVC_GATT_CHR_SERVICE_CHANGED_UUID16),
-            .access_cb = ble_svc_gatt_access,
-            .val_handle = &ble_svc_gatt_changed_val_handle,
-            .flags = BLE_GATT_CHR_F_INDICATE,
-        }, {
-            0, /* No more characteristics in this service. */
-        } },
+        .characteristics = (struct ble_gatt_chr_def[])
+        { {
+                .uuid = BLE_UUID16_DECLARE(BLE_SVC_GATT_CHR_SERVICE_CHANGED_UUID16),
+                .access_cb = ble_svc_gatt_access,
+                .val_handle = &ble_svc_gatt_changed_val_handle,
+                .flags = BLE_GATT_CHR_F_INDICATE,
+            }, {
+                0, /* No more characteristics in this service. */
+            }
+        },
     },
 
     {
@@ -56,7 +58,6 @@ ble_svc_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
                     struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     uint8_t *u8p;
-
     /* The only operation allowed for this characteristic is indicate.  This
      * access callback gets called by the stack when it needs to read the
      * characteristic value to populate the outgoing indication command.
@@ -65,15 +66,14 @@ ble_svc_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
      */
     assert(ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR);
     assert(ctxt->chr == &ble_svc_gatt_defs[0].characteristics[0]);
-
     u8p = os_mbuf_extend(ctxt->om, 4);
-    if (u8p == NULL) {
+
+    if(u8p == NULL) {
         return BLE_HS_ENOMEM;
     }
 
     put_le16(u8p + 0, ble_svc_gatt_start_handle);
     put_le16(u8p + 2, ble_svc_gatt_end_handle);
-
     return 0;
 }
 
@@ -96,13 +96,10 @@ void
 ble_svc_gatt_init(void)
 {
     int rc;
-
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
-
     rc = ble_gatts_count_cfg(ble_svc_gatt_defs);
     SYSINIT_PANIC_ASSERT(rc == 0);
-
     rc = ble_gatts_add_svcs(ble_svc_gatt_defs);
     SYSINIT_PANIC_ASSERT(rc == 0);
 }

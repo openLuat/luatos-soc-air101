@@ -14,7 +14,7 @@
 #include "../src/ble_hs_conn_priv.h"
 
 int bt_mesh_pb_adv_open(const u8_t uuid[16], u16_t net_idx, u16_t addr,
-			u8_t attention_duration);
+                        u8_t attention_duration);
 
 void bt_mesh_pb_adv_recv(struct os_mbuf *buf);
 
@@ -27,7 +27,9 @@ int bt_mesh_pb_gatt_recv(uint16_t conn_handle, struct os_mbuf *buf);
 const struct bt_mesh_prov *bt_mesh_prov_get(void);
 
 int bt_mesh_prov_init(const struct bt_mesh_prov *prov);
+int bt_mesh_prov_deinit(void);
 
+void bt_mesh_prov_reset_link_deinit(void);
 void bt_mesh_prov_reset_link(void);
 
 void bt_mesh_prov_complete(u16_t net_idx, u16_t addr);

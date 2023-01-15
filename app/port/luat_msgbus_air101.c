@@ -5,38 +5,24 @@
 #include "FreeRTOS.h"
 #include "rtosqueue.h"
 
-#define QUEUE_MAX_SIZE (1024)
+static QueueHandle_t xQueue = {0};
 
-static xQueueHandle queue = NULL;
-static u8 queue_buff[sizeof(rtos_msg_t) * QUEUE_MAX_SIZE];
-
-void luat_msgbus_init(void)
-{
-    if (queue == NULL)
-    {
-        queue = xQueueCreateExt(queue_buff, QUEUE_MAX_SIZE, sizeof(rtos_msg_t));
+void luat_msgbus_init(void) {
+    if (!xQueue) {
+        xQueue = xQueueCreate(256, sizeof(rtos_msg_t));
     }
 }
-uint32_t luat_msgbus_put(rtos_msg_t *msg, size_t timeout)
-{
-    if (queue == NULL)
-    {
+uint32_t luat_msgbus_put(rtos_msg_t* msg, size_t timeout) {
+    if (xQueue == NULL)
         return 1;
-    }
-    portBASE_TYPE pxHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendFromISR(queue, msg, &pxHigherPriorityTaskWoken);
-    return 0;
+    return xQueueSendFromISR(xQueue, msg, NULL) == pdTRUE ? 0 : 1;
 }
-uint32_t luat_msgbus_get(rtos_msg_t *msg, size_t timeout)
-{
-    if (queue == NULL)
-    {
+uint32_t luat_msgbus_get(rtos_msg_t* msg, size_t timeout) {
+    if (xQueue == NULL)
         return 1;
-    }
-    xQueueReceive(queue, msg, timeout);
-    return 0;
+    return xQueueReceive(xQueue, msg, timeout) == pdTRUE ? 0 : 1;
 }
-uint32_t luat_msgbus_freesize(void)
-{
+uint32_t luat_msgbus_freesize(void) {
     return 1;
 }
+

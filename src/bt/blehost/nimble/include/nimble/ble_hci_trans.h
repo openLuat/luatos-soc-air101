@@ -62,6 +62,9 @@ struct os_mbuf;
 /* Host-to-controller command. */
 #define BLE_HCI_TRANS_BUF_CMD       3
 
+/*Queue buffer*/
+#define BLE_HCI_TRANS_QUEUE_EVT     4
+
 /** Callback function types; executed when HCI packets are received. */
 typedef int ble_hci_trans_rx_cmd_fn(uint8_t *cmd, void *arg);
 typedef int ble_hci_trans_rx_acl_fn(struct os_mbuf *om, void *arg);

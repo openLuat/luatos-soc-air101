@@ -44,39 +44,33 @@ ble_ibeacon_set_adv_data(void *uuid128, uint16_t major,
     struct ble_hs_adv_fields fields;
     uint8_t buf[BLE_IBEACON_MFG_DATA_SIZE];
     int rc;
-
     /** Company identifier (Apple). */
     buf[0] = 0x4c;
     buf[1] = 0x00;
-
     /** iBeacon indicator. */
     buf[2] = 0x02;
     buf[3] = 0x15;
-
     /** UUID. */
     memcpy(buf + 4, uuid128, 16);
-
     /** Version number. */
     put_be16(buf + 20, major);
     put_be16(buf + 22, minor);
 
     /* Measured Power ranging data (Calibrated tx power at 1 meters). */
-    if (measured_power < -126 || measured_power > 20) {
+    if(measured_power < -126 || measured_power > 20) {
         return BLE_HS_EINVAL;
     }
-    buf[24] = measured_power;
 
+    buf[24] = measured_power;
     memset(&fields, 0, sizeof fields);
     fields.mfg_data = buf;
     fields.mfg_data_len = sizeof buf;
-
     /* Advertise two flags:
      *     o Discoverability in forthcoming advertisement (general)
      *     o BLE-only (BR/EDR unsupported).
      */
     fields.flags = BLE_HS_ADV_F_DISC_GEN |
                    BLE_HS_ADV_F_BREDR_UNSUP;
-
     rc = ble_gap_adv_set_fields(&fields);
     return rc;
 }

@@ -430,7 +430,7 @@ int tls_param_init(void)
 			TLS_DBGPRT_INFO("read parameter partition - %d.\n", i);
 			tls_fls_read((i == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR, (u8 *)flash, sizeof(*flash));
 			TLS_DBGPRT_INFO("patition %d magic - 0x%x, crc -0x%x .\n", i, flash->magic, flash->crc32);
-			
+
 			if (flash->magic == TLS_PARAM_MAGIC)
 			{
 				crckey = 0xFFFFFFFF;

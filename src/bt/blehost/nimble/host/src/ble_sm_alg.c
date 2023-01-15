@@ -48,7 +48,7 @@ ble_sm_alg_xor_128(const uint8_t *p, const uint8_t *q, uint8_t *r)
 {
     int i;
 
-    for (i = 0; i < 16; i++) {
+    for(i = 0; i < 16; i++) {
         r[i] = p[i] ^ q[i];
     }
 }
@@ -59,23 +59,19 @@ ble_sm_alg_encrypt(const uint8_t *key, const uint8_t *plaintext,
 {
     struct tc_aes_key_sched_struct s;
     uint8_t tmp[16];
-
     swap_buf(tmp, key, 16);
 
-    if (tc_aes128_set_encrypt_key(&s, tmp) == TC_CRYPTO_FAIL) {
+    if(tc_aes128_set_encrypt_key(&s, tmp) == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
     swap_buf(tmp, plaintext, 16);
 
-
-
-    if (tc_aes_encrypt(enc_data, tmp, &s) == TC_CRYPTO_FAIL) {
+    if(tc_aes_encrypt(enc_data, tmp, &s) == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
     swap_in_place(enc_data, 16);
-
     return 0;
 }
 
@@ -84,7 +80,6 @@ ble_sm_alg_s1(const uint8_t *k, const uint8_t *r1, const uint8_t *r2,
               uint8_t *out)
 {
     int rc;
-
     /* The most significant 64-bits of r1 are discarded to generate
      * r1' and the most significant 64-bits of r2 are discarded to
      * generate r2'.
@@ -95,10 +90,10 @@ ble_sm_alg_s1(const uint8_t *k, const uint8_t *r1, const uint8_t *r2,
      */
     memcpy(out, r2, 8);
     memcpy(out + 8, r1, 8);
-
     /* s1(k, r1 , r2) = e(k, r') */
     rc = ble_sm_alg_encrypt(k, out, out);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
@@ -111,7 +106,6 @@ ble_sm_alg_s1(const uint8_t *k, const uint8_t *r1, const uint8_t *r2,
     BLE_HS_LOG(DEBUG, "\n    out=");
     ble_hs_log_flat_buf(out, 16);
     BLE_HS_LOG(DEBUG, "\n");
-
     return 0;
 }
 
@@ -124,7 +118,6 @@ ble_sm_alg_c1(const uint8_t *k, const uint8_t *r,
 {
     uint8_t p1[16], p2[16];
     int rc;
-
     BLE_HS_LOG(DEBUG, "ble_sm_alg_c1()\n    k=");
     ble_hs_log_flat_buf(k, 16);
     BLE_HS_LOG(DEBUG, "\n    r=");
@@ -138,23 +131,19 @@ ble_sm_alg_c1(const uint8_t *k, const uint8_t *r,
     ble_hs_log_flat_buf(preq, 7);
     BLE_HS_LOG(DEBUG, "\n    pres=");
     ble_hs_log_flat_buf(pres, 7);
-
     /* pres, preq, rat and iat are concatenated to generate p1 */
     p1[0] = iat;
     p1[1] = rat;
     memcpy(p1 + 2, preq, 7);
     memcpy(p1 + 9, pres, 7);
-
     BLE_HS_LOG(DEBUG, "\n    p1=");
     ble_hs_log_flat_buf(p1, sizeof p1);
-
     /* c1 = e(k, e(k, r XOR p1) XOR p2) */
-
     /* Using out_enc_data as temporary output buffer */
     ble_sm_alg_xor_128(r, p1, out_enc_data);
-
     rc = ble_sm_alg_encrypt(k, out_enc_data, out_enc_data);
-    if (rc != 0) {
+
+    if(rc != 0) {
         rc = BLE_HS_EUNKNOWN;
         goto done;
     }
@@ -163,23 +152,19 @@ ble_sm_alg_c1(const uint8_t *k, const uint8_t *r,
     memcpy(p2, ra, 6);
     memcpy(p2 + 6, ia, 6);
     memset(p2 + 12, 0, 4);
-
     BLE_HS_LOG(DEBUG, "\n    p2=");
     ble_hs_log_flat_buf(p2, sizeof p2);
-
     ble_sm_alg_xor_128(out_enc_data, p2, out_enc_data);
-
     rc = ble_sm_alg_encrypt(k, out_enc_data, out_enc_data);
-    if (rc != 0) {
+
+    if(rc != 0) {
         rc = BLE_HS_EUNKNOWN;
         goto done;
     }
 
     BLE_HS_LOG(DEBUG, "\n    out_enc_data=");
     ble_hs_log_flat_buf(out_enc_data, 16);
-
     rc = 0;
-
 done:
     BLE_HS_LOG(DEBUG, "\n    rc=%d\n", rc);
     return rc;
@@ -210,15 +195,15 @@ ble_sm_alg_aes_cmac(const uint8_t *key, const uint8_t *in, size_t len,
     struct tc_aes_key_sched_struct sched;
     struct tc_cmac_struct state;
 
-    if (tc_cmac_setup(&state, key, &sched) == TC_CRYPTO_FAIL) {
+    if(tc_cmac_setup(&state, key, &sched) == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
-    if (tc_cmac_update(&state, in, len) == TC_CRYPTO_FAIL) {
+    if(tc_cmac_update(&state, in, len) == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
-    if (tc_cmac_final(out, &state) == TC_CRYPTO_FAIL) {
+    if(tc_cmac_final(out, &state) == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
@@ -232,7 +217,6 @@ ble_sm_alg_f4(const uint8_t *u, const uint8_t *v, const uint8_t *x,
     uint8_t xs[16];
     uint8_t m[65];
     int rc;
-
     BLE_HS_LOG(DEBUG, "ble_sm_alg_f4()\n    u=");
     ble_hs_log_flat_buf(u, 32);
     BLE_HS_LOG(DEBUG, "\n    v=");
@@ -240,7 +224,6 @@ ble_sm_alg_f4(const uint8_t *u, const uint8_t *v, const uint8_t *x,
     BLE_HS_LOG(DEBUG, "\n    x=");
     ble_hs_log_flat_buf(x, 16);
     BLE_HS_LOG(DEBUG, "\n    z=0x%02x\n", z);
-
     /*
      * U, V and Z are concatenated and used as input m to the function
      * AES-CMAC and X is used as the key k.
@@ -253,20 +236,17 @@ ble_sm_alg_f4(const uint8_t *u, const uint8_t *v, const uint8_t *x,
     swap_buf(m, u, 32);
     swap_buf(m + 32, v, 32);
     m[64] = z;
-
     swap_buf(xs, x, 16);
-
     rc = ble_sm_alg_aes_cmac(xs, m, sizeof(m), out_enc_data);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     swap_in_place(out_enc_data, 16);
-
     BLE_HS_LOG(DEBUG, "    out_enc_data=");
     ble_hs_log_flat_buf(out_enc_data, 16);
     BLE_HS_LOG(DEBUG, "\n");
-
     return 0;
 }
 
@@ -276,8 +256,9 @@ ble_sm_alg_f5(const uint8_t *w, const uint8_t *n1, const uint8_t *n2,
               uint8_t *mackey, uint8_t *ltk)
 {
     static const uint8_t salt[16] = { 0x6c, 0x88, 0x83, 0x91, 0xaa, 0xf5,
-                      0xa5, 0x38, 0x60, 0x37, 0x0b, 0xdb,
-                      0x5a, 0x60, 0x83, 0xbe };
+                                      0xa5, 0x38, 0x60, 0x37, 0x0b, 0xdb,
+                                      0x5a, 0x60, 0x83, 0xbe
+                                    };
     uint8_t m[53] = {
         0x00, /* counter */
         0x62, 0x74, 0x6c, 0x65, /* keyID */
@@ -292,49 +273,42 @@ ble_sm_alg_f5(const uint8_t *w, const uint8_t *n1, const uint8_t *n2,
     uint8_t ws[32];
     uint8_t t[16];
     int rc;
-
     BLE_HS_LOG(DEBUG, "ble_sm_alg_f5()\n");
     ble_sm_alg_log_buf("w", w, 32);
     ble_sm_alg_log_buf("n1", n1, 16);
     ble_sm_alg_log_buf("n2", n2, 16);
-
     swap_buf(ws, w, 32);
-
     rc = ble_sm_alg_aes_cmac(salt, ws, 32, t);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     ble_sm_alg_log_buf("t", t, 16);
-
     swap_buf(m + 5, n1, 16);
     swap_buf(m + 21, n2, 16);
     m[37] = a1t;
     swap_buf(m + 38, a1, 6);
     m[44] = a2t;
     swap_buf(m + 45, a2, 6);
-
     rc = ble_sm_alg_aes_cmac(t, m, sizeof(m), mackey);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     ble_sm_alg_log_buf("mackey", mackey, 16);
-
     swap_in_place(mackey, 16);
-
     /* Counter for ltk is 1. */
     m[0] = 0x01;
-
     rc = ble_sm_alg_aes_cmac(t, m, sizeof(m), ltk);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     ble_sm_alg_log_buf("ltk", ltk, 16);
-
     swap_in_place(ltk, 16);
-
     return 0;
 }
 
@@ -347,7 +321,6 @@ ble_sm_alg_f6(const uint8_t *w, const uint8_t *n1, const uint8_t *n2,
     uint8_t ws[16];
     uint8_t m[65];
     int rc;
-
     BLE_HS_LOG(DEBUG, "ble_sm_alg_f6()\n");
     ble_sm_alg_log_buf("w", w, 16);
     ble_sm_alg_log_buf("n1", n1, 16);
@@ -358,31 +331,25 @@ ble_sm_alg_f6(const uint8_t *w, const uint8_t *n1, const uint8_t *n2,
     ble_sm_alg_log_buf("a1", a1, 6);
     ble_sm_alg_log_buf("a2t", &a2t, 1);
     ble_sm_alg_log_buf("a2", a2, 6);
-
     swap_buf(m, n1, 16);
     swap_buf(m + 16, n2, 16);
     swap_buf(m + 32, r, 16);
     swap_buf(m + 48, iocap, 3);
-
     m[51] = a1t;
     memcpy(m + 52, a1, 6);
     swap_buf(m + 52, a1, 6);
-
     m[58] = a2t;
     memcpy(m + 59, a2, 6);
     swap_buf(m + 59, a2, 6);
-
     swap_buf(ws, w, 16);
-
     rc = ble_sm_alg_aes_cmac(ws, m, sizeof(m), check);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     ble_sm_alg_log_buf("res", check, 16);
-
     swap_in_place(check, 16);
-
     return 0;
 }
 
@@ -392,30 +359,25 @@ ble_sm_alg_g2(const uint8_t *u, const uint8_t *v, const uint8_t *x,
 {
     uint8_t m[80], xs[16];
     int rc;
-
     BLE_HS_LOG(DEBUG, "ble_sm_alg_g2()\n");
     ble_sm_alg_log_buf("u", u, 32);
     ble_sm_alg_log_buf("v", v, 32);
     ble_sm_alg_log_buf("x", x, 16);
     ble_sm_alg_log_buf("y", y, 16);
-
     swap_buf(m, u, 32);
     swap_buf(m + 32, v, 32);
     swap_buf(m + 64, y, 16);
-
     swap_buf(xs, x, 16);
-
     /* reuse xs (key) as buffer for result */
     rc = ble_sm_alg_aes_cmac(xs, m, sizeof(m), xs);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     ble_sm_alg_log_buf("res", xs, 16);
-
     *passkey = get_be32(xs + 12) % 1000000;
     BLE_HS_LOG(DEBUG, "    passkey=%u\n", *passkey);
-
     return 0;
 }
 
@@ -427,22 +389,21 @@ ble_sm_alg_gen_dhkey(const uint8_t *peer_pub_key_x, const uint8_t *peer_pub_key_
     uint8_t pk[64];
     uint8_t priv[32];
     int rc;
-
     swap_buf(pk, peer_pub_key_x, 32);
     swap_buf(&pk[32], peer_pub_key_y, 32);
     swap_buf(priv, our_priv_key, 32);
 
-    if (uECC_valid_public_key(pk, &curve_secp256r1) < 0) {
+    if(uECC_valid_public_key(pk, &curve_secp256r1) < 0) {
         return BLE_HS_EUNKNOWN;
     }
 
     rc = uECC_shared_secret(pk, priv, dh, &curve_secp256r1);
-    if (rc == TC_CRYPTO_FAIL) {
+
+    if(rc == TC_CRYPTO_FAIL) {
         return BLE_HS_EUNKNOWN;
     }
 
     swap_buf(out_dhkey, dh, 32);
-
     return 0;
 }
 
@@ -481,18 +442,17 @@ ble_sm_alg_gen_key_pair(uint8_t *pub, uint8_t *priv)
     uint8_t pk[64];
 
     do {
-        if (uECC_make_key(pk, priv, &curve_secp256r1) != TC_CRYPTO_SUCCESS) {
+        if(uECC_make_key(pk, priv, &curve_secp256r1) != TC_CRYPTO_SUCCESS) {
             return BLE_HS_EUNKNOWN;
         }
 
         /* Make sure generated key isn't debug key. */
-    } while (memcmp(priv, ble_sm_alg_dbg_priv_key, 32) == 0);
+    } while(memcmp(priv, ble_sm_alg_dbg_priv_key, 32) == 0);
 
     swap_buf(pub, pk, 32);
     swap_buf(&pub[32], &pk[32], 32);
     swap_in_place(priv, 32);
 #endif
-
     return 0;
 }
 
@@ -503,22 +463,24 @@ ble_sm_alg_rand(uint8_t *dst, unsigned int size)
 #if MYNEWT_VAL(TRNG)
     size_t num;
 
-    if (!g_trng) {
+    if(!g_trng) {
         g_trng = (struct trng_dev *)os_dev_open("trng", OS_WAIT_FOREVER, NULL);
         assert(g_trng);
     }
 
-    while (size) {
+    while(size) {
         num = trng_read(g_trng, dst, size);
         dst += num;
         size -= num;
     }
+
 #else
-    if (ble_hs_hci_util_rand(dst, size)) {
+
+    if(ble_hs_hci_util_rand(dst, size)) {
         return 0;
     }
-#endif
 
+#endif
     return 1;
 }
 

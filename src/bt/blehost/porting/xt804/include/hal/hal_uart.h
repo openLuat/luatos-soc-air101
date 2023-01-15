@@ -62,7 +62,7 @@ typedef int (*hal_uart_rx_char)(void *arg, uint8_t byte);
  * UART/GPIO pins is in BSP.
  */
 int hal_uart_init_cbs(int uart, hal_uart_tx_char tx_func,
-  hal_uart_tx_done tx_done, hal_uart_rx_char rx_func, void *arg);
+                      hal_uart_tx_done tx_done, hal_uart_rx_char rx_func, void *arg);
 
 enum hal_uart_parity {
     /** No Parity */
@@ -104,7 +104,7 @@ int hal_uart_init(int uart, void *cfg);
  * @return 0 on success, non-zero error code on failure
  */
 int hal_uart_config(int uart, int32_t speed, uint8_t databits, uint8_t stopbits,
-  enum hal_uart_parity parity, enum hal_uart_flow_ctl flow_ctl);
+                    enum hal_uart_parity parity, enum hal_uart_flow_ctl flow_ctl);
 
 /**
  * Close UART port. Can call hal_uart_config() with different settings after

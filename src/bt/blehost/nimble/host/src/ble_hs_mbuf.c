@@ -28,20 +28,19 @@ ble_hs_mbuf_gen_pkt(uint16_t leading_space)
 {
     struct os_mbuf *om;
     int rc;
-
     om = os_msys_get_pkthdr(0, 0);
-    if (om == NULL) {
+
+    if(om == NULL) {
         return NULL;
     }
 
-    if (om->om_omp->omp_databuf_len < leading_space) {
+    if(om->om_omp->omp_databuf_len < leading_space) {
         rc = os_mbuf_free_chain(om);
         BLE_HS_DBG_ASSERT_EVAL(rc == 0);
         return NULL;
     }
 
     om->om_data += leading_space;
-
     return om;
 }
 
@@ -90,9 +89,9 @@ ble_hs_mbuf_att_pkt(void)
     /* Prepare write request and response are the larget ATT commands which
      * contain attribute data.
      */
-     return ble_hs_mbuf_gen_pkt(BLE_HCI_DATA_HDR_SZ +
-                                BLE_L2CAP_HDR_SZ +
-                                BLE_ATT_PREP_WRITE_CMD_BASE_SZ);
+    return ble_hs_mbuf_gen_pkt(BLE_HCI_DATA_HDR_SZ +
+                               BLE_L2CAP_HDR_SZ +
+                               BLE_ATT_PREP_WRITE_CMD_BASE_SZ);
 }
 
 struct os_mbuf *
@@ -100,14 +99,15 @@ ble_hs_mbuf_from_flat(const void *buf, uint16_t len)
 {
     struct os_mbuf *om;
     int rc;
-
     om = ble_hs_mbuf_att_pkt();
-    if (om == NULL) {
+
+    if(om == NULL) {
         return NULL;
     }
 
     rc = os_mbuf_copyinto(om, 0, buf, len);
-    if (rc != 0) {
+
+    if(rc != 0) {
         os_mbuf_free_chain(om);
         return NULL;
     }
@@ -122,38 +122,41 @@ ble_hs_mbuf_to_flat(const struct os_mbuf *om, void *flat, uint16_t max_len,
     uint16_t copy_len;
     int rc;
 
-    if (OS_MBUF_PKTLEN(om) <= max_len) {
+    if(OS_MBUF_PKTLEN(om) <= max_len) {
         copy_len = OS_MBUF_PKTLEN(om);
     } else {
         copy_len = max_len;
     }
 
     rc = os_mbuf_copydata(om, 0, copy_len, flat);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return BLE_HS_EUNKNOWN;
     }
 
-    if (copy_len > max_len) {
+    if(copy_len > max_len) {
         rc = BLE_HS_EMSGSIZE;
     } else {
         rc = 0;
     }
 
-    if (out_copy_len != NULL) {
+    if(out_copy_len != NULL) {
         *out_copy_len = copy_len;
     }
+
     return rc;
 }
 
 int
 ble_hs_mbuf_pullup_base(struct os_mbuf **om, int base_len)
 {
-    if (OS_MBUF_PKTLEN(*om) < base_len) {
+    if(OS_MBUF_PKTLEN(*om) < base_len) {
         return BLE_HS_EBADDATA;
     }
 
     *om = os_mbuf_pullup(*om, base_len);
-    if (*om == NULL) {
+
+    if(*om == NULL) {
         return BLE_HS_ENOMEM;
     }
 

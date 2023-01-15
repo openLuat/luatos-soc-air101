@@ -21,59 +21,66 @@
 
 #define BT_MESH_MBUF_HEADER_SIZE (sizeof(struct os_mbuf_pkthdr) + \
                                     BT_MESH_ADV_USER_DATA_SIZE +\
-				    sizeof(struct os_mbuf))
+                    sizeof(struct os_mbuf))
 
-enum bt_mesh_adv_type
-{
-	BT_MESH_ADV_PROV,
-	BT_MESH_ADV_DATA,
-	BT_MESH_ADV_BEACON,
-	BT_MESH_ADV_URI,
+enum bt_mesh_adv_type {
+    BT_MESH_ADV_PROV,
+    BT_MESH_ADV_DATA,
+    BT_MESH_ADV_BEACON,
+    BT_MESH_ADV_URI,
 };
 
 typedef void (*bt_mesh_adv_func_t)(struct os_mbuf *buf, u16_t duration,
-				   int err, void *user_data);
+                                   int err, void *user_data);
 
 struct bt_mesh_adv {
-	const struct bt_mesh_send_cb *cb;
-	void *cb_data;
+    const struct bt_mesh_send_cb *cb;
+    void *cb_data;
 
-	u8_t      type:2,
-		  busy:1;
-	u8_t      xmit;
+    u8_t      type: 2,
+              busy: 1;
+    u8_t      xmit;
 
-	/* For transport layer segment sending */
-	struct {
-		u8_t attempts;
-	} seg;
+    /* For transport layer segment sending */
+    struct {
+        u8_t attempts;
+    } seg;
 
-	u8_t flags;
+    u8_t flags;
 
-	int ref_cnt;
-	struct ble_npl_event ev;
+    int ref_cnt;
+    struct ble_npl_event ev;
 };
 
 typedef struct bt_mesh_adv *(*bt_mesh_adv_alloc_t)(int id);
 
 /* xmit_count: Number of retransmissions, i.e. 0 == 1 transmission */
 struct os_mbuf *bt_mesh_adv_create(enum bt_mesh_adv_type type, u8_t xmit,
-				   s32_t timeout);
+                                   s32_t timeout);
 
 struct os_mbuf *bt_mesh_adv_create_from_pool(struct os_mbuf_pool *pool,
-					     bt_mesh_adv_alloc_t get_id,
-					     enum bt_mesh_adv_type type,
-					     u8_t xmit, s32_t timeout);
+        bt_mesh_adv_alloc_t get_id,
+        enum bt_mesh_adv_type type,
+        u8_t xmit, s32_t timeout);
 
 void bt_mesh_adv_send(struct os_mbuf *buf, const struct bt_mesh_send_cb *cb,
-		      void *cb_data);
+                      void *cb_data);
+void bt_mesh_adv_send_to_tail(struct os_mbuf *buf, const struct bt_mesh_send_cb *cb,
+                      void *cb_data);
 
 void bt_mesh_adv_update(void);
 
 void bt_mesh_adv_init(void);
+
+void bt_mesh_adv_deinit(void);
+
 
 int bt_mesh_scan_enable(void);
 
 int bt_mesh_scan_disable(void);
 
 int ble_adv_gap_mesh_cb(struct ble_gap_event *event, void *arg);
+
+uint8_t bt_mesh_adv_avaiable_for_relay(void);
+
 #endif

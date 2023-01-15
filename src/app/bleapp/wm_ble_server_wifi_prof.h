@@ -1,6 +1,10 @@
 #ifndef __WM_BLE_WIFI_PROF_H__
 #define __WM_BLE_WIFI_PROF_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int (*op_exec_write_callback)(int exec);
 typedef int (*op_write_callback)(int offset, uint8_t *ptr, int length, bool b_prep);
 typedef int (*op_read_callback)(int offset);
@@ -11,8 +15,7 @@ typedef int (*op_service_enabled_callback)(int status);
 typedef int (*op_mtu_changed_callback)(int mtu);
 
 
-typedef struct
-{
+typedef struct {
     size_t size;
 
     op_service_enabled_callback enabled_cb;
@@ -39,6 +42,10 @@ int tls_ble_wifi_prof_disconnect(int status);
 int tls_ble_wifi_prof_send_msg(uint8_t *ptr, int length);
 int tls_ble_wifi_prof_disable(int status);
 int tls_ble_wifi_adv(bool enable);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

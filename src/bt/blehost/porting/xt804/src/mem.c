@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "os/os.h"
 #include "mem/mem.h"
+#include "wm_mem.h"
 
 /**
  * Generic mempool allocation function.  Used with basic and extended mempools.
@@ -30,9 +31,10 @@ mem_malloc_mempool_gen(uint16_t num_blocks, uint32_t block_size,
 {
     block_size = OS_ALIGN(block_size, OS_ALIGNMENT);
 
-    if (num_blocks > 0) {
+    if(num_blocks > 0) {
         *out_buf = tls_mem_alloc(OS_MEMPOOL_BYTES(num_blocks, block_size));
-        if (*out_buf == NULL) {
+
+        if(*out_buf == NULL) {
             return OS_ENOMEM;
         }
     } else {
@@ -64,19 +66,20 @@ mem_malloc_mempool(struct os_mempool *mempool, uint16_t num_blocks,
 {
     void *buf;
     int rc;
-
     rc = mem_malloc_mempool_gen(num_blocks, block_size, &buf);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
     rc = os_mempool_init(mempool, num_blocks, block_size, buf, name);
-    if (rc != 0) {
+
+    if(rc != 0) {
         tls_mem_free(buf);
         return rc;
     }
 
-    if (out_buf != NULL) {
+    if(out_buf != NULL) {
         *out_buf = buf;
     }
 
@@ -105,19 +108,20 @@ mem_malloc_mempool_ext(struct os_mempool_ext *mpe, uint16_t num_blocks,
 {
     void *buf;
     int rc;
-
     rc = mem_malloc_mempool_gen(num_blocks, block_size, &buf);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
     rc = os_mempool_ext_init(mpe, num_blocks, block_size, buf, name);
-    if (rc != 0) {
+
+    if(rc != 0) {
         tls_mem_free(buf);
         return rc;
     }
 
-    if (out_buf != NULL) {
+    if(out_buf != NULL) {
         *out_buf = buf;
     }
 
@@ -150,21 +154,21 @@ mem_malloc_mbuf_pool(struct os_mempool *mempool,
 {
     void *buf;
     int rc;
-
-    block_size = OS_ALIGN(block_size + sizeof (struct os_mbuf), OS_ALIGNMENT);
-
+    block_size = OS_ALIGN(block_size + sizeof(struct os_mbuf), OS_ALIGNMENT);
     rc = mem_malloc_mempool(mempool, num_blocks, block_size, name, &buf);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
     rc = os_mbuf_pool_init(mbuf_pool, mempool, block_size, num_blocks);
-    if (rc != 0) {
+
+    if(rc != 0) {
         tls_mem_free(buf);
         return rc;
     }
 
-    if (out_buf != NULL) {
+    if(out_buf != NULL) {
         *out_buf = buf;
     }
 
@@ -196,9 +200,8 @@ mem_malloc_mbufpkt_pool(struct os_mempool *mempool,
                         void **out_buf)
 {
     int rc;
-
     rc = mem_malloc_mbuf_pool(mempool, mbuf_pool, num_blocks,
-                              block_size + sizeof (struct os_mbuf_pkthdr),
+                              block_size + sizeof(struct os_mbuf_pkthdr),
                               name, out_buf);
     return rc;
 }
@@ -209,14 +212,15 @@ mem_init_mbuf_pool(void *mem, struct os_mempool *mempool,
                    int block_size, char *name)
 {
     int rc;
-
     rc = os_mempool_init(mempool, num_blocks, block_size, mem, name);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
     rc = os_mbuf_pool_init(mbuf_pool, mempool, block_size, num_blocks);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
@@ -271,7 +275,7 @@ mem_split_frag(struct os_mbuf **om, uint16_t max_frag_sz,
     struct os_mbuf *frag;
     int rc;
 
-    if (OS_MBUF_PKTLEN(*om) <= max_frag_sz) {
+    if(OS_MBUF_PKTLEN(*om) <= max_frag_sz) {
         /* Final fragment. */
         frag = *om;
         *om = NULL;
@@ -280,22 +284,22 @@ mem_split_frag(struct os_mbuf **om, uint16_t max_frag_sz,
 
     /* Packet needs to be split.  Allocate a new buffer for the fragment. */
     frag = alloc_cb(max_frag_sz, cb_arg);
-    if (frag == NULL) {
+
+    if(frag == NULL) {
         goto err;
     }
 
     /* Move data from the front of the packet into the fragment mbuf. */
     rc = os_mbuf_appendfrom(frag, *om, 0, max_frag_sz);
-    if (rc != 0) {
+
+    if(rc != 0) {
         goto err;
     }
-    os_mbuf_adj(*om, max_frag_sz);
 
+    os_mbuf_adj(*om, max_frag_sz);
     /* Free unused portion of of source mbuf chain, if possible. */
     *om = os_mbuf_trim_front(*om);
-
     return frag;
-
 err:
     os_mbuf_free_chain(frag);
     return NULL;

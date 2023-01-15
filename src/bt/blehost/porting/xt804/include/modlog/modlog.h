@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-#include "log/log.h"
+#include "log_common/log_common.h"
 
 #define MODLOG_MODULE_DFLT 3
 
@@ -63,7 +63,7 @@
 
 #define MODLOG(ml_lvl_, ml_mod_, ...) \
     MODLOG_ ## ml_lvl_((ml_mod_), __VA_ARGS__)
-    
+
 #define MODLOG_DFLT(ml_lvl_, ...) \
         MODLOG(ml_lvl_, LOG_MODULE_DEFAULT, __VA_ARGS__)
 

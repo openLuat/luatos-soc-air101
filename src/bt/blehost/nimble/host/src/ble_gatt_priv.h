@@ -34,55 +34,55 @@ struct ble_att_read_group_type_adata;
 struct ble_att_prep_write_cmd;
 
 STATS_SECT_START(ble_gattc_stats)
-    STATS_SECT_ENTRY(mtu)
-    STATS_SECT_ENTRY(mtu_fail)
-    STATS_SECT_ENTRY(disc_all_svcs)
-    STATS_SECT_ENTRY(disc_all_svcs_fail)
-    STATS_SECT_ENTRY(disc_svc_uuid)
-    STATS_SECT_ENTRY(disc_svc_uuid_fail)
-    STATS_SECT_ENTRY(find_inc_svcs)
-    STATS_SECT_ENTRY(find_inc_svcs_fail)
-    STATS_SECT_ENTRY(disc_all_chrs)
-    STATS_SECT_ENTRY(disc_all_chrs_fail)
-    STATS_SECT_ENTRY(disc_chrs_uuid)
-    STATS_SECT_ENTRY(disc_chrs_uuid_fail)
-    STATS_SECT_ENTRY(disc_all_dscs)
-    STATS_SECT_ENTRY(disc_all_dscs_fail)
-    STATS_SECT_ENTRY(read)
-    STATS_SECT_ENTRY(read_fail)
-    STATS_SECT_ENTRY(read_uuid)
-    STATS_SECT_ENTRY(read_uuid_fail)
-    STATS_SECT_ENTRY(read_long)
-    STATS_SECT_ENTRY(read_long_fail)
-    STATS_SECT_ENTRY(read_mult)
-    STATS_SECT_ENTRY(read_mult_fail)
-    STATS_SECT_ENTRY(write_no_rsp)
-    STATS_SECT_ENTRY(write_no_rsp_fail)
-    STATS_SECT_ENTRY(write)
-    STATS_SECT_ENTRY(write_fail)
-    STATS_SECT_ENTRY(write_long)
-    STATS_SECT_ENTRY(write_long_fail)
-    STATS_SECT_ENTRY(write_reliable)
-    STATS_SECT_ENTRY(write_reliable_fail)
-    STATS_SECT_ENTRY(notify)
-    STATS_SECT_ENTRY(notify_fail)
-    STATS_SECT_ENTRY(indicate)
-    STATS_SECT_ENTRY(indicate_fail)
-    STATS_SECT_ENTRY(proc_timeout)
+STATS_SECT_ENTRY(mtu)
+STATS_SECT_ENTRY(mtu_fail)
+STATS_SECT_ENTRY(disc_all_svcs)
+STATS_SECT_ENTRY(disc_all_svcs_fail)
+STATS_SECT_ENTRY(disc_svc_uuid)
+STATS_SECT_ENTRY(disc_svc_uuid_fail)
+STATS_SECT_ENTRY(find_inc_svcs)
+STATS_SECT_ENTRY(find_inc_svcs_fail)
+STATS_SECT_ENTRY(disc_all_chrs)
+STATS_SECT_ENTRY(disc_all_chrs_fail)
+STATS_SECT_ENTRY(disc_chrs_uuid)
+STATS_SECT_ENTRY(disc_chrs_uuid_fail)
+STATS_SECT_ENTRY(disc_all_dscs)
+STATS_SECT_ENTRY(disc_all_dscs_fail)
+STATS_SECT_ENTRY(read)
+STATS_SECT_ENTRY(read_fail)
+STATS_SECT_ENTRY(read_uuid)
+STATS_SECT_ENTRY(read_uuid_fail)
+STATS_SECT_ENTRY(read_long)
+STATS_SECT_ENTRY(read_long_fail)
+STATS_SECT_ENTRY(read_mult)
+STATS_SECT_ENTRY(read_mult_fail)
+STATS_SECT_ENTRY(write_no_rsp)
+STATS_SECT_ENTRY(write_no_rsp_fail)
+STATS_SECT_ENTRY(write)
+STATS_SECT_ENTRY(write_fail)
+STATS_SECT_ENTRY(write_long)
+STATS_SECT_ENTRY(write_long_fail)
+STATS_SECT_ENTRY(write_reliable)
+STATS_SECT_ENTRY(write_reliable_fail)
+STATS_SECT_ENTRY(notify)
+STATS_SECT_ENTRY(notify_fail)
+STATS_SECT_ENTRY(indicate)
+STATS_SECT_ENTRY(indicate_fail)
+STATS_SECT_ENTRY(proc_timeout)
 STATS_SECT_END
 extern STATS_SECT_DECL(ble_gattc_stats) ble_gattc_stats;
 
 STATS_SECT_START(ble_gatts_stats)
-    STATS_SECT_ENTRY(svcs)
-    STATS_SECT_ENTRY(chrs)
-    STATS_SECT_ENTRY(dscs)
-    STATS_SECT_ENTRY(svc_def_reads)
-    STATS_SECT_ENTRY(svc_inc_reads)
-    STATS_SECT_ENTRY(chr_def_reads)
-    STATS_SECT_ENTRY(chr_val_reads)
-    STATS_SECT_ENTRY(chr_val_writes)
-    STATS_SECT_ENTRY(dsc_reads)
-    STATS_SECT_ENTRY(dsc_writes)
+STATS_SECT_ENTRY(svcs)
+STATS_SECT_ENTRY(chrs)
+STATS_SECT_ENTRY(dscs)
+STATS_SECT_ENTRY(svc_def_reads)
+STATS_SECT_ENTRY(svc_inc_reads)
+STATS_SECT_ENTRY(chr_def_reads)
+STATS_SECT_ENTRY(chr_val_reads)
+STATS_SECT_ENTRY(chr_val_writes)
+STATS_SECT_ENTRY(dsc_reads)
+STATS_SECT_ENTRY(dsc_writes)
 STATS_SECT_END
 extern STATS_SECT_DECL(ble_gatts_stats) ble_gatts_stats;
 
@@ -115,10 +115,10 @@ void ble_gattc_rx_read_blob_rsp(uint16_t conn_handle, int status,
 void ble_gattc_rx_read_mult_rsp(uint16_t conn_handle, int status,
                                 struct os_mbuf **rxom);
 void ble_gattc_rx_read_group_type_adata(
-    uint16_t conn_handle, struct ble_att_read_group_type_adata *adata);
+                uint16_t conn_handle, struct ble_att_read_group_type_adata *adata);
 void ble_gattc_rx_read_group_type_complete(uint16_t conn_handle, int rc);
 void ble_gattc_rx_find_type_value_hinfo(
-    uint16_t conn_handle, struct ble_att_find_type_value_hinfo *hinfo);
+                uint16_t conn_handle, struct ble_att_find_type_value_hinfo *hinfo);
 void ble_gattc_rx_find_type_value_complete(uint16_t conn_handle, int status);
 void ble_gattc_rx_write_rsp(uint16_t conn_handle);
 void ble_gattc_rx_prep_write_rsp(uint16_t conn_handle, int status,

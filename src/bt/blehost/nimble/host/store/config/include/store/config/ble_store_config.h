@@ -31,6 +31,9 @@ int ble_store_config_read(int obj_type, const union ble_store_key *key,
                           union ble_store_value *value);
 int ble_store_config_write(int obj_type, const union ble_store_value *val);
 int ble_store_config_delete(int obj_type, const union ble_store_key *key);
+int ble_store_config_flush(void);
+void ble_store_config_init(void);
+void ble_store_config_deinit(void);
 
 #ifdef __cplusplus
 }

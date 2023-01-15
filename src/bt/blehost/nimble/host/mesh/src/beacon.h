@@ -16,11 +16,12 @@ void bt_mesh_beacon_disable(void);
 
 void bt_mesh_beacon_ivu_initiator(bool enable);
 
-void bt_mesh_beacon_recv(struct os_mbuf *buf);
+void bt_mesh_beacon_recv(const bt_addr_le_t *addr, struct os_mbuf *buf);
 
 void bt_mesh_beacon_create(struct bt_mesh_subnet *sub,
-			   struct os_mbuf *buf);
+                           struct os_mbuf *buf);
 
 void bt_mesh_beacon_init(void);
+void bt_mesh_beacon_deinit(void);
 
 #endif

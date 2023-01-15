@@ -31,7 +31,6 @@ static void
 ble_hs_shutdown_stop_cb(int status, void *arg)
 {
     SYSDOWN_ASSERT_ACTIVE();
-
     /* Indicate to sysdown that the host is fully shut down. */
     sysdown_release();
 }
@@ -40,29 +39,28 @@ int
 ble_hs_shutdown(int reason)
 {
     int rc;
-
     /* Ensure this function only gets called by sysdown. */
     SYSDOWN_ASSERT_ACTIVE();
-
     /* Initiate a host stop procedure. */
     rc = ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb,
                      NULL);
-    switch (rc) {
-    case 0:
-        /* Stop initiated.  Wait for result to be reported asynchronously. */
-        return SYSDOWN_IN_PROGRESS;
 
-    case BLE_HS_EBUSY:
-        /* Already stopping.  Wait for result to be reported asynchronously. */
-        return SYSDOWN_IN_PROGRESS;
+    switch(rc) {
+        case 0:
+            /* Stop initiated.  Wait for result to be reported asynchronously. */
+            return SYSDOWN_IN_PROGRESS;
 
-    case BLE_HS_EALREADY:
-        /* Already stopped.  Shutdown complete. */
-        return SYSDOWN_COMPLETE;
+        case BLE_HS_EBUSY:
+            /* Already stopping.  Wait for result to be reported asynchronously. */
+            return SYSDOWN_IN_PROGRESS;
 
-    default:
-        BLE_HS_LOG(ERROR, "ble_hs_shutdown: failed to stop host; rc=%d\n", rc);
-        return SYSDOWN_COMPLETE;
+        case BLE_HS_EALREADY:
+            /* Already stopped.  Shutdown complete. */
+            return SYSDOWN_COMPLETE;
+
+        default:
+            BLE_HS_LOG(ERROR, "ble_hs_shutdown: failed to stop host; rc=%d\n", rc);
+            return SYSDOWN_COMPLETE;
     }
 }
 

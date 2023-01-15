@@ -38,8 +38,7 @@ extern "C" {
 /* 4 byte header + 251 byte payload. */
 #define BLE_ACL_MAX_PKT_SIZE     255
 
-struct ble_encryption_block
-{
+struct ble_encryption_block {
     uint8_t     key[BLE_ENC_BLOCK_SIZE];
     uint8_t     plain_text[BLE_ENC_BLOCK_SIZE];
     uint8_t     cipher_text[BLE_ENC_BLOCK_SIZE];
@@ -64,8 +63,7 @@ struct ble_encryption_block
  *  crcok: flag denoting CRC check passed (1) or failed (0).
  *  rssi: RSSI, in dBm.
  */
-struct ble_mbuf_hdr_rxinfo
-{
+struct ble_mbuf_hdr_rxinfo {
     uint16_t flags;
     uint8_t channel;
     uint8_t handle;
@@ -99,16 +97,14 @@ struct ble_mbuf_hdr_rxinfo
 #define BLE_MBUF_HDR_F_RXSTATE_MASK     (0x0007)
 
 /* Transmit info. NOTE: no flags defined */
-struct ble_mbuf_hdr_txinfo
-{
+struct ble_mbuf_hdr_txinfo {
     uint8_t flags;
     uint8_t offset;
     uint8_t pyld_len;
     uint8_t hdr_byte;
 };
 
-struct ble_mbuf_hdr
-{
+struct ble_mbuf_hdr {
     union {
         struct ble_mbuf_hdr_rxinfo rxinfo;
         struct ble_mbuf_hdr_txinfo txinfo;
@@ -178,8 +174,7 @@ extern uint8_t g_dev_addr[BLE_DEV_ADDR_LEN];
 extern uint8_t g_random_addr[BLE_DEV_ADDR_LEN];
 
 /* BLE Error Codes (Core v4.2 Vol 2 part D) */
-enum ble_error_codes
-{
+enum ble_error_codes {
     /* An "error" code of 0x0 means success */
     BLE_ERR_SUCCESS             = 0x00,
     BLE_ERR_UNKNOWN_HCI_CMD     = 0x01,
@@ -288,9 +283,9 @@ typedef struct {
 static inline int ble_addr_cmp(const ble_addr_t *a, const ble_addr_t *b)
 {
     int type_diff;
-
     type_diff = a->type - b->type;
-    if (type_diff != 0) {
+
+    if(type_diff != 0) {
         return type_diff;
     }
 

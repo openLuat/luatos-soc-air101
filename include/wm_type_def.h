@@ -9,10 +9,8 @@
  */
 #ifndef __WM_TYPE_DEF_H__
 #define __WM_TYPE_DEF_H__
+#include <stdbool.h>
 
-#ifdef bool
-#undef bool
-#endif
 #ifdef u8
 #undef u8
 #endif
@@ -53,7 +51,7 @@ typedef unsigned char INT8U;
 #endif
 typedef signed char INT8S;
 
-typedef unsigned char        bool;
+//typedef unsigned char        bool;
 typedef unsigned char        u8;
 typedef signed char          s8;
 typedef unsigned short       u16;

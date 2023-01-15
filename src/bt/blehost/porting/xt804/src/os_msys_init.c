@@ -61,11 +61,9 @@ os_msys_init_once(void *data, struct os_mempool *mempool,
                   int block_count, int block_size, char *name)
 {
     int rc;
-
     rc = mem_init_mbuf_pool(data, mempool, mbuf_pool, block_count, block_size,
                             name);
     assert(rc == 0);
-
     rc = os_msys_register(mbuf_pool);
     assert(rc == 0);
 }
@@ -74,15 +72,13 @@ void
 os_msys_init(void)
 {
     os_msys_reset();
-    
     (void)os_msys_init_once;
 #if MYNEWT_VAL(MSYS_1_BLOCK_COUNT) > 0
-
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-        os_msys_init_1_data = (os_membuf_t *)tls_mem_alloc(sizeof(os_membuf_t)*SYSINIT_MSYS_1_MEMPOOL_SIZE);
-        assert(os_msys_init_1_data != NULL);
+    os_msys_init_1_data = (os_membuf_t *)tls_mem_alloc(sizeof(os_membuf_t) *
+                          SYSINIT_MSYS_1_MEMPOOL_SIZE);
+    assert(os_msys_init_1_data != NULL);
 #endif
-
     os_msys_init_once(os_msys_init_1_data,
                       &os_msys_init_1_mempool,
                       &os_msys_init_1_mbuf_pool,
@@ -90,14 +86,12 @@ os_msys_init(void)
                       SYSINIT_MSYS_1_MEMBLOCK_SIZE,
                       "msys_1");
 #endif
-
 #if MYNEWT_VAL(MSYS_2_BLOCK_COUNT) > 0
-
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-        os_msys_init_2_data = (os_membuf_t *)tls_mem_alloc(sizeof(os_membuf_t)*SYSINIT_MSYS_2_MEMPOOL_SIZE);
-        assert(os_msys_init_2_data != NULL);
+    os_msys_init_2_data = (os_membuf_t *)tls_mem_alloc(sizeof(os_membuf_t) *
+                          SYSINIT_MSYS_2_MEMPOOL_SIZE);
+    assert(os_msys_init_2_data != NULL);
 #endif
-
     os_msys_init_once(os_msys_init_2_data,
                       &os_msys_init_2_mempool,
                       &os_msys_init_2_mbuf_pool,
@@ -111,23 +105,22 @@ os_msys_deinit()
 {
 #if MYNEWT_VAL(MSYS_1_BLOCK_COUNT) > 0
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-    if(os_msys_init_1_data) 
-    {
+
+    if(os_msys_init_1_data) {
         tls_mem_free(os_msys_init_1_data);
         os_msys_init_1_data = NULL;
-        
     }
-#endif
-#endif
 
+#endif
+#endif
 #if MYNEWT_VAL(MSYS_2_BLOCK_COUNT) > 0
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-    if(os_msys_init_2_data)
-    {
+
+    if(os_msys_init_2_data) {
         tls_mem_free(os_msys_init_2_data);
         os_msys_init_2_data = NULL;
     }
-#endif
-#endif
 
+#endif
+#endif
 }

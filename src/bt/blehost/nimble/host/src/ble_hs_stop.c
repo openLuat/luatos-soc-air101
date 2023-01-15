@@ -49,20 +49,13 @@ ble_hs_stop_done(int status)
 {
     struct ble_hs_stop_listener_slist slist;
     struct ble_hs_stop_listener *listener;
-
     ble_npl_callout_stop(&ble_hs_stop_terminate_tmo);
-
     ble_hs_lock();
-
     ble_gap_event_listener_unregister(&ble_hs_stop_gap_listener);
-
     slist = ble_hs_stop_listeners;
     SLIST_INIT(&ble_hs_stop_listeners);
-
     ble_hs_enabled_state = BLE_HS_ENABLED_STATE_OFF;
-
     ble_hs_unlock();
-
     SLIST_FOREACH(listener, &slist, link) {
         listener->fn(status, listener->arg);
     }
@@ -82,7 +75,7 @@ ble_hs_stop_terminate_all_periodic_sync(void)
     struct ble_hs_periodic_sync *psync;
     uint16_t sync_handle;
 
-    while((psync = ble_hs_periodic_sync_first())){
+    while((psync = ble_hs_periodic_sync_first())) {
         /* Terminate sync command waits a command complete event, so there
          * is no need to wait for GAP event, as the calling thread will be
          * blocked on the hci semaphore until the command complete is received.
@@ -93,7 +86,8 @@ ble_hs_stop_terminate_all_periodic_sync(void)
          */
         sync_handle = psync->sync_handle;
         rc = ble_gap_periodic_adv_sync_terminate(sync_handle);
-        if (rc != 0 && rc != BLE_HS_ENOTCONN) {
+
+        if(rc != 0 && rc != BLE_HS_ENOTCONN) {
             BLE_HS_LOG(ERROR, "failed to terminate periodic sync=0x%04x, rc=%d\n",
                        sync_handle, rc);
             return rc;
@@ -111,9 +105,9 @@ static int
 ble_hs_stop_terminate_conn(struct ble_hs_conn *conn, void *arg)
 {
     int rc;
-
     rc = ble_gap_terminate_with_conn(conn, BLE_ERR_REM_USER_CONN_TERM);
-    if (rc == 0) {
+
+    if(rc == 0) {
         /* Terminate procedure successfully initiated.  Let the GAP event
          * handler deal with the result.
          */
@@ -136,8 +130,7 @@ static void
 ble_hs_stop_terminate_timeout_cb(struct ble_npl_event *ev)
 {
     BLE_HS_LOG(ERROR, "ble_hs_stop_terminate_timeout_cb,"
-                      "%d connection(s) still up \n", ble_hs_stop_conn_cnt);
-
+               "%d connection(s) still up \n", ble_hs_stop_conn_cnt);
     /* TODO: Shall we send error here? */
     ble_hs_stop_done(0);
 }
@@ -152,12 +145,11 @@ static int
 ble_hs_stop_gap_event(struct ble_gap_event *event, void *arg)
 {
     /* Only process connection termination events. */
-    if (event->type == BLE_GAP_EVENT_DISCONNECT ||
-        event->type == BLE_GAP_EVENT_TERM_FAILURE) {
-
+    if(event->type == BLE_GAP_EVENT_DISCONNECT ||
+            event->type == BLE_GAP_EVENT_TERM_FAILURE) {
         ble_hs_stop_conn_cnt--;
 
-        if (ble_hs_stop_conn_cnt == 0) {
+        if(ble_hs_stop_conn_cnt == 0) {
             ble_hs_stop_done(0);
         }
     }
@@ -173,7 +165,6 @@ ble_hs_stop_register_listener(struct ble_hs_stop_listener *listener,
                               ble_hs_stop_fn *fn, void *arg)
 {
     BLE_HS_DBG_ASSERT(fn != NULL);
-
     listener->fn = fn;
     listener->arg = arg;
     SLIST_INSERT_HEAD(&ble_hs_stop_listeners, listener, link);
@@ -181,77 +172,80 @@ ble_hs_stop_register_listener(struct ble_hs_stop_listener *listener,
 
 static int
 ble_hs_stop_begin(struct ble_hs_stop_listener *listener,
-                   ble_hs_stop_fn *fn, void *arg)
+                  ble_hs_stop_fn *fn, void *arg)
 {
-    switch (ble_hs_enabled_state) {
-    case BLE_HS_ENABLED_STATE_ON:
-        /* Host is enabled; proceed with the stop procedure. */
-        ble_hs_enabled_state = BLE_HS_ENABLED_STATE_STOPPING;
-        if (listener != NULL) {
-            ble_hs_stop_register_listener(listener, fn, arg);
-        }
+    switch(ble_hs_enabled_state) {
+        case BLE_HS_ENABLED_STATE_ON:
+            /* Host is enabled; proceed with the stop procedure. */
+            ble_hs_enabled_state = BLE_HS_ENABLED_STATE_STOPPING;
 
-        /* Put the host in the "stopping" state and ensure the host timer is
-         * not running.
-         */
-        ble_hs_timer_resched();
-        return 0;
+            if(listener != NULL) {
+                ble_hs_stop_register_listener(listener, fn, arg);
+            }
 
-    case BLE_HS_ENABLED_STATE_STOPPING:
-        /* A stop procedure is already in progress.  Just listen for the
-         * procedure's completion.
-         */
-        if (listener != NULL) {
-            ble_hs_stop_register_listener(listener, fn, arg);
-        }
-        return BLE_HS_EBUSY;
+            /* Put the host in the "stopping" state and ensure the host timer is
+             * not running.
+             */
+            ble_hs_timer_resched();
+            return 0;
 
-    case BLE_HS_ENABLED_STATE_OFF:
-        /* Host already stopped. */
-        return BLE_HS_EALREADY;
+        case BLE_HS_ENABLED_STATE_STOPPING:
 
-    default:
-        assert(0);
-        return BLE_HS_EUNKNOWN;
+            /* A stop procedure is already in progress.  Just listen for the
+             * procedure's completion.
+             */
+            if(listener != NULL) {
+                ble_hs_stop_register_listener(listener, fn, arg);
+            }
+
+            return BLE_HS_EBUSY;
+
+        case BLE_HS_ENABLED_STATE_OFF:
+            /* Host already stopped. */
+            return BLE_HS_EALREADY;
+
+        default:
+            assert(0);
+            return BLE_HS_EUNKNOWN;
     }
 }
 
 int
-ble_hs_stop(struct ble_hs_stop_listener *listener, 
+ble_hs_stop(struct ble_hs_stop_listener *listener,
             ble_hs_stop_fn *fn, void *arg)
 {
     int rc;
-
     ble_hs_lock();
     rc = ble_hs_stop_begin(listener, fn, arg);
     ble_hs_unlock();
 
-    switch (rc) {
-    case 0:
-        break;
+    switch(rc) {
+        case 0:
+            break;
 
-    case BLE_HS_EBUSY:
-        return 0;
+        case BLE_HS_EBUSY:
+            return 0;
 
-    default:
-        return rc;
+        default:
+            return rc;
     }
 
     /* Abort all active GAP procedures. */
     ble_gap_preempt();
     ble_gap_preempt_done();
-
 #if MYNEWT_VAL(BLE_PERIODIC_ADV)
     /* Check for active periodic sync first and terminate it all */
     rc = ble_hs_stop_terminate_all_periodic_sync();
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
-#endif
 
+#endif
     rc = ble_gap_event_listener_register(&ble_hs_stop_gap_listener,
                                          ble_hs_stop_gap_event, NULL);
-    if (rc != 0) {
+
+    if(rc != 0) {
         return rc;
     }
 
@@ -259,7 +253,7 @@ ble_hs_stop(struct ble_hs_stop_listener *listener,
     ble_hs_conn_foreach(ble_hs_stop_terminate_conn, NULL);
     ble_hs_unlock();
 
-    if (ble_hs_stop_conn_cnt > 0) {
+    if(ble_hs_stop_conn_cnt > 0) {
         ble_npl_callout_reset(&ble_hs_stop_terminate_tmo,
                               ble_npl_time_ms_to_ticks32(BLE_HOST_STOP_TIMEOUT_MS));
     } else {

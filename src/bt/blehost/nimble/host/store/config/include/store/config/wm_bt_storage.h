@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define BTIF_CFG_TYPE_INVALID   0
 #define BTIF_CFG_TYPE_STR       1
 #define BTIF_CFG_TYPE_INT      (1 << 1)
@@ -13,8 +17,7 @@
 #define BTIF_CFG_TYPE_VOLATILE (1 << 15)
 
 
-typedef enum
-{
+typedef enum {
     NV_LOCAL = 0,
     NV_LOCAL_ADAPTER,
     NV_LOCAL_ADAPTER_ADDRESS,
@@ -103,33 +106,43 @@ extern int btif_wm_config_get_remote_device(int index, void *ptr, int from_flash
 
 extern int btif_config_get_int(const char *section, const char *key, const char *name, int *value);
 extern int btif_config_set_int(const char *section, const char *key, const char *name, int value);
-extern int btif_config_get_str(const char *section, const char *key, const char *name, char *value, int *bytes);
-extern int btif_config_set_str(const char *section, const char *key, const char *name, const char *value);
+extern int btif_config_get_str(const char *section, const char *key, const char *name, char *value,
+                               int *bytes);
+extern int btif_config_set_str(const char *section, const char *key, const char *name,
+                               const char *value);
 
-extern int btif_config_get(const char *section, const char *key, const char *name, char *value, int *bytes, int *type);
-extern int btif_config_set(const char *section, const char *key, const char *name, const char  *value, int bytes, int type);
+extern int btif_config_get(const char *section, const char *key, const char *name, char *value,
+                           int *bytes, int *type);
+extern int btif_config_set(const char *section, const char *key, const char *name,
+                           const char  *value, int bytes, int type);
 
 extern int btif_config_remove(const char *section, const char *key, const char *name);
-extern int btif_config_filter_remove(const char *section, const char *filter[], int filter_count, int max_allowed);
+extern int btif_config_filter_remove(const char *section, const char *filter[], int filter_count,
+                                     int max_allowed);
 extern int btif_config_exist(const char *section, const char *key, const char *name);
 extern int btif_config_flush(int force);
 extern int btif_config_save();
 extern void btif_clear_remote_all();
 extern int btif_wm_config_update_remote_device(const char *key);
 
-extern int btif_config_store_peer_sec(int idx,void *addr, uint8_t *payload, int length);
-extern int btif_config_store_our_sec(int idx,void *addr, uint8_t *payload, int length);
+extern int btif_config_store_peer_sec(int idx, void *addr, uint8_t *payload, int length);
+extern int btif_config_store_our_sec(int idx, void *addr, uint8_t *payload, int length);
 extern int btif_config_store_cccd(int idx, void *addr, int count, void *payload, int length);
 extern int btif_config_delete_our_sec(int idx);
 extern int btif_config_delete_peer_sec(int idx);
 extern int btif_config_delete_cccd(int idx);
 extern int btif_config_get_sec_index(void *addr, uint8_t *found);
-extern int btif_config_store_our_sec(int idx,void *addr, uint8_t *payload, int length);
-
-extern uint32_t btif_config_get_sec_cccd_item(int idx, void *addr, void *our_sec,int our_sec_size, void *peer_sec, int peer_sec_size,void *cccd_info, int cccd_info_size);
-
-extern int btif_config_store_key_map(const uint8_t *map_info, int length);
+extern int btif_config_store_our_sec(int idx, void *addr, uint8_t *payload, int length);
+extern uint32_t btif_config_get_sec_cccd_item(int idx, void *addr, void *our_sec, int our_sec_size,
+        void *peer_sec, int peer_sec_size, void *cccd_info, int cccd_info_size);
+extern int btif_config_store_key_map(const uint8_t *map_info, int length, bool force_flush);
 extern int btif_config_load_key_map(uint8_t *map_info, int length);
+extern int btif_config_delete_all();
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

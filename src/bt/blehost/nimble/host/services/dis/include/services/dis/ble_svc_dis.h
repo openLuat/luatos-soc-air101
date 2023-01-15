@@ -26,22 +26,22 @@
  *    char firmware_revision[20] = '?.?.?';
  *    struct image_version iv;
  *    if (!imgr_my_version(&iv)) {
- *	snprintf(firmware_revision, sizeof(firmware_revision),
- *		 "%u.%u.%u", iv.iv_major, iv.iv_minor, iv.iv_revision);
+ *  snprintf(firmware_revision, sizeof(firmware_revision),
+ *       "%u.%u.%u", iv.iv_major, iv.iv_minor, iv.iv_revision);
  *    }
  *    ble_svc_dis_manufacturer_name_set("MyNewt");
  *    ble_svc_dis_firmware_revision_set(firmware_revision);
  *
  */
 
-#define BLE_SVC_DIS_UUID16					0x180A
-#define BLE_SVC_DIS_CHR_UUID16_SYSTEM_ID			0x2A23
-#define BLE_SVC_DIS_CHR_UUID16_MODEL_NUMBER			0x2A24
-#define BLE_SVC_DIS_CHR_UUID16_SERIAL_NUMBER			0x2A25
-#define BLE_SVC_DIS_CHR_UUID16_FIRMWARE_REVISION 		0x2A26
-#define BLE_SVC_DIS_CHR_UUID16_HARDWARE_REVISION 		0x2A27
-#define BLE_SVC_DIS_CHR_UUID16_SOFTWARE_REVISION 		0x2A28
-#define BLE_SVC_DIS_CHR_UUID16_MANUFACTURER_NAME		0x2A29
+#define BLE_SVC_DIS_UUID16                  0x180A
+#define BLE_SVC_DIS_CHR_UUID16_SYSTEM_ID            0x2A23
+#define BLE_SVC_DIS_CHR_UUID16_MODEL_NUMBER         0x2A24
+#define BLE_SVC_DIS_CHR_UUID16_SERIAL_NUMBER            0x2A25
+#define BLE_SVC_DIS_CHR_UUID16_FIRMWARE_REVISION        0x2A26
+#define BLE_SVC_DIS_CHR_UUID16_HARDWARE_REVISION        0x2A27
+#define BLE_SVC_DIS_CHR_UUID16_SOFTWARE_REVISION        0x2A28
+#define BLE_SVC_DIS_CHR_UUID16_MANUFACTURER_NAME        0x2A29
 
 /**
  * Structure holding data for the main characteristics

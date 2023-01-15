@@ -5,6 +5,8 @@
 #ifndef H_MYNEWT_SYSCFG_
 #define H_MYNEWT_SYSCFG_
 
+#include "wm_bt_config.h"
+
 /**
  * This macro exists to ensure code includes this header when needed.  If code
  * checks the existence of a setting directly via ifdef without including this
@@ -59,7 +61,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_MSYS_1_BLOCK_COUNT
-#define MYNEWT_VAL_MSYS_1_BLOCK_COUNT (12)
+#define MYNEWT_VAL_MSYS_1_BLOCK_COUNT (24)
 #endif
 
 #ifndef MYNEWT_VAL_MSYS_1_BLOCK_SIZE
@@ -300,7 +302,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_LOG_LEVEL
-#define MYNEWT_VAL_LOG_LEVEL (0)
+#define MYNEWT_VAL_LOG_LEVEL (2)
 #endif
 
 /*** @apache-mynewt-core/sys/mfg */
@@ -370,7 +372,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MAX_CONNECTIONS
-#define MYNEWT_VAL_BLE_MAX_CONNECTIONS (7)
+#define MYNEWT_VAL_BLE_MAX_CONNECTIONS (WM_BLE_MAX_CONNECTION)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MAX_PERIODIC_SYNCS
@@ -393,16 +395,24 @@
 #define MYNEWT_VAL_BLE_ROLE_BROADCASTER (1)
 #endif
 
-#ifndef MYNEWT_VAL_BLE_ROLE_CENTRAL
+#if (WM_BLE_CENTRAL_INCLUDED == CFG_ON)
 #define MYNEWT_VAL_BLE_ROLE_CENTRAL (1)
-#endif
-
 #ifndef MYNEWT_VAL_BLE_ROLE_OBSERVER
 #define MYNEWT_VAL_BLE_ROLE_OBSERVER (1)
 #endif
+#else
+#define MYNEWT_VAL_BLE_ROLE_CENTRAL (0)
+#ifndef MYNEWT_VAL_BLE_ROLE_OBSERVER
+#define MYNEWT_VAL_BLE_ROLE_OBSERVER (0)
+#endif
+#endif
 
-#ifndef MYNEWT_VAL_BLE_ROLE_PERIPHERAL
+
+
+#if (WM_BLE_PERIPHERAL_INCLUDED == CFG_ON)
 #define MYNEWT_VAL_BLE_ROLE_PERIPHERAL (1)
+#else
+#define MYNEWT_VAL_BLE_ROLE_PERIPHERAL (0)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_VERSION
@@ -415,7 +425,7 @@
 
 /*** @apache-mynewt-nimble/nimble/host */
 #ifndef MYNEWT_VAL_BLE_ATT_PREFERRED_MTU
-#define MYNEWT_VAL_BLE_ATT_PREFERRED_MTU (256)
+#define MYNEWT_VAL_BLE_ATT_PREFERRED_MTU (512)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_ATT_SVR_FIND_INFO
@@ -595,7 +605,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_HS_LOG_LVL
-#define MYNEWT_VAL_BLE_HS_LOG_LVL (1)
+#define MYNEWT_VAL_BLE_HS_LOG_LVL (0)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_HS_LOG_MOD
@@ -624,7 +634,7 @@
 
 #ifndef MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM
 //0->1; pts tools, connect parameters update
-#define MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM (5)  
+#define MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM (5)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_L2CAP_COC_MPS
@@ -651,9 +661,6 @@
 #define MYNEWT_VAL_BLE_L2CAP_SIG_MAX_PROCS (1)
 #endif
 
-#ifndef MYNEWT_VAL_BLE_MESH
-#define MYNEWT_VAL_BLE_MESH (0)
-#endif
 
 #ifndef MYNEWT_VAL_BLE_MONITOR_CONSOLE_BUFFER_SIZE
 #define MYNEWT_VAL_BLE_MONITOR_CONSOLE_BUFFER_SIZE (128)
@@ -860,7 +867,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME
-#define MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME ("nimble")
+#define MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME ("WM-NIMBLE")
 #endif
 
 #ifndef MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH
@@ -918,7 +925,7 @@
 
 /*** @apache-mynewt-nimble/nimble/transport/socket */
 #ifndef MYNEWT_VAL_BLE_ACL_BUF_COUNT
-#define MYNEWT_VAL_BLE_ACL_BUF_COUNT (24)
+#define MYNEWT_VAL_BLE_ACL_BUF_COUNT (36)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_ACL_BUF_SIZE
@@ -940,11 +947,11 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_HCI_EVT_HI_BUF_COUNT
-#define MYNEWT_VAL_BLE_HCI_EVT_HI_BUF_COUNT (8)
+#define MYNEWT_VAL_BLE_HCI_EVT_HI_BUF_COUNT (16)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_HCI_EVT_LO_BUF_COUNT
-#define MYNEWT_VAL_BLE_HCI_EVT_LO_BUF_COUNT (8)
+#define MYNEWT_VAL_BLE_HCI_EVT_LO_BUF_COUNT (96)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_SOCK_CLI_SYSINIT_STAGE
@@ -1044,12 +1051,24 @@
 #endif
 
 /*** net/nimble/host/mesh */
+
+
+#if (WM_MESH_INCLUDED == CFG_ON)
+#define MYNEWT_VAL_BLE_MESH (1)
+#else
+#define MYNEWT_VAL_BLE_MESH (0)
+#endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_DEV_UUID
+#define MYNEWT_VAL_BLE_MESH_DEV_UUID (((uint8_t[16]){0x11, 0x22, 0}))
+#endif
+
 #ifndef MYNEWT_VAL_BLE_MESH_ADV_BUF_COUNT
-#define MYNEWT_VAL_BLE_MESH_ADV_BUF_COUNT (10)
+#define MYNEWT_VAL_BLE_MESH_ADV_BUF_COUNT (128)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_ADV_TASK_PRIO
-#define MYNEWT_VAL_BLE_MESH_ADV_TASK_PRIO (9)
+#define MYNEWT_VAL_BLE_MESH_ADV_TASK_PRIO (5)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_APP_KEY_COUNT
@@ -1061,7 +1080,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_DEBUG
-#define MYNEWT_VAL_BLE_MESH_DEBUG (0)
+#define MYNEWT_VAL_BLE_MESH_DEBUG (1)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_DEBUG_ACCESS
@@ -1108,13 +1127,6 @@
 #define MYNEWT_VAL_BLE_MESH_DEBUG_TRANS (0)
 #endif
 
-#ifndef MYNEWT_VAL_BLE_MESH_DEV_UUID
-#define MYNEWT_VAL_BLE_MESH_DEV_UUID (((uint8_t[16]){0x11, 0x22, 0}))
-#endif
-
-#ifndef MYNEWT_VAL_BLE_MESH_FRIEND
-#define MYNEWT_VAL_BLE_MESH_FRIEND (1)
-#endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_FRIEND_LPN_COUNT
 #define MYNEWT_VAL_BLE_MESH_FRIEND_LPN_COUNT (1)
@@ -1142,10 +1154,6 @@
 
 #ifndef MYNEWT_VAL_BLE_MESH_LABEL_COUNT
 #define MYNEWT_VAL_BLE_MESH_LABEL_COUNT (1)
-#endif
-
-#ifndef MYNEWT_VAL_BLE_MESH_LOW_POWER
-#define MYNEWT_VAL_BLE_MESH_LOW_POWER (1)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_LPN_GROUPS
@@ -1177,11 +1185,11 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_MODEL_GROUP_COUNT
-#define MYNEWT_VAL_BLE_MESH_MODEL_GROUP_COUNT (1)
+#define MYNEWT_VAL_BLE_MESH_MODEL_GROUP_COUNT (5)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_MODEL_KEY_COUNT
-#define MYNEWT_VAL_BLE_MESH_MODEL_KEY_COUNT (1)
+#define MYNEWT_VAL_BLE_MESH_MODEL_KEY_COUNT (3)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_MSG_CACHE_SIZE
@@ -1209,10 +1217,22 @@
 #ifndef MYNEWT_VAL_BLE_MESH_PROXY_FILTER_SIZE
 #define MYNEWT_VAL_BLE_MESH_PROXY_FILTER_SIZE (1)
 #endif
+/* Overridden by net/nimble/host/mesh (defined by net/nimble/host/mesh) */
 
 #ifndef MYNEWT_VAL_BLE_MESH_RELAY
-#define MYNEWT_VAL_BLE_MESH_RELAY (0)
+#define MYNEWT_VAL_BLE_MESH_RELAY (1)
 #endif
+/* Overridden by net/nimble/host/mesh (defined by net/nimble/host/mesh) */
+
+#ifndef MYNEWT_VAL_BLE_MESH_FRIEND
+#define MYNEWT_VAL_BLE_MESH_FRIEND (1)
+#endif
+/* Overridden by net/nimble/host/mesh (defined by net/nimble/host/mesh) */
+
+#ifndef MYNEWT_VAL_BLE_MESH_LOW_POWER
+#define MYNEWT_VAL_BLE_MESH_LOW_POWER (0)
+#endif
+
 
 #ifndef MYNEWT_VAL_BLE_MESH_RX_SDU_MAX
 #define MYNEWT_VAL_BLE_MESH_RX_SDU_MAX (384)
@@ -1239,8 +1259,18 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_SETTINGS
-#define MYNEWT_VAL_BLE_MESH_SETTINGS (0)
+#define MYNEWT_VAL_BLE_MESH_SETTINGS (1)
 #endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_SETTINGS_SEQ
+#define MYNEWT_VAL_BLE_MESH_SETTINGS_SEQ (0)
+#endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_SETTINGS_RPL
+#define MYNEWT_VAL_BLE_MESH_SETTINGS_RPL (0)
+#endif
+
+
 
 #ifndef MYNEWT_VAL_BLE_MESH_TESTING
 #define MYNEWT_VAL_BLE_MESH_TESTING (0)
@@ -1271,7 +1301,7 @@
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_NODE_COUNT
-#define MYNEWT_VAL_BLE_MESH_NODE_COUNT (3)
+#define MYNEWT_VAL_BLE_MESH_NODE_COUNT (10)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_MESH_IVU_DIVIDER
@@ -1290,21 +1320,56 @@
 #define MYNEWT_VAL_BLE_MESH_SEG_RETRANSMIT_ATTEMPTS (3)
 #endif
 
+#ifndef MYNEWT_VAL_BLE_MESH_RPL_STORE_TIMEOUT
+#define MYNEWT_VAL_BLE_MESH_RPL_STORE_TIMEOUT (6)
+#endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_STORE_TIMEOUT
+#define MYNEWT_VAL_BLE_MESH_STORE_TIMEOUT (5)
+#endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_SEQ_STORE_RATE
+#define MYNEWT_VAL_BLE_MESH_SEQ_STORE_RATE (3)
+#endif
+
+#ifndef MYNEWT_VAL_BLE_MESH_CFG_CLI
+#define MYNEWT_VAL_BLE_MESH_CFG_CLI (1)
+#endif
+
 /*******************************************************/
 #ifndef MYNEWT_VAL_OS_HS_STACK_SIZE
-#define MYNEWT_VAL_OS_HS_STACK_SIZE (512)
+#define MYNEWT_VAL_OS_HS_STACK_SIZE (768)
 #endif
 
 #ifndef MYNEWT_VAL_OS_HS_TASK_PRIO
 #define MYNEWT_VAL_OS_HS_TASK_PRIO (8)
 #endif
+#ifndef MYNEWT_VAL_OS_HS_VUART_STACK_SIZE
+#define MYNEWT_VAL_OS_HS_VUART_STACK_SIZE (256)
+#endif
+
+#ifndef MYNEWT_VAL_OS_HS_VUART_TASK_PRIO
+#define MYNEWT_VAL_OS_HS_VUART_TASK_PRIO (7)
+#endif
+
+#ifndef MYNEWT_VAL_HCI_VUART_RX_QUEUE_ENABLE
+#define MYNEWT_VAL_HCI_VUART_RX_QUEUE_ENABLE (0)
+#endif
+
+#ifndef MYNEWT_VAL_HCI_VUART_QUEUE_BUF_COUNT
+#define MYNEWT_VAL_HCI_VUART_QUEUE_BUF_COUNT (20)
+#endif
+#ifndef MYNEWT_VAL_HCI_VUART_QUEUE_BUF_SIZE
+#define MYNEWT_VAL_HCI_VUART_QUEUE_BUF_SIZE (270)
+#endif
+
 
 #ifndef MYNEWT_VAL_SYS_MEM_DYNAMIC
 #define MYNEWT_VAL_SYS_MEM_DYNAMIC (1)
 #endif
 
 #ifndef MYNEWT_VAL_BLE_STORE_CONFIG_PERSIST
-#define MYNEWT_VAL_BLE_STORE_CONFIG_PERSIST (1)
+#define MYNEWT_VAL_BLE_STORE_CONFIG_PERSIST (0)
 #endif
 
 /*******************************************************/

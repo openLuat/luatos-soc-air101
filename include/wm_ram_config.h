@@ -39,6 +39,7 @@ enum SYS_REBOOT_REASON
 	REBOOT_REASON_EXCEPTION    = 2,   /*exception reset*/
 	REBOOT_REASON_WDG_TIMEOUT  = 3,   /*watchdog timeout*/
 	REBOOT_REASON_ACTIVE       = 4,   /*user active reset*/
+	REBOOT_REASON_SLEEP       	  ,   
 	REBOOT_REASON_MAX
 };
 

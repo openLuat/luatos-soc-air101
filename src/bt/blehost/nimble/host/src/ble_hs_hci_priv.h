@@ -70,8 +70,7 @@ struct ble_hs_hci_ext_conn_params {
 
 #if MYNEWT_VAL(BLE_PERIODIC_ADV)
 /* Periodic Advertising Parameters */
-struct hci_periodic_adv_params
-{
+struct hci_periodic_adv_params {
     uint16_t min_interval;
     uint16_t max_interval;
     uint16_t properties;
@@ -113,7 +112,7 @@ int ble_hs_hci_set_tx_buf_sz(uint16_t pktlen);
 void ble_hs_hci_add_avail_pkts(uint16_t delta);
 
 uint16_t ble_hs_hci_util_handle_pb_bc_join(uint16_t handle, uint8_t pb,
-                                           uint8_t bc);
+        uint8_t bc);
 
 int ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om);
 int ble_hs_hci_acl_tx(struct ble_hs_conn *conn, struct os_mbuf **om);

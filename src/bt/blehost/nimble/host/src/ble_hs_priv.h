@@ -78,17 +78,17 @@ struct os_event;
 #endif
 
 STATS_SECT_START(ble_hs_stats)
-    STATS_SECT_ENTRY(conn_create)
-    STATS_SECT_ENTRY(conn_delete)
-    STATS_SECT_ENTRY(hci_cmd)
-    STATS_SECT_ENTRY(hci_event)
-    STATS_SECT_ENTRY(hci_invalid_ack)
-    STATS_SECT_ENTRY(hci_unknown_event)
-    STATS_SECT_ENTRY(hci_timeout)
-    STATS_SECT_ENTRY(reset)
-    STATS_SECT_ENTRY(sync)
-    STATS_SECT_ENTRY(pvcy_add_entry)
-    STATS_SECT_ENTRY(pvcy_add_entry_fail)
+STATS_SECT_ENTRY(conn_create)
+STATS_SECT_ENTRY(conn_delete)
+STATS_SECT_ENTRY(hci_cmd)
+STATS_SECT_ENTRY(hci_event)
+STATS_SECT_ENTRY(hci_invalid_ack)
+STATS_SECT_ENTRY(hci_unknown_event)
+STATS_SECT_ENTRY(hci_timeout)
+STATS_SECT_ENTRY(reset)
+STATS_SECT_ENTRY(sync)
+STATS_SECT_ENTRY(pvcy_add_entry)
+STATS_SECT_ENTRY(pvcy_add_entry_fail)
 STATS_SECT_END
 extern STATS_SECT_DECL(ble_hs_stats) ble_hs_stats;
 
@@ -144,11 +144,11 @@ struct os_mbuf *ble_mqueue_get(struct ble_mqueue *mq);
 int ble_mqueue_put(struct ble_mqueue *mq, struct ble_npl_eventq *evq, struct os_mbuf *om);
 
 #if MYNEWT_VAL(BLE_HS_DEBUG)
-    #define BLE_HS_DBG_ASSERT(x) assert(x)
-    #define BLE_HS_DBG_ASSERT_EVAL(x) assert(x)
+#define BLE_HS_DBG_ASSERT(x) assert(x)
+#define BLE_HS_DBG_ASSERT_EVAL(x) assert(x)
 #else
-    #define BLE_HS_DBG_ASSERT(x)
-    #define BLE_HS_DBG_ASSERT_EVAL(x) ((void)(x))
+#define BLE_HS_DBG_ASSERT(x)
+#define BLE_HS_DBG_ASSERT_EVAL(x) ((void)(x))
 #endif
 
 #ifdef __cplusplus

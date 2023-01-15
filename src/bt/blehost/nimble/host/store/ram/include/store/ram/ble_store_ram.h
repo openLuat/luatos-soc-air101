@@ -27,6 +27,7 @@ extern "C" {
 union ble_store_key;
 union ble_store_value;
 
+void ble_store_ram_init(void);
 int ble_store_ram_read(int obj_type, const union ble_store_key *key,
                        union ble_store_value *value);
 int ble_store_ram_write(int obj_type, const union ble_store_value *val);

@@ -104,6 +104,28 @@ void tls_irq_disable(u8 vec_no);
  */
 u8 tls_get_isr_count(void);
 
+/**
+ * @brief          This function is used to enter interrupt.
+ *
+ * @param[in]      None
+ *
+ * @return         0:success
+ *
+ * @note           None
+ */
+int csi_kernel_intrpt_enter(void);
+
+/**
+ * @brief          This function is used to exit from interrupt.
+ *
+ * @param[in]      None
+ *
+ * @return         0:success
+ *
+ * @note           None
+ */
+int csi_kernel_intrpt_exit(void);
+
 void tls_irq_priority(u8 vec_no, u32 prio);
 
 

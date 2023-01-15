@@ -95,18 +95,25 @@ vPortStartTask:
     ld.w     r4, (r4)
     ld.w     sp, (r4)
 
-    ldw      r0, (sp, 192)
+#if SAVE_VR_REGISTERS
+    fldms    vr0-vr15, (sp)
+    addi     sp, 64
+#endif    
+
+#if SAVE_HIGH_REGISTERS
+    ldm      r16-r31, (sp)
+    addi     sp, 64
+#endif
+
+    ldw      r0, (sp, 64)
     mtcr     r0, epc
-    ldw      r0, (sp, 188)
+    ldw      r0, (sp, 60)
     mtcr     r0, epsr
+
 
     ldm      r0-r13, (sp)
     ldw      r15, (sp, 56)
-    addi     sp, 60
-    ldm      r16-r31, (sp)
-    addi     sp, 64
-    fldms    vr0-vr15, (sp)
-    addi     sp, 72
+    addi     sp, 68
 
     rte
 
@@ -117,17 +124,24 @@ vPortStartTask:
 .global tspend_handler
 .type   tspend_handler, %function
 tspend_handler:
-    subi     sp, 196
+    subi     sp, 68
     stm      r0-r13, (sp)
     stw      r15, (sp, 56)
-    addi     r0, sp, 60
-    stm      r16-r31, (r0)
-    addi     r0, 64
-    fstms    vr0-vr15, (r0)
+
     mfcr     r1, epsr
-    stw      r1, (r0, 64)
+    stw      r1, (sp, 60)
     mfcr     r1, epc
-    stw      r1, (r0, 68)
+    stw      r1, (sp, 64)
+
+#if SAVE_HIGH_REGISTERS
+	subi     sp, 64
+    stm      r16-r31, (sp)
+#endif    
+
+#if SAVE_VR_REGISTERS
+	subi     sp, 64
+    fstms    vr0-vr15, (sp)
+#endif
 
     lrw      r2, pxCurrentTCB
     ld.w     r3, (r2)
@@ -139,18 +153,26 @@ tspend_handler:
     ld.w     r4, (r4)
     ld.w     sp, (r4)
 
-    ldw      r0, (sp, 192)
+#if SAVE_VR_REGISTERS
+    fldms    vr0-vr15, (sp)
+    addi     sp, 64
+#endif
+
+#if SAVE_HIGH_REGISTERS
+    ldm      r16-r31, (sp)
+    addi     sp, 64
+#endif
+
+    ldw      r0, (sp, 64)
     mtcr     r0, epc
-    ldw      r0, (sp, 188)
+    ldw      r0, (sp, 60)
     mtcr     r0, epsr
+
 
     ldm      r0-r13, (sp)
     ldw      r15, (sp, 56)
-    addi     sp, 60
-    ldm      r16-r31, (sp)
-    addi     sp, 64
-    fldms    vr0-vr15, (sp)
-    addi     sp, 72
+    addi     sp, 68
+
 
     rte
 

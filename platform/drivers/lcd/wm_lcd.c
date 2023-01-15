@@ -93,5 +93,3 @@ void tls_lcd_init(tls_lcd_options_t *opts)
 	TLS_LCD_POWERDOWM(1);
 }
 
-
-

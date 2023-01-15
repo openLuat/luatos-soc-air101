@@ -43,9 +43,6 @@
 #include "tinycrypt/cmac_mode.h"
 #include "tinycrypt/ecc_dh.h"
 
-#if MYNEWT_VAL(BLE_MESH_SETTINGS)
-#include "config/config.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -177,11 +174,12 @@ extern "C" {
 
 #define BT_DBG(fmt, ...)    \
     if (BT_DBG_ENABLED) { \
-        BLE_HS_LOG(DEBUG, "%s: " fmt "\n", __func__, ## __VA_ARGS__); \
+        BLE_HS_LOG(DEBUG, "%s: " fmt "\r\n", __func__, ## __VA_ARGS__); \
     }
-#define BT_INFO(fmt, ...)   BLE_HS_LOG(INFO, "%s: " fmt "\n", __func__, ## __VA_ARGS__);
-#define BT_WARN(fmt, ...)   BLE_HS_LOG(WARN, "%s: " fmt "\n", __func__, ## __VA_ARGS__);
-#define BT_ERR(fmt, ...)    BLE_HS_LOG(ERROR, "%s: " fmt "\n", __func__, ## __VA_ARGS__);
+#define BT_INFO(fmt, ...)   BLE_HS_LOG(INFO, "%s: " fmt "\r\n", __func__, ## __VA_ARGS__);
+#define BT_WARN(fmt, ...)   BLE_HS_LOG(WARN, "%s: " fmt "\r\n", __func__, ## __VA_ARGS__);
+#define BT_ERR(fmt, ...)    BLE_HS_LOG(ERROR, "%s: " fmt "\r\n", __func__, ## __VA_ARGS__);
+
 
 #define BT_GATT_ERR(_att_err)   (-(_att_err))
 
@@ -201,13 +199,11 @@ struct net_buf_simple_state {
     u16_t len;
 };
 
-static inline struct os_mbuf * NET_BUF_SIMPLE(uint16_t size)
+static inline struct os_mbuf *NET_BUF_SIMPLE(uint16_t size)
 {
     struct os_mbuf *buf;
-
     buf = os_msys_get(size, 0);
     assert(buf);
-
     return buf;
 }
 
@@ -239,7 +235,8 @@ static inline void net_buf_simple_init(struct os_mbuf *buf,
 }
 
 void net_buf_put(struct ble_npl_eventq *fifo, struct os_mbuf *buf);
-void * net_buf_ref(struct os_mbuf *om);
+void net_buf_put_to_front(struct ble_npl_eventq *fifo, struct os_mbuf *om);
+void *net_buf_ref(struct os_mbuf *om);
 void net_buf_unref(struct os_mbuf *om);
 uint16_t net_buf_simple_pull_le16(struct os_mbuf *om);
 uint16_t net_buf_simple_pull_be16(struct os_mbuf *om);
@@ -251,16 +248,16 @@ void net_buf_simple_add_be16(struct os_mbuf *om, uint16_t val);
 void net_buf_simple_add_u8(struct os_mbuf *om, uint8_t val);
 void net_buf_simple_add_be32(struct os_mbuf *om, uint32_t val);
 void net_buf_simple_add_le32(struct os_mbuf *om, uint32_t val);
-void net_buf_add_zeros(struct os_mbuf *om, uint8_t len);
+void net_buf_add_zeros(struct os_mbuf *om, uint16_t len);
 void net_buf_simple_push_le16(struct os_mbuf *om, uint16_t val);
 void net_buf_simple_push_be16(struct os_mbuf *om, uint16_t val);
 void net_buf_simple_push_u8(struct os_mbuf *om, uint8_t val);
-void *net_buf_simple_pull(struct os_mbuf *om, uint8_t len);
-void *net_buf_simple_pull_mem(struct os_mbuf *om, uint8_t len);
-void *net_buf_simple_add(struct os_mbuf *om, uint8_t len);
+void *net_buf_simple_pull(struct os_mbuf *om, uint16_t len);
+void *net_buf_simple_pull_mem(struct os_mbuf *om, uint16_t len);
+void *net_buf_simple_add(struct os_mbuf *om, uint16_t len);
 bool k_fifo_is_empty(struct ble_npl_eventq *q);
-void *net_buf_get(struct ble_npl_eventq *fifo,s32_t t);
-uint8_t *net_buf_simple_push(struct os_mbuf *om, uint8_t len);
+void *net_buf_get(struct ble_npl_eventq *fifo, s32_t t);
+uint8_t *net_buf_simple_push(struct os_mbuf *om, uint16_t len);
 void net_buf_reserve(struct os_mbuf *om, size_t reserve);
 
 #define net_buf_add_mem(a,b,c) os_mbuf_append(a,b,c)
@@ -308,7 +305,7 @@ int bt_dh_key_gen(const u8_t remote_pk[64], bt_dh_key_cb_t cb);
 int bt_pub_key_gen(struct bt_pub_key_cb *new_cb);
 uint8_t *bt_pub_key_get(void);
 int bt_rand(void *buf, size_t len);
-const char * bt_hex(const void *buf, size_t len);
+const char *bt_hex(const void *buf, size_t len);
 int bt_encrypt_be(const uint8_t *key, const uint8_t *plaintext, uint8_t *enc_data);
 void bt_mesh_register_gatt(void);
 int bt_le_adv_start(const struct ble_gap_adv_params *param,
@@ -320,8 +317,28 @@ struct k_delayed_work {
     struct ble_npl_callout work;
 };
 
+#define DEBUG_MEMORY 0
+
+#if DEBUG_MEMORY
+void k_work_init_debug(struct ble_npl_callout *work, ble_npl_event_fn handler, const char *file,
+                       int line);
+void k_delayed_work_init_debug(struct k_delayed_work *w, ble_npl_event_fn *f, const char *file,
+                               int line);
+void k_work_deinit_debug(struct ble_npl_callout *work, const char *file, int line);
+void k_delayed_work_deinit_debug(struct k_delayed_work *w, const char *file, int line);
+
+
+#define k_work_init(param1, param2) k_work_init_debug(param1, param2, __FILE__, __LINE__)
+#define k_delayed_work_init(param1, param2) k_delayed_work_init_debug(param1, param2, __FILE__, __LINE__)
+#define k_work_deinit(param) k_work_deinit_debug(param, __FILE__, __LINE__)
+#define k_delayed_work_deinit(param) k_delayed_work_deinit_debug(param, __FILE__, __LINE__)
+#else
 void k_work_init(struct ble_npl_callout *work, ble_npl_event_fn handler);
 void k_delayed_work_init(struct k_delayed_work *w, ble_npl_event_fn *f);
+void k_work_deinit(struct ble_npl_callout *work);
+void k_delayed_work_deinit(struct k_delayed_work *w);
+#endif
+
 void k_delayed_work_cancel(struct k_delayed_work *w);
 void k_delayed_work_submit(struct k_delayed_work *w, uint32_t ms);
 int64_t k_uptime_get(void);
@@ -333,28 +350,27 @@ void k_delayed_work_add_arg(struct k_delayed_work *w, void *arg);
 uint32_t k_delayed_work_remaining_get(struct k_delayed_work *w);
 
 static inline void net_buf_simple_save(struct os_mbuf *buf,
-                       struct net_buf_simple_state *state)
+                                       struct net_buf_simple_state *state)
 {
     state->offset = net_buf_simple_headroom(buf);
     state->len = buf->om_len;
 }
 
 static inline void net_buf_simple_restore(struct os_mbuf *buf,
-                                          struct net_buf_simple_state *state)
+        struct net_buf_simple_state *state)
 {
-      buf->om_data = &buf->om_databuf[buf->om_pkthdr_len] + state->offset;
-      buf->om_len = state->len;
+    buf->om_data = &buf->om_databuf[buf->om_pkthdr_len] + state->offset;
+    buf->om_len = state->len;
 }
 
 static inline void sys_memcpy_swap(void *dst, const void *src, size_t length)
 {
     __ASSERT(((src < dst && (src + length) <= dst) ||
-          (src > dst && (dst + length) <= src)),
-         "Source and destination buffers must not overlap");
-
+              (src > dst && (dst + length) <= src)),
+             "Source and destination buffers must not overlap");
     src += length - 1;
 
-    for (; length > 0; length--) {
+    for(; length > 0; length--) {
         *((u8_t *)dst++) = *((u8_t *)src--);
     }
 }
@@ -368,8 +384,8 @@ static inline unsigned int find_lsb_set(u32_t op)
 
 static inline unsigned int find_msb_set(u32_t op)
 {
-    if (!op)
-        return 0;
+    if(!op)
+    { return 0; }
 
     return 32 - __builtin_clz(op);
 }
@@ -386,6 +402,11 @@ static inline unsigned int find_msb_set(u32_t op)
 #define CONFIG_BT_MESH_PROXY                BLE_MESH_PROXY
 #define CONFIG_BT_TESTING                   BLE_MESH_TESTING
 #define CONFIG_BT_SETTINGS                  BLE_MESH_SETTINGS
+#define CONFIG_BT_SETTINGS_SEQ              BLE_MESH_SETTINGS_SEQ
+#define CONFIG_BT_SETTINGS_RPL              BLE_MESH_SETTINGS_RPL
+
+
+
 #define CONFIG_SETTINGS                     BLE_MESH_SETTINGS
 #define CONFIG_BT_MESH_PROVISIONER          BLE_MESH_PROVISIONER
 
@@ -415,29 +436,33 @@ static inline unsigned int find_msb_set(u32_t op)
 #define printk console_printf
 
 #define CONTAINER_OF(ptr, type, field) \
-	((type *)(((char *)(ptr)) - offsetof(type, field)))
+    ((type *)(((char *)(ptr)) - offsetof(type, field)))
 
 
 #define k_sem ble_npl_sem
 
 static inline void k_sem_init(struct k_sem *sem, unsigned int initial_count,
-			      unsigned int limit)
+                              unsigned int limit)
 {
-	ble_npl_sem_init(sem, initial_count);
+    ble_npl_sem_init(sem, initial_count);
 }
 
 static inline int k_sem_take(struct k_sem *sem, s32_t timeout)
 {
-	uint32_t ticks;
-
-	ble_npl_time_ms_to_ticks(timeout, &ticks);
-	return - ble_npl_sem_pend(sem,  ticks);
+    uint32_t ticks;
+    ble_npl_time_ms_to_ticks(timeout, &ticks);
+    return - ble_npl_sem_pend(sem,  ticks);
 }
 
 static inline void k_sem_give(struct k_sem *sem)
 {
-	ble_npl_sem_release(sem);
+    ble_npl_sem_release(sem);
 }
+static inline void k_sem_deinit(struct k_sem *sem)
+{
+    ble_npl_sem_deinit(sem);
+}
+
 
 /* Helpers to access the storage array, since we don't have access to its
  * type at this point anymore.
@@ -447,11 +472,10 @@ static inline void k_sem_give(struct k_sem *sem)
 
 static inline int net_buf_id(struct os_mbuf *buf)
 {
-	struct os_mbuf_pool *pool = buf->om_omp;
-	u8_t *pool_start = (u8_t *)pool->omp_pool->mp_membuf_addr;
-	u8_t *buf_ptr = (u8_t *)buf;
-
-	return (buf_ptr - pool_start) / BUF_SIZE(pool);
+    struct os_mbuf_pool *pool = buf->om_omp;
+    u8_t *pool_start = (u8_t *)pool->omp_pool->mp_membuf_addr;
+    u8_t *buf_ptr = (u8_t *)buf;
+    return (buf_ptr - pool_start) / BUF_SIZE(pool);
 }
 
 /* XXX: We should not use os_mbuf_pkthdr chains to represent a list of
@@ -467,9 +491,9 @@ struct os_mbuf *net_buf_slist_peek_next(struct os_mbuf *buf);
 struct os_mbuf *net_buf_slist_get(struct net_buf_slist_t *list);
 void net_buf_slist_put(struct net_buf_slist_t *list, struct os_mbuf *buf);
 void net_buf_slist_remove(struct net_buf_slist_t *list, struct os_mbuf *prev,
-			  struct os_mbuf *cur);
+                          struct os_mbuf *cur);
 void net_buf_slist_merge_slist(struct net_buf_slist_t *list,
-			       struct net_buf_slist_t *list_to_append);
+                               struct net_buf_slist_t *list_to_append);
 #define NET_BUF_SLIST_FOR_EACH_NODE(head, var) STAILQ_FOREACH(var, head, omp_next)
 
 #if MYNEWT_VAL(BLE_MESH_SETTINGS)
@@ -477,18 +501,22 @@ void net_buf_slist_merge_slist(struct net_buf_slist_t *list,
 #define settings_load conf_load
 int settings_bytes_from_str(char *val_str, void *vp, int *len);
 char *settings_str_from_bytes(const void *vp, int vp_len,
-			      char *buf, int buf_len);
+                              char *buf, int buf_len);
 
 #define snprintk snprintf
 #define BT_SETTINGS_SIZE(in_size) ((((((in_size) - 1) / 3) * 4) + 4) + 1)
+
+extern int conf_save_one(const char *path, int len, const char *value);
+
 #define settings_save_one conf_save_one
+
 
 #else
 
 static inline int
 settings_load(void)
 {
-	return 0;
+    return 0;
 }
 
 #endif /* MYNEWT_VAL(MYNEWT_VAL_BLE_MESH_SETTINGS) */

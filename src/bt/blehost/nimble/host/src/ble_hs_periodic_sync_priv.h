@@ -44,7 +44,7 @@ void ble_hs_periodic_sync_insert(struct ble_hs_periodic_sync *psync);
 void ble_hs_periodic_sync_remove(struct ble_hs_periodic_sync *psync);
 struct ble_hs_periodic_sync *ble_hs_periodic_sync_find_by_handle(uint16_t sync_handle);
 struct ble_hs_periodic_sync *ble_hs_periodic_sync_find(const ble_addr_t *addr,
-                                                       uint8_t sid);
+        uint8_t sid);
 struct ble_hs_periodic_sync *ble_hs_periodic_sync_first(void);
 int ble_hs_periodic_sync_init(void);
 

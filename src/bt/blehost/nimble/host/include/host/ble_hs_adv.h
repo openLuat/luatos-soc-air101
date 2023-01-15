@@ -38,8 +38,8 @@ struct ble_hs_adv_field {
     uint8_t value[0];
 };
 
-typedef int (* ble_hs_adv_parse_func_t) (const struct ble_hs_adv_field *,
-                                         void *);
+typedef int (* ble_hs_adv_parse_func_t)(const struct ble_hs_adv_field *,
+                                        void *);
 
 struct ble_hs_adv_fields {
     /*** 0x01 - Flags. */
@@ -48,26 +48,26 @@ struct ble_hs_adv_fields {
     /*** 0x02,0x03 - 16-bit service class UUIDs. */
     const ble_uuid16_t *uuids16;
     uint8_t num_uuids16;
-    unsigned uuids16_is_complete:1;
+    unsigned uuids16_is_complete: 1;
 
     /*** 0x04,0x05 - 32-bit service class UUIDs. */
     const ble_uuid32_t *uuids32;
     uint8_t num_uuids32;
-    unsigned uuids32_is_complete:1;
+    unsigned uuids32_is_complete: 1;
 
     /*** 0x06,0x07 - 128-bit service class UUIDs. */
     const ble_uuid128_t *uuids128;
     uint8_t num_uuids128;
-    unsigned uuids128_is_complete:1;
+    unsigned uuids128_is_complete: 1;
 
     /*** 0x08,0x09 - Local name. */
     const uint8_t *name;
     uint8_t name_len;
-    unsigned name_is_complete:1;
+    unsigned name_is_complete: 1;
 
     /*** 0x0a - Tx power level. */
     int8_t tx_pwr_lvl;
-    unsigned tx_pwr_lvl_is_present:1;
+    unsigned tx_pwr_lvl_is_present: 1;
 
     /*** 0x0d - Slave connection interval range. */
     const uint8_t *slave_itvl_range;
@@ -82,11 +82,11 @@ struct ble_hs_adv_fields {
 
     /*** 0x19 - Appearance. */
     uint16_t appearance;
-    unsigned appearance_is_present:1;
+    unsigned appearance_is_present: 1;
 
     /*** 0x1a - Advertising interval. */
     uint16_t adv_itvl;
-    unsigned adv_itvl_is_present:1;
+    unsigned adv_itvl_is_present: 1;
 
     /*** 0x20 - Service data - 32-bit UUID. */
     const uint8_t *svc_data_uuid32;

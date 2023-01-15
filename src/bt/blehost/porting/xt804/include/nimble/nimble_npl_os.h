@@ -85,19 +85,16 @@ ble_npl_get_current_task_id(void)
 static inline void
 ble_npl_eventq_init(struct ble_npl_eventq *evq)
 {
+    tls_os_queue_create(&evq->q, 128);
 
-    tls_os_queue_create(&evq->q, 32);
-    if(evq->q == NULL)
-    {
+    if(evq->q == NULL) {
         assert(0);
     }
 }
 static inline void
 ble_npl_eventq_deinit(struct ble_npl_eventq *evq)
 {
-
-    if(evq && evq->q)
-    {
+    if(evq && evq->q) {
         tls_os_queue_delete(evq->q);
     }
 }
@@ -112,6 +109,11 @@ static inline void
 ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev)
 {
     npl_freertos_eventq_put(evq, ev);
+}
+static inline void
+ble_npl_eventq_put_to_front(struct ble_npl_eventq *evq, struct ble_npl_event *ev)
+{
+    npl_freertos_eventq_put_to_front(evq, ev);
 }
 
 static inline void
@@ -130,6 +132,11 @@ static inline bool
 ble_npl_eventq_is_empty(struct ble_npl_eventq *evq)
 {
     return tls_os_queue_is_empty(evq->q);
+}
+static inline u8
+ble_npl_eventq_space_available(struct ble_npl_eventq *evq)
+{
+    return tls_os_queue_space_available(evq->q);
 }
 
 static inline void
@@ -168,7 +175,6 @@ ble_npl_mutex_init(struct ble_npl_mutex *mu)
 static inline ble_npl_error_t
 ble_npl_mutex_deinit(struct ble_npl_mutex *mu)
 {
-
     return npl_freertos_mutex_deinit(mu);
 }
 
@@ -187,13 +193,11 @@ ble_npl_mutex_release(struct ble_npl_mutex *mu)
 static inline ble_npl_error_t
 ble_npl_sem_init(struct ble_npl_sem *sem, uint16_t tokens)
 {
-
     return npl_freertos_sem_init(sem, tokens);
 }
 static inline ble_npl_error_t
 ble_npl_sem_deinit(struct ble_npl_sem *sem)
 {
-
     return npl_freertos_sem_deinit(sem);
 }
 
@@ -224,8 +228,7 @@ ble_npl_callout_init(struct ble_npl_callout *co, struct ble_npl_eventq *evq,
 static inline void
 ble_npl_callout_deinit(struct ble_npl_callout *co)
 {
-    if(co && co->handle)
-    {
+    if(co && co->handle) {
         tls_os_timer_delete(co->handle);
     }
 }
@@ -314,15 +317,14 @@ ble_npl_hw_set_isr(int irqn, void (*addr)(void))
 static inline uint32_t
 ble_npl_hw_enter_critical(void)
 {
-    vPortEnterCritical();
+    tls_os_set_critical();
     return 0;
 }
 
 static inline void
 ble_npl_hw_exit_critical(uint32_t ctx)
 {
-    vPortExitCritical();
-
+    tls_os_release_critical(ctx);
 }
 
 #ifdef __cplusplus

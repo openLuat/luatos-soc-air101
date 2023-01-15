@@ -17,12 +17,12 @@
  * under the License.
  */
 
- /**
-  * @addtogroup OSKernel
-  * @{
-  *   @defgroup OSCPUTime High Resolution Timers
-  *   @{
-  */
+/**
+ * @addtogroup OSKernel
+ * @{
+ *   @defgroup OSCPUTime High Resolution Timers
+ *   @{
+ */
 
 #ifndef H_OS_CPUTIME_
 #define H_OS_CPUTIME_
@@ -70,14 +70,13 @@ extern "C" {
 #else
 
 #error "Invalid OS_CPUTIME_FREQ value.  Value must be one of a) a power of 2" \
-       ">= 256Hz, or b) any value >= 1MHz"
+">= 256Hz, or b) any value >= 1MHz"
 
 #endif
 
 #if defined(OS_CPUTIME_FREQ_HIGH)
 /* CPUTIME data. */
-struct os_cputime_data
-{
+struct os_cputime_data {
     uint32_t ticks_per_usec;    /* number of ticks per usec */
 };
 extern struct os_cputime_data g_os_cputime;
@@ -188,7 +187,7 @@ void os_cputime_delay_usecs(uint32_t usecs);
  * @param arg   Pointer to data object to pass to timer.
  */
 void os_cputime_timer_init(struct hal_timer *timer, hal_timer_cb fp,
-        void *arg);
+                           void *arg);
 
 /**
  * Start a cputimer that will expire at 'cputime'. If cputime has already

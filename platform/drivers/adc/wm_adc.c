@@ -31,10 +31,14 @@ typedef struct
 	double a[3];
 }ST_ADC_POLYFIT_PARAM;
 
+/*f(x) = kx + b*/
+//#define ADC_CAL_K_POS   (6)
+//#define ADC_CAL_B_POS   (7)
+
+
 ST_ADC_POLYFIT_PARAM _polyfit_param = {0};
 extern void polyfit(int n,double x[],double y[],int poly_n,double a[]);
-//TODO
-#define HR_SD_ADC_CONFIG_REG 0
+
 static int adc_offset = 0;
 static int *adc_dma_buffer = NULL;
 volatile ST_ADC gst_adc;
@@ -654,4 +658,5 @@ int adc_temp(void)
 
 	return temperature;
 }
+
 

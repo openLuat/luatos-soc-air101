@@ -226,11 +226,11 @@ struct ble_sm_dhkey_check {
 typedef uint8_t ble_sm_proc_flags;
 
 struct ble_sm_keys {
-    unsigned ltk_valid:1;
-    unsigned ediv_rand_valid:1;
-    unsigned irk_valid:1;
-    unsigned csrk_valid:1;
-    unsigned addr_valid:1;
+    unsigned ltk_valid: 1;
+    unsigned ediv_rand_valid: 1;
+    unsigned irk_valid: 1;
+    unsigned csrk_valid: 1;
+    unsigned addr_valid: 1;
     uint16_t ediv;
     uint64_t rand_val;
     uint8_t addr_type;
@@ -279,10 +279,10 @@ struct ble_sm_result {
     uint8_t sm_err;
     struct ble_gap_passkey_params passkey_params;
     void *state_arg;
-    unsigned execute:1;
-    unsigned enc_cb:1;
-    unsigned persist_keys:1;
-    unsigned restore:1;
+    unsigned execute: 1;
+    unsigned enc_cb: 1;
+    unsigned persist_keys: 1;
+    unsigned restore: 1;
 };
 
 #if MYNEWT_VAL(BLE_HS_DEBUG)

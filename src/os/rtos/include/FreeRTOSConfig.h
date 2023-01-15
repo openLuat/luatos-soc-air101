@@ -1,6 +1,6 @@
 /*
     FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
-
+	
 
     ***************************************************************************
      *                                                                       *
@@ -63,36 +63,33 @@
  * application requirements.
  *
  * THESE PARAMETERS ARE DESCRIBED WITHIN THE 'CONFIGURATION' SECTION OF THE
- * FreeRTOS API DOCUMENTATION AVAILABLE ON THE FreeRTOS.org WEB SITE.
+ * FreeRTOS API DOCUMENTATION AVAILABLE ON THE FreeRTOS.org WEB SITE. 
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configUSE_PREEMPTION		1	//ʹ������ʽ�ں�
-#define configUSE_IDLE_HOOK			1	//ʹ�ÿ��й���
-#define configUSE_TICK_HOOK			1	//��ʹ��ʱ��Ƭ����
+#define configUSE_PREEMPTION		1	
+#define configUSE_IDLE_HOOK			1	//使用空闲钩子
+#define configUSE_TICK_HOOK			1	
 
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///�ڲ�������ִ��Ƶ��
+#define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///???????????????
 
-#define configTICK_RATE_HZ			( ( portTickType ) 1000u )	//ʱ��Ƭ�жϵ�Ƶ��
-#define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 63)	//Ӧ�ó����п������ȼ�����Ŀ
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 90 )	//��������ʹ�õĶ�ջ��С
-#define configTOTAL_HEAP_SIZE		( ( size_t ) 12 * 1024 )		//�ں��п��õ�RAM����,heap2ʹ��
-#define configMAX_TASK_NAME_LEN		( 8 )	//�����������������������
-#define configUSE_TRACE_FACILITY	0		//�Ƿ�ʹ�ÿ��ӻ�׷��
-#define configUSE_16_BIT_TICKS		0	//����portTickType
-#define configIDLE_SHOULD_YIELD		1	//����ֹ���������ó�ʱ��ֱ������ʱ��Ƭ����
+#define configTICK_RATE_HZ			( ( portTickType ) 1000u )	
+#define configMAX_PRIORITIES		(63)
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )	
+#define configTOTAL_HEAP_SIZE		( ( size_t ) 12 * 1024 )	
+#define configMAX_TASK_NAME_LEN		( 10 )	//创建任务名称最大允许长度
+#define configUSE_TRACE_FACILITY	1		
+#define configUSE_16_BIT_TICKS		0	
+#define configIDLE_SHOULD_YIELD		1	
 #define configUSE_HEAP3				0
 
 #define configQUEUE_REGISTRY_SIZE 	0
-#define configSEMAPHORE_INIT_VALUE	5	//�����ź�����������ֵ
+#define configSEMAPHORE_INIT_VALUE	5	
 
 /* Co-routine definitions. */
-#define configUSE_CO_ROUTINES 		0	//��ʹ�ú�����תʽ����
-#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )	//����ʽӦ�ó����п��õ����ȼ���Ŀ
-
-#define configTIMER_TASK_STACK_DEPTH 400
-
+#define configUSE_CO_ROUTINES 		0	
+#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )	
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
@@ -105,10 +102,25 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil			1
 #define INCLUDE_vTaskDelay				1
 
-#define configUSE_MUTEXES               1
-#define configUSE_RECURSIVE_MUTEXES     1
+#define configUSE_COUNTING_SEMAPHORES    1
+#define configSUPPORT_STATIC_ALLOCATION  1
+#define configTIMER_TASK_PRIORITY       ( 1 )
+#define configTIMER_QUEUE_LENGTH        ( 128 )
+#define configTIMER_TASK_STACK_DEPTH    ( 512 )
+#define configUSE_TIMERS                1
+#define configUSE_MUTEXES                (1)
+#define configUSE_STATS_FORMATTING_FUNCTIONS  (1)
+#define INCLUDE_xTaskGetCurrentTaskHandle  (1)
 
-#define INCLUDE_xTaskGetCurrentTaskHandle   1 //���Ի�ȡ��ǰ����
+#define configUSE_APPLICATION_TASK_TAG 1
+#define INCLUDE_xQueueGetMutexHolder   1
 
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION  0
+
+#define configUSE_RECURSIVE_MUTEXES    1
+extern void vPortCleanUpTCB(void *pxTCB);
+#define portCLEAN_UP_TCB( pxTCB )          vPortCleanUpTCB( pxTCB )
+extern int printf( const char *format, ... );
+#define configASSERT( a )   do {if ((a)==0){printf("Assert : %s %d\r\n", __FILE__, __LINE__);while(1);}}while(0)
 
 #endif /* FREERTOS_CONFIG_H */

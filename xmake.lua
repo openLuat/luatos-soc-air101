@@ -62,6 +62,26 @@ set_objectdir("$(buildir)/.objs")
 
 set_policy("build.across_targets_in_parallel", false)
 
+add_includedirs("include",{public = true})
+add_includedirs("include/app",{public = true})
+add_includedirs("include/driver",{public = true})
+add_includedirs("include/os",{public = true})
+add_includedirs("include/bt",{public = true})
+add_includedirs("include/platform",{public = true})
+add_includedirs("platform/common/params",{public = true})
+add_includedirs("include/wifi",{public = true})
+add_includedirs("include/arch/xt804",{public = true})
+add_includedirs("include/arch/xt804/csi_core",{public = true})
+add_includedirs("include/net",{public = true})
+add_includedirs("demo",{public = true})
+add_includedirs("platform/inc",{public = true})
+add_includedirs(luatos.."components/mbedtls/include")
+
+add_includedirs("src/os/rtos/include",{public = true})
+
+add_includedirs("include/driver",{public = true})
+
+
 target("app")
     set_kind("static")
     set_plat("cross")
@@ -74,21 +94,6 @@ target("app")
 
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/app/**")))
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
-
-    add_includedirs("include",{public = true})
-    add_includedirs("include/app",{public = true})
-    add_includedirs("include/driver",{public = true})
-    add_includedirs("include/os",{public = true})
-    add_includedirs("include/bt",{public = true})
-    add_includedirs("include/platform",{public = true})
-    add_includedirs("platform/common/params",{public = true})
-    add_includedirs("include/wifi",{public = true})
-    add_includedirs("include/arch/xt804",{public = true})
-    add_includedirs("include/arch/xt804/csi_core",{public = true})
-    add_includedirs("include/net",{public = true})
-    add_includedirs("demo",{public = true})
-    add_includedirs("platform/inc",{public = true})
-    add_includedirs(luatos.."components/mbedtls/include")
 
     -- mbedtls
     add_files(luatos.."components/mbedtls/library/*.c")
@@ -103,11 +108,6 @@ target("wmarch")
 
     add_files("platform/arch/**.c")
     add_files("platform/arch/**.S")
-    add_includedirs("include",{public = true})
-    add_includedirs("include/driver",{public = true})
-    add_includedirs("include/os",{public = true})
-    add_includedirs("include/arch/xt804",{public = true})
-    add_includedirs("include/arch/xt804/csi_core",{public = true})
 
     after_load(function (target)
         for _, sourcebatch in pairs(target:sourcebatches()) do

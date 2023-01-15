@@ -34,16 +34,16 @@ struct ble_hs_conn;
 struct hci_data_hdr;
 
 STATS_SECT_START(ble_l2cap_stats)
-    STATS_SECT_ENTRY(chan_create)
-    STATS_SECT_ENTRY(chan_delete)
-    STATS_SECT_ENTRY(update_init)
-    STATS_SECT_ENTRY(update_rx)
-    STATS_SECT_ENTRY(update_fail)
-    STATS_SECT_ENTRY(proc_timeout)
-    STATS_SECT_ENTRY(sig_tx)
-    STATS_SECT_ENTRY(sig_rx)
-    STATS_SECT_ENTRY(sm_tx)
-    STATS_SECT_ENTRY(sm_rx)
+STATS_SECT_ENTRY(chan_create)
+STATS_SECT_ENTRY(chan_delete)
+STATS_SECT_ENTRY(update_init)
+STATS_SECT_ENTRY(update_rx)
+STATS_SECT_ENTRY(update_fail)
+STATS_SECT_ENTRY(proc_timeout)
+STATS_SECT_ENTRY(sig_tx)
+STATS_SECT_ENTRY(sig_rx)
+STATS_SECT_ENTRY(sm_tx)
+STATS_SECT_ENTRY(sm_rx)
 STATS_SECT_END
 extern STATS_SECT_DECL(ble_l2cap_stats) ble_l2cap_stats;
 

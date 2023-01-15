@@ -25,36 +25,36 @@ extern "C" {
 #endif
 
 extern struct ble_store_value_sec
-    ble_store_config_our_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
+ble_store_config_our_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
 extern int ble_store_config_num_our_secs;
 
 extern struct ble_store_value_sec
-    ble_store_config_peer_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
+ble_store_config_peer_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
 extern int ble_store_config_num_peer_secs;
 
 extern struct ble_store_value_cccd
-    ble_store_config_cccds[MYNEWT_VAL(BLE_STORE_MAX_CCCDS)*MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
+ble_store_config_cccds[MYNEWT_VAL(BLE_STORE_MAX_CCCDS)*MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
 extern int ble_store_config_num_cccds;
 
 #if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)
 
-int ble_store_config_persist_our_secs(void);
-int ble_store_config_persist_peer_secs(void);
-int ble_store_config_persist_cccds(void);
+int ble_store_config_persist_our_secs(bool flush);
+int ble_store_config_persist_peer_secs(bool flush);
+int ble_store_config_persist_cccds(bool flush);
 void ble_store_config_conf_init(void);
 void ble_store_config_conf_deinit(void);
-
 void ble_store_config_persist_flush(void);
+int ble_store_config_delete_all(void);
 
 #else
 
-static inline int ble_store_config_persist_our_secs(void)   { return 0; }
-static inline int ble_store_config_persist_peer_secs(void)  { return 0; }
-static inline int ble_store_config_persist_cccds(void)      { return 0; }
+static inline int ble_store_config_persist_our_secs(bool flush)   { return 0; }
+static inline int ble_store_config_persist_peer_secs(bool flush)  { return 0; }
+static inline int ble_store_config_persist_cccds(bool flush)      { return 0; }
 static inline void ble_store_config_conf_init(void)         { }
 static inline void ble_store_config_conf_deinit(void)         { }
-
 static inline void ble_store_config_persist_flush(void) {}
+static inline int ble_store_config_delete_all(void){ return 0;}
 
 #endif /* MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST) */
 

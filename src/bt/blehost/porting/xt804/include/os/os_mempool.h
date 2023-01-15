@@ -68,7 +68,7 @@ struct os_mempool {
     /** Address of memory buffer used by pool */
     uintptr_t mp_membuf_addr;
     STAILQ_ENTRY(os_mempool) mp_list;
-    SLIST_HEAD(,os_memblock);
+    SLIST_HEAD(, os_memblock);
     /** Name for memory block */
     char *name;
 };
@@ -251,6 +251,13 @@ os_error_t os_memblock_put_from_cb(struct os_mempool *mp, void *block_addr);
  * @return os_error_t
  */
 os_error_t os_memblock_put(struct os_mempool *mp, void *block_addr);
+
+int
+os_memblock_get_total_block(struct os_mempool *mp);
+int
+os_memblock_get_free_block(struct os_mempool *mp);
+
+
 
 void os_mempool_reset();
 

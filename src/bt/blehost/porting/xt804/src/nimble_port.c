@@ -23,6 +23,12 @@
 #if NIMBLE_CFG_CONTROLLER
 #include "controller/ble_ll.h"
 #endif
+#if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)
+#include "store/config/ble_store_config.h"
+#else
+#include "store/ram/ble_store_ram.h"
+#endif
+
 
 static struct ble_npl_eventq g_eventq_dflt ;
 static struct ble_hs_stop_listener stop_listener;
@@ -38,31 +44,23 @@ nimble_port_init(void)
 #if NIMBLE_CFG_CONTROLLER
     void ble_hci_ram_init(void);
 #endif
-
     /* Initialize default event queue */
     ble_npl_eventq_init(&g_eventq_dflt);
-
     os_mempool_reset();
-
     os_msys_init();
-
     ble_hs_init();
-
     /* XXX Need to have template for store */
-
-#if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)    
+#if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)
     ble_store_config_init();
 #else
     ble_store_ram_init();
 #endif
-
 #if NIMBLE_CFG_CONTROLLER
     hal_timer_init(5, NULL);
     os_cputime_init(32768);
     ble_ll_init();
     ble_hci_ram_init();
 #endif
-
 }
 
 void
@@ -70,15 +68,11 @@ nimble_port_deinit(void)
 {
     /* Deinitialize default event queue */
     ble_npl_eventq_deinit(&g_eventq_dflt);
-    
     ble_hs_deinit();
-
     os_msys_deinit();
-    
-#if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST) 
+#if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)
     ble_store_config_deinit();
 #endif
-
 }
 
 
@@ -88,11 +82,12 @@ nimble_port_run(void)
     struct ble_npl_event *ev;
     int arg;
 
-    while (1) {
+    while(1) {
         ev = ble_npl_eventq_get(&g_eventq_dflt, BLE_NPL_TIME_FOREVER);
         ble_npl_event_run(ev);
         arg = (int)ble_npl_event_get_arg(ev);
-        if (arg == NIMBLE_PORT_DEINIT_EV_ARG) {
+
+        if(arg == NIMBLE_PORT_DEINIT_EV_ARG) {
             ;//break;
         }
     }
@@ -117,30 +112,27 @@ int
 nimble_port_stop(void)
 {
     int rc;
-
     ble_npl_sem_init(&ble_hs_stop_sem, 0);
     /* Initiate a host stop procedure. */
     rc = ble_hs_stop(&stop_listener, ble_hs_stop_cb,
-            NULL);
-    if (rc != 0) {
+                     NULL);
+
+    if(rc != 0) {
         ble_npl_sem_deinit(&ble_hs_stop_sem);
         return rc;
     }
 
     /* Wait till the host stop procedure is complete */
     ble_npl_sem_pend(&ble_hs_stop_sem, BLE_NPL_TIME_FOREVER);
-
     ble_npl_event_init(&ble_hs_ev_stop, nimble_port_stop_cb,
-            (void *)NIMBLE_PORT_DEINIT_EV_ARG);
+                       (void *)NIMBLE_PORT_DEINIT_EV_ARG);
     ble_npl_eventq_put(&g_eventq_dflt, &ble_hs_ev_stop);
-
     /* Wait till the event is serviced */
     ble_npl_sem_pend(&ble_hs_stop_sem, BLE_NPL_TIME_FOREVER);
-
     ble_npl_sem_deinit(&ble_hs_stop_sem);
 
     /*Adding shutdown cb function, inform application free resources*/
-    if (ble_hs_cfg.shutdown_cb != NULL) {
+    if(ble_hs_cfg.shutdown_cb != NULL) {
         ble_hs_cfg.shutdown_cb(0);
     }
 
@@ -160,7 +152,6 @@ void
 nimble_port_ll_task_func(void *arg)
 {
     extern void ble_ll_task(void *);
-
     ble_ll_task(arg);
 }
 #endif

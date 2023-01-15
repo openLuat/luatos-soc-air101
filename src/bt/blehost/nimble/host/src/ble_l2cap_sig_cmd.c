@@ -26,13 +26,11 @@ ble_l2cap_sig_tx(uint16_t conn_handle, struct os_mbuf *txom)
     struct ble_l2cap_chan *chan;
     struct ble_hs_conn *conn;
     int rc;
-
     ble_hs_lock();
     ble_hs_misc_conn_chan_find_reqd(conn_handle, BLE_L2CAP_CID_SIG,
                                     &conn, &chan);
     rc = ble_l2cap_tx(conn, chan, txom);
     ble_hs_unlock();
-
     return rc;
 }
 
@@ -41,9 +39,7 @@ ble_l2cap_sig_hdr_parse(void *payload, uint16_t len,
                         struct ble_l2cap_sig_hdr *dst)
 {
     struct ble_l2cap_sig_hdr *src = payload;
-
     BLE_HS_DBG_ASSERT(len >= BLE_L2CAP_SIG_HDR_SZ);
-
     dst->op = src->op;
     dst->identifier = src->identifier;
     dst->length = le16toh(src->length);
@@ -55,16 +51,15 @@ ble_l2cap_sig_reject_tx(uint16_t conn_handle, uint8_t id, uint16_t reason,
 {
     struct ble_l2cap_sig_reject *cmd;
     struct os_mbuf *txom;
-
     cmd = ble_l2cap_sig_cmd_get(BLE_L2CAP_SIG_OP_REJECT, id,
-                           sizeof(*cmd) + data_len, &txom);
-    if (!cmd) {
+                                sizeof(*cmd) + data_len, &txom);
+
+    if(!cmd) {
         return BLE_HS_ENOMEM;
     }
 
     cmd->reason = htole16(reason);
     memcpy(cmd->data, data, data_len);
-
     STATS_INC(ble_l2cap_stats, sig_rx);
     return ble_l2cap_sig_tx(conn_handle, txom);
 }
@@ -80,10 +75,9 @@ ble_l2cap_sig_reject_invalid_cid_tx(uint16_t conn_handle, uint8_t id,
         .local_cid = dst_cid,
         .remote_cid = src_cid,
     };
-
     return ble_l2cap_sig_reject_tx(conn_handle, id,
-                                 BLE_L2CAP_SIG_ERR_INVALID_CID,
-                                 &data, sizeof data);
+                                   BLE_L2CAP_SIG_ERR_INVALID_CID,
+                                   &data, sizeof data);
 }
 
 void *
@@ -91,22 +85,20 @@ ble_l2cap_sig_cmd_get(uint8_t opcode, uint8_t id, uint16_t len,
                       struct os_mbuf **txom)
 {
     struct ble_l2cap_sig_hdr *hdr;
-
     *txom = ble_hs_mbuf_l2cap_pkt();
-    if (*txom == NULL) {
+
+    if(*txom == NULL) {
         return NULL;
     }
 
-    if (os_mbuf_extend(*txom, sizeof(*hdr) + len) == NULL) {
+    if(os_mbuf_extend(*txom, sizeof(*hdr) + len) == NULL) {
         os_mbuf_free_chain(*txom);
         return NULL;
     }
 
     hdr = (struct ble_l2cap_sig_hdr *)(*txom)->om_data;
-
     hdr->op = opcode;
     hdr->identifier = id;
     hdr->length = htole16(len);
-
     return hdr->data;
 }

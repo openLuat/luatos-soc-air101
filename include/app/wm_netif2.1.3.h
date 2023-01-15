@@ -1,9 +1,9 @@
 /**
- * @file    wm_netif2.0.3.h
+ * @file    wm_netif2.1.3.h
  *
- * @brief   netif203 module
+ * @brief   netif213 module
  *
- * @author  dave
+ * @author  WinnerMicro
  *
  * Copyright (c) 2014 Winner Microelectronics Co., Ltd.
  */

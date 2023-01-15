@@ -37,37 +37,37 @@ struct ble_hs_hci_ack;
 struct ble_hs_adv;
 
 STATS_SECT_START(ble_gap_stats)
-    STATS_SECT_ENTRY(wl_set)
-    STATS_SECT_ENTRY(wl_set_fail)
-    STATS_SECT_ENTRY(adv_stop)
-    STATS_SECT_ENTRY(adv_stop_fail)
-    STATS_SECT_ENTRY(adv_start)
-    STATS_SECT_ENTRY(adv_start_fail)
-    STATS_SECT_ENTRY(adv_set_data)
-    STATS_SECT_ENTRY(adv_set_data_fail)
-    STATS_SECT_ENTRY(adv_rsp_set_data)
-    STATS_SECT_ENTRY(adv_rsp_set_data_fail)
-    STATS_SECT_ENTRY(discover)
-    STATS_SECT_ENTRY(discover_fail)
-    STATS_SECT_ENTRY(initiate)
-    STATS_SECT_ENTRY(initiate_fail)
-    STATS_SECT_ENTRY(terminate)
-    STATS_SECT_ENTRY(terminate_fail)
-    STATS_SECT_ENTRY(cancel)
-    STATS_SECT_ENTRY(cancel_fail)
-    STATS_SECT_ENTRY(update)
-    STATS_SECT_ENTRY(update_fail)
-    STATS_SECT_ENTRY(connect_mst)
-    STATS_SECT_ENTRY(connect_slv)
-    STATS_SECT_ENTRY(disconnect)
-    STATS_SECT_ENTRY(rx_disconnect)
-    STATS_SECT_ENTRY(rx_update_complete)
-    STATS_SECT_ENTRY(rx_adv_report)
-    STATS_SECT_ENTRY(rx_conn_complete)
-    STATS_SECT_ENTRY(discover_cancel)
-    STATS_SECT_ENTRY(discover_cancel_fail)
-    STATS_SECT_ENTRY(security_initiate)
-    STATS_SECT_ENTRY(security_initiate_fail)
+STATS_SECT_ENTRY(wl_set)
+STATS_SECT_ENTRY(wl_set_fail)
+STATS_SECT_ENTRY(adv_stop)
+STATS_SECT_ENTRY(adv_stop_fail)
+STATS_SECT_ENTRY(adv_start)
+STATS_SECT_ENTRY(adv_start_fail)
+STATS_SECT_ENTRY(adv_set_data)
+STATS_SECT_ENTRY(adv_set_data_fail)
+STATS_SECT_ENTRY(adv_rsp_set_data)
+STATS_SECT_ENTRY(adv_rsp_set_data_fail)
+STATS_SECT_ENTRY(discover)
+STATS_SECT_ENTRY(discover_fail)
+STATS_SECT_ENTRY(initiate)
+STATS_SECT_ENTRY(initiate_fail)
+STATS_SECT_ENTRY(terminate)
+STATS_SECT_ENTRY(terminate_fail)
+STATS_SECT_ENTRY(cancel)
+STATS_SECT_ENTRY(cancel_fail)
+STATS_SECT_ENTRY(update)
+STATS_SECT_ENTRY(update_fail)
+STATS_SECT_ENTRY(connect_mst)
+STATS_SECT_ENTRY(connect_slv)
+STATS_SECT_ENTRY(disconnect)
+STATS_SECT_ENTRY(rx_disconnect)
+STATS_SECT_ENTRY(rx_update_complete)
+STATS_SECT_ENTRY(rx_adv_report)
+STATS_SECT_ENTRY(rx_conn_complete)
+STATS_SECT_ENTRY(discover_cancel)
+STATS_SECT_ENTRY(discover_cancel_fail)
+STATS_SECT_ENTRY(security_initiate)
+STATS_SECT_ENTRY(security_initiate_fail)
 STATS_SECT_END
 
 extern STATS_SECT_DECL(ble_gap_stats) ble_gap_stats;
@@ -83,18 +83,19 @@ void ble_gap_rx_le_scan_timeout(void);
 void ble_gap_rx_ext_adv_report(struct ble_gap_ext_disc_desc *desc);
 void ble_gap_rx_adv_set_terminated(const struct ble_hci_ev_le_subev_adv_set_terminated *ev);
 #if MYNEWT_VAL(BLE_PERIODIC_ADV)
-void ble_gap_rx_peroidic_adv_sync_estab(const struct ble_hci_ev_le_subev_periodic_adv_sync_estab *ev);
+void ble_gap_rx_peroidic_adv_sync_estab(const struct ble_hci_ev_le_subev_periodic_adv_sync_estab
+                                        *ev);
 void ble_gap_rx_periodic_adv_rpt(const struct ble_hci_ev_le_subev_periodic_adv_rpt *ev);
 void ble_gap_rx_periodic_adv_sync_lost(const struct ble_hci_ev_le_subev_periodic_adv_sync_lost *ev);
-void ble_gap_rx_periodic_adv_sync_transfer(const struct ble_hci_ev_le_subev_periodic_adv_sync_transfer *ev);
+void ble_gap_rx_periodic_adv_sync_transfer(const struct
+        ble_hci_ev_le_subev_periodic_adv_sync_transfer *ev);
 #endif
 void ble_gap_rx_scan_req_rcvd(const struct ble_hci_ev_le_subev_scan_req_rcvd *ev);
 #endif
 void ble_gap_rx_adv_report(struct ble_gap_disc_desc *desc);
 void ble_gap_rx_rd_rem_sup_feat_complete(const struct ble_hci_ev_le_subev_rd_rem_used_feat *ev);
 
-struct ble_gap_conn_complete
-{
+struct ble_gap_conn_complete {
     uint8_t status;
     uint16_t connection_handle;
     uint8_t role;

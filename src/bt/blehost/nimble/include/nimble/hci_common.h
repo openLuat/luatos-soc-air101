@@ -979,6 +979,8 @@ struct ble_hci_le_set_host_feat_cp {
 #define BLE_HCI_SET_DATALEN_TX_OCTETS_MAX   (0x00fb)
 #define BLE_HCI_SET_DATALEN_TX_TIME_MIN     (0x0148)
 #define BLE_HCI_SET_DATALEN_TX_TIME_MAX     (0x4290)
+#define BLE_HCI_SET_DATALEN_UNCODED_TX_TIME_MAX   (2120)  /* usecs */
+
 
 /* --- LE read maximum default PHY (OCF 0x0030) */
 #define BLE_HCI_LE_PHY_1M                   (1)
@@ -1213,7 +1215,7 @@ struct ble_hci_ev_auth_pyld_tmo {
 struct ble_hci_ev_vendor_debug {
     uint8_t id;
     uint8_t data[0];
-}__attribute__((packed));
+} __attribute__((packed));
 
 /* LE sub-event codes */
 #define BLE_HCI_LE_SUBEV_CONN_COMPLETE          (0x01)
@@ -1519,8 +1521,7 @@ struct ble_hci_ev_le_subev_periodic_adv_sync_transfer {
 #define BLE_HCI_DATA_PB(handle_pb_bc)       (((handle_pb_bc) & 0x3000) >> 12)
 #define BLE_HCI_DATA_BC(handle_pb_bc)       (((handle_pb_bc) & 0xc000) >> 14)
 
-struct hci_data_hdr
-{
+struct hci_data_hdr {
     uint16_t hdh_handle_pb_bc;
     uint16_t hdh_len;
 };

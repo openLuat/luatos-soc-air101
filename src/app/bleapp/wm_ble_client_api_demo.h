@@ -1,13 +1,22 @@
-#ifndef __WM_BLE_CLIENT_DEMO_HUAWEI_H__
-#define __WM_BLE_CLIENT_DEMO_HUAWEI_H__
+#ifndef __WM_BLE_CLIENT_DEMO_H__
+#define __WM_BLE_CLIENT_DEMO_H__
 
 #include "wm_bt_def.h"
 
-int tls_ble_client_demo_api_init(tls_ble_output_func_ptr output_func_ptr);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+int tls_ble_client_demo_api_init(tls_ble_uart_output_ptr uart_output_ptr, tls_ble_uart_sent_ptr uart_in_and_sent_ptr);
 
 int tls_ble_client_demo_api_deinit();
 
 int tls_ble_client_demo_api_send_msg(uint8_t *ptr, int length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

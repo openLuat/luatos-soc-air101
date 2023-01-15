@@ -23,6 +23,7 @@ static struct tls_inside_fls *inside_fls = NULL;
 static u8 tls_fls_cache[INSIDE_FLS_SECTOR_SIZE];
 
 /**System parameter, default for 2M flash*/
+unsigned int  TLS_FLASH_MESH_PARAM_ADDR      =        (0x81FA000UL);
 unsigned int  TLS_FLASH_PARAM_DEFAULT        =		  (0x81FB000UL);
 unsigned int  TLS_FLASH_PARAM1_ADDR          =		  (0x81FC000UL);
 unsigned int  TLS_FLASH_PARAM2_ADDR          =		  (0x81FD000UL);
@@ -61,17 +62,18 @@ static void writeBpBit_for_1wreg(char cmp, char bp4, char bp3, char bp2, char bp
     M32(HR_FLASH_CMD_ADDR) = 0x0C035;
     M32(HR_FLASH_CMD_START) = CMD_START_Msk;
     status  |=  (read_first_value() & 0xFF) << 8;
-
-    /*Write Enable*/
-    M32(HR_FLASH_CMD_ADDR) = 0x6;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
-
     bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
-    status      = (status & 0xBF83) | bpstatus | (cmp << 14);
+	if ((status & 0x407C) != (bpstatus|(cmp<<14)))
+	{
+	    status      = (status & 0xBF83) | bpstatus | (cmp << 14);
+	    /*Write Enable*/
+	    M32(HR_FLASH_CMD_ADDR) = 0x6;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
-    M32(RSA_BASE_ADDRESS)  = status;
-    M32(HR_FLASH_CMD_ADDR) = 0x1A001;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+	    M32(RSA_BASE_ADDRESS)  = status;
+	    M32(HR_FLASH_CMD_ADDR) = 0x1A001;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+	}
 }
 
 static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
@@ -88,24 +90,29 @@ static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp
     status  |=  (read_first_value() & 0xFF) << 8;
 
     /*Write Enable*/
-    M32(HR_FLASH_CMD_ADDR) = 0x6;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
-
     bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
-    bpstatus      = (status & 0x83) | bpstatus;
+	if ((bpstatus != (status & 0x7C)))
+	{
+	    bpstatus      = (status & 0x83) | bpstatus;
 
-    M32(RSA_BASE_ADDRESS)  = bpstatus;
-    M32(HR_FLASH_CMD_ADDR) = 0xA001;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+	    M32(HR_FLASH_CMD_ADDR) = 0x6;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
+	    M32(RSA_BASE_ADDRESS)  = bpstatus;
+	    M32(HR_FLASH_CMD_ADDR) = 0xA001;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+	}
 
-    M32(HR_FLASH_CMD_ADDR) = 0x6;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+	if (((status & 0x4000)>>8) != (cmp << 6))
+	{
+	    M32(HR_FLASH_CMD_ADDR) = 0x6;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
-    status      = ((status>>8) & 0xBF) | (cmp << 6);
-    M32(RSA_BASE_ADDRESS)   = status;
-    M32(HR_FLASH_CMD_ADDR)  = 0xA031;
-    M32(HR_FLASH_CMD_START) = CMD_START_Msk;	
+	    status      = ((status>>8) & 0xBF) | (cmp << 6);
+	    M32(RSA_BASE_ADDRESS)   = status;
+	    M32(HR_FLASH_CMD_ADDR)  = 0xA031;
+	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;	
+	}
 }
 
 
@@ -155,6 +162,16 @@ static int flashunlock(void)
         writeBpBit_for_1wreg(0, 0, 0, 0, 0, 0);
         break;
     case SPIFLASH_MID_PUYA:
+	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
+		if (inside_fls->density == 0x100000)/*PUYA 1M Flash use 1 register to set lock/unlock*/
+		{
+			writeBpBit_for_1wreg(0, 0, 0, 0, 0, 0);
+		}
+		else
+		{
+			writeBpBit_for_2wreg(0, 0, 0, 0, 0, 0);
+		}
+		break;
 	case SPIFLASH_MID_XTX:
 	case SPIFLASH_MID_BOYA:
 	case SPIFLASH_MID_FUDANMICRO:
@@ -175,10 +192,20 @@ static int flashlock(void)
     switch(readRID())
     {
     case SPIFLASH_MID_GD:
-	case SPIFLASH_MID_TSINGTENG:		
+	case SPIFLASH_MID_TSINGTENG:	
         writeBpBit_for_1wreg(0, 1, 1, 0, 1, 0);
 		break;
     case SPIFLASH_MID_PUYA:
+	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
+		if (inside_fls->density == 0x100000) /*PUYA 1M Flash use 1 register to set lock/unlock*/
+		{
+			writeBpBit_for_1wreg(0, 1, 1, 0, 1, 0);
+		}
+		else
+		{
+			writeBpBit_for_2wreg(0, 1, 1, 0, 1, 0);
+		}
+        break;
 	case SPIFLASH_MID_XTX:
 	case SPIFLASH_MID_BOYA:
 	case SPIFLASH_MID_FUDANMICRO:
@@ -293,6 +320,14 @@ static int eraseSector (unsigned long adr)
 
     return (0);                                  				// Finished without Errors
 }
+#if 0
+/*only for XT806 c400 flash*/
+static int erasePage (unsigned long addr)
+{
+	eraseSR(0x80000881, addr);
+    return (0);                                  				// Finished without Errors
+}
+#endif
 
 static unsigned int getFlashDensity(void)
 {

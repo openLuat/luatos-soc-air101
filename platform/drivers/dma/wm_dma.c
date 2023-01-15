@@ -259,7 +259,7 @@ unsigned char tls_dma_start_by_wrap(unsigned char ch, struct tls_dma_descriptor 
     DMA_SRCWRAPADDR_REG(ch) = dma_desc->src_addr;
     DMA_DESTWRAPADDR_REG(ch) = dma_desc->dest_addr;
     DMA_WRAPSIZE_REG(ch) = (dest_zize << 16) | src_zize;
-    DMA_CTRL_REG(ch) = ((dma_desc->dma_ctrl & 0x1ffff) << 1) | (auto_reload ? 0x1: 0x0);
+    DMA_CTRL_REG(ch) = ((dma_desc->dma_ctrl & 0x7fffff) << 1) | (auto_reload ? 0x1: 0x0);
     DMA_CHNLCTRL_REG(ch) |= DMA_CHNL_CTRL_CHNL_ON;
 
     return 0;

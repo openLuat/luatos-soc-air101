@@ -86,7 +86,6 @@ static void
 ble_hs_hci_lock(void)
 {
     int rc;
-
     rc = ble_npl_mutex_pend(&ble_hs_hci_mutex, BLE_NPL_TIME_FOREVER);
     BLE_HS_DBG_ASSERT_EVAL(rc == 0 || rc == OS_NOT_STARTED);
 }
@@ -95,7 +94,6 @@ static void
 ble_hs_hci_unlock(void)
 {
     int rc;
-
     rc = ble_npl_mutex_release(&ble_hs_hci_mutex);
     BLE_HS_DBG_ASSERT_EVAL(rc == 0 || rc == OS_NOT_STARTED);
 }
@@ -103,26 +101,23 @@ ble_hs_hci_unlock(void)
 int
 ble_hs_hci_set_buf_sz(uint16_t pktlen, uint16_t max_pkts)
 {
-    if (pktlen == 0 || max_pkts == 0) {
+    if(pktlen == 0 || max_pkts == 0) {
         return BLE_HS_EINVAL;
     }
 
     ble_hs_hci_buf_sz = pktlen;
     ble_hs_hci_max_pkts = max_pkts;
     ble_hs_hci_avail_pkts = max_pkts;
-
     return 0;
 }
 int
 ble_hs_hci_set_tx_buf_sz(uint16_t pktlen)
 {
-    if(pktlen > BLE_HCI_SET_DATALEN_TX_OCTETS_MAX || pktlen < BLE_HCI_SET_DATALEN_TX_OCTETS_MIN)
-    {
+    if(pktlen > BLE_HCI_SET_DATALEN_TX_OCTETS_MAX || pktlen < BLE_HCI_SET_DATALEN_TX_OCTETS_MIN) {
         return BLE_HS_EINVAL;
     }
-    
-    ble_hs_hci_buf_sz = pktlen;
 
+    ble_hs_hci_buf_sz = pktlen;
     return 0;
 }
 
@@ -134,7 +129,7 @@ ble_hs_hci_add_avail_pkts(uint16_t delta)
 {
     BLE_HS_DBG_ASSERT(ble_hs_locked_by_cur_task());
 
-    if (ble_hs_hci_avail_pkts + delta > UINT16_MAX) {
+    if(ble_hs_hci_avail_pkts + delta > UINT16_MAX) {
         ble_hs_sched_reset(BLE_HS_ECONTROLLER);
     } else {
         ble_hs_hci_avail_pkts += delta;
@@ -149,20 +144,19 @@ ble_hs_hci_rx_cmd_complete(const void *data, int len,
     const struct ble_hci_ev_command_complete_nop *nop = data;
     uint16_t opcode;
 
-    if (len < sizeof(*ev)) {
-        if (len < sizeof(*nop)) {
+    if(len < sizeof(*ev)) {
+        if(len < sizeof(*nop)) {
             return BLE_HS_ECONTROLLER;
         }
 
         /* nop is special as it doesn't have status and response */
-
         opcode = le16toh(nop->opcode);
-        if (opcode != BLE_HCI_OPCODE_NOP) {
+
+        if(opcode != BLE_HCI_OPCODE_NOP) {
             return BLE_HS_ECONTROLLER;
         }
 
         /* TODO Process num_pkts field. */
-
         out_ack->bha_status = 0;
         out_ack->bha_params = NULL;
         out_ack->bha_params_len = 0;
@@ -170,14 +164,12 @@ ble_hs_hci_rx_cmd_complete(const void *data, int len,
     }
 
     opcode = le16toh(ev->opcode);
-
     /* TODO Process num_pkts field. */
-
     out_ack->bha_opcode = opcode;
-
     out_ack->bha_status = BLE_HS_HCI_ERR(ev->status);
     out_ack->bha_params_len = len - sizeof(*ev);
-    if (out_ack->bha_params_len) {
+
+    if(out_ack->bha_params_len) {
         out_ack->bha_params = ev->return_params;
     } else {
         out_ack->bha_params = NULL;
@@ -192,17 +184,15 @@ ble_hs_hci_rx_cmd_status(const void *data, int len,
 {
     const struct ble_hci_ev_command_status *ev = data;
 
-    if (len != sizeof(*ev)) {
+    if(len != sizeof(*ev)) {
         return BLE_HS_ECONTROLLER;
     }
 
     /* XXX: Process num_pkts field. */
-
     out_ack->bha_opcode = le16toh(ev->opcode);
     out_ack->bha_params = NULL;
     out_ack->bha_params_len = 0;
     out_ack->bha_status = BLE_HS_HCI_ERR(ev->status);
-
     return 0;
 }
 
@@ -212,51 +202,49 @@ ble_hs_hci_process_ack(uint16_t expected_opcode,
                        struct ble_hs_hci_ack *out_ack)
 {
     int rc;
-
     BLE_HS_DBG_ASSERT(ble_hs_hci_ack != NULL);
-
     /* Count events received */
     STATS_INC(ble_hs_stats, hci_event);
-
-
     /* Clear ack fields up front to silence spurious gcc warnings. */
-    memset(out_ack, 0, sizeof *out_ack);
+    memset(out_ack, 0, sizeof * out_ack);
 
-    switch (ble_hs_hci_ack->opcode) {
-    case BLE_HCI_EVCODE_COMMAND_COMPLETE:
-        rc = ble_hs_hci_rx_cmd_complete(ble_hs_hci_ack->data,
-                                        ble_hs_hci_ack->length, out_ack);
-        break;
+    switch(ble_hs_hci_ack->opcode) {
+        case BLE_HCI_EVCODE_COMMAND_COMPLETE:
+            rc = ble_hs_hci_rx_cmd_complete(ble_hs_hci_ack->data,
+                                            ble_hs_hci_ack->length, out_ack);
+            break;
 
-    case BLE_HCI_EVCODE_COMMAND_STATUS:
-        rc = ble_hs_hci_rx_cmd_status(ble_hs_hci_ack->data,
-                                      ble_hs_hci_ack->length, out_ack);
-        break;
+        case BLE_HCI_EVCODE_COMMAND_STATUS:
+            rc = ble_hs_hci_rx_cmd_status(ble_hs_hci_ack->data,
+                                          ble_hs_hci_ack->length, out_ack);
+            break;
 
-    default:
-        BLE_HS_DBG_ASSERT(0);
-        rc = BLE_HS_EUNKNOWN;
-        break;
+        default:
+            BLE_HS_DBG_ASSERT(0);
+            rc = BLE_HS_EUNKNOWN;
+            break;
     }
 
-    if (rc == 0) {
-        if (params_buf == NULL || out_ack->bha_params == NULL) {
+    if(rc == 0) {
+        if(params_buf == NULL || out_ack->bha_params == NULL) {
             out_ack->bha_params_len = 0;
         } else {
-            if (out_ack->bha_params_len > params_buf_len) {
+            if(out_ack->bha_params_len > params_buf_len) {
                 out_ack->bha_params_len = params_buf_len;
                 rc = BLE_HS_ECONTROLLER;
             }
+
             memcpy(params_buf, out_ack->bha_params, out_ack->bha_params_len);
         }
+
         out_ack->bha_params = params_buf;
 
-        if (out_ack->bha_opcode != expected_opcode) {
+        if(out_ack->bha_opcode != expected_opcode) {
             rc = BLE_HS_ECONTROLLER;
         }
     }
 
-    if (rc != 0) {
+    if(rc != 0) {
         STATS_INC(ble_hs_stats, hci_invalid_ack);
     }
 
@@ -267,39 +255,41 @@ static int
 ble_hs_hci_wait_for_ack(void)
 {
     int rc;
-
 #if MYNEWT_VAL(BLE_HS_PHONY_HCI_ACKS)
-    if (ble_hs_hci_phony_ack_cb == NULL) {
+
+    if(ble_hs_hci_phony_ack_cb == NULL) {
         rc = BLE_HS_ETIMEOUT_HCI;
     } else {
         ble_hs_hci_ack =
-            (void *) ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_CMD);
+                        (void *) ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_CMD);
         BLE_HS_DBG_ASSERT(ble_hs_hci_ack != NULL);
         rc = ble_hs_hci_phony_ack_cb((void *)ble_hs_hci_ack, 260);
     }
+
 #else
     rc = ble_npl_sem_pend(&ble_hs_hci_sem,
                           ble_npl_time_ms_to_ticks32(BLE_HCI_CMD_TIMEOUT_MS));
-    switch (rc) {
-    case 0:
-        BLE_HS_DBG_ASSERT(ble_hs_hci_ack != NULL);
 
+    switch(rc) {
+        case 0:
+            BLE_HS_DBG_ASSERT(ble_hs_hci_ack != NULL);
 #if BLE_MONITOR
-        ble_monitor_send(BLE_MONITOR_OPCODE_EVENT_PKT, (void *) ble_hs_hci_ack,
-                         sizeof(*ble_hs_hci_ack) + ble_hs_hci_ack->length);
+            ble_monitor_send(BLE_MONITOR_OPCODE_EVENT_PKT, (void *) ble_hs_hci_ack,
+                             sizeof(*ble_hs_hci_ack) + ble_hs_hci_ack->length);
 #endif
+            break;
 
-        break;
-    case OS_TIMEOUT:
-        rc = BLE_HS_ETIMEOUT_HCI;
-        STATS_INC(ble_hs_stats, hci_timeout);
-        break;
-    default:
-        rc = BLE_HS_EOS;
-        break;
+        case OS_TIMEOUT:
+            rc = BLE_HS_ETIMEOUT_HCI;
+            STATS_INC(ble_hs_stats, hci_timeout);
+            break;
+
+        default:
+            rc = BLE_HS_EOS;
+            break;
     }
-#endif
 
+#endif
     return rc;
 }
 
@@ -309,23 +299,24 @@ ble_hs_hci_cmd_tx(uint16_t opcode, const void *cmd, uint8_t cmd_len,
 {
     struct ble_hs_hci_ack ack;
     int rc;
-
     BLE_HS_DBG_ASSERT(ble_hs_hci_ack == NULL);
     ble_hs_hci_lock();
-
     rc = ble_hs_hci_cmd_send_buf(opcode, cmd, cmd_len);
-    if (rc != 0) {
+
+    if(rc != 0) {
         goto done;
     }
 
     rc = ble_hs_hci_wait_for_ack();
-    if (rc != 0) {
+
+    if(rc != 0) {
         ble_hs_sched_reset(rc);
         goto done;
     }
 
     rc = ble_hs_hci_process_ack(opcode, rsp, rsp_len, &ack);
-    if (rc != 0) {
+
+    if(rc != 0) {
         ble_hs_sched_reset(rc);
         goto done;
     }
@@ -333,13 +324,14 @@ ble_hs_hci_cmd_tx(uint16_t opcode, const void *cmd, uint8_t cmd_len,
     rc = ack.bha_status;
 
     /* on success we should always get full response */
-    if (!rc && (ack.bha_params_len != rsp_len)) {
+    if(!rc && (ack.bha_params_len != rsp_len)) {
         ble_hs_sched_reset(rc);
         goto done;
     }
 
 done:
-    if (ble_hs_hci_ack != NULL) {
+
+    if(ble_hs_hci_ack != NULL) {
         ble_hci_trans_buf_free((uint8_t *) ble_hs_hci_ack);
         ble_hs_hci_ack = NULL;
     }
@@ -351,13 +343,13 @@ done:
 static void
 ble_hs_hci_rx_ack(uint8_t *ack_ev)
 {
-    if (ble_npl_sem_get_count(&ble_hs_hci_sem) > 0) {
+    if(ble_npl_sem_get_count(&ble_hs_hci_sem) > 0) {
         /* This ack is unexpected; ignore it. */
         ble_hci_trans_buf_free(ack_ev);
         return;
     }
-    BLE_HS_DBG_ASSERT(ble_hs_hci_ack == NULL);
 
+    BLE_HS_DBG_ASSERT(ble_hs_hci_ack == NULL);
     /* Unblock the application now that the HCI command buffer is populated
      * with the acknowledgement.
      */
@@ -372,22 +364,23 @@ ble_hs_hci_rx_evt(uint8_t *hci_ev, void *arg)
     struct ble_hci_ev_command_complete *cmd_complete = (void *) ev->data;
     struct ble_hci_ev_command_status *cmd_status = (void *) ev->data;
     int enqueue;
-
     BLE_HS_DBG_ASSERT(hci_ev != NULL);
 
-    switch (ev->opcode) {
-    case BLE_HCI_EVCODE_COMMAND_COMPLETE:
-        enqueue = (cmd_complete->opcode == BLE_HCI_OPCODE_NOP);
-        break;
-    case BLE_HCI_EVCODE_COMMAND_STATUS:
-        enqueue = (cmd_status->opcode == BLE_HCI_OPCODE_NOP);
-        break;
-    default:
-        enqueue = 1;
-        break;
+    switch(ev->opcode) {
+        case BLE_HCI_EVCODE_COMMAND_COMPLETE:
+            enqueue = (cmd_complete->opcode == BLE_HCI_OPCODE_NOP);
+            break;
+
+        case BLE_HCI_EVCODE_COMMAND_STATUS:
+            enqueue = (cmd_status->opcode == BLE_HCI_OPCODE_NOP);
+            break;
+
+        default:
+            enqueue = 1;
+            break;
     }
 
-    if (enqueue) {
+    if(enqueue) {
         ble_hs_enqueue_hci_event(hci_ev);
     } else {
         ble_hs_hci_rx_ack(hci_ev);
@@ -402,20 +395,17 @@ ble_hs_hci_rx_evt(uint8_t *hci_ev, void *arg)
 static uint16_t
 ble_hs_hci_max_acl_payload_sz(struct ble_hs_conn *conn)
 {
-
-      /*per connection, use their own mtu is reasonable*/
+    /*per connection, use their own mtu is reasonable*/
     return conn->tx_ll_mtu;
 
-      /* As per BLE 5.1 Standard, Vol. 2, Part E, section 7.8.2:
-     * The LE_Read_Buffer_Size command is used to read the maximum size of the
-     * data portion of HCI LE ACL Data Packets sent from the Host to the
-     * Controller.
-     */  
-    if(conn->supported_feat&BLE_HS_HCI_LE_FEAT_DATA_PACKET_LENGTH_EXT)
-    {
+    /* As per BLE 5.1 Standard, Vol. 2, Part E, section 7.8.2:
+    * The LE_Read_Buffer_Size command is used to read the maximum size of the
+    * data portion of HCI LE ACL Data Packets sent from the Host to the
+    * Controller.
+    */
+    if(conn->supported_feat & BLE_HS_HCI_LE_FEAT_DATA_PACKET_LENGTH_EXT) {
         return ble_hs_hci_buf_sz;
-    }else
-    {
+    } else {
         return 27;
     }
 }
@@ -427,17 +417,18 @@ static struct os_mbuf *
 ble_hs_hci_frag_alloc(uint16_t frag_size, void *arg)
 {
     struct os_mbuf *om;
-
     /* Prefer the dedicated one-element fragment pool. */
     om = os_mbuf_get_pkthdr(&ble_hs_hci_frag_mbuf_pool, 0);
-    if (om != NULL) {
+
+    if(om != NULL) {
         om->om_data += BLE_HCI_DATA_HDR_SZ;
         return om;
     }
 
     /* Otherwise, fall back to msys. */
     om = ble_hs_mbuf_acl_pkt();
-    if (om != NULL) {
+
+    if(om != NULL) {
         return om;
     }
 
@@ -468,29 +459,27 @@ ble_hs_hci_acl_hdr_prepend(struct os_mbuf *om, uint16_t handle,
 {
     struct hci_data_hdr hci_hdr;
     struct os_mbuf *om2;
-
     hci_hdr.hdh_handle_pb_bc =
-        ble_hs_hci_util_handle_pb_bc_join(handle, pb_flag, 0);
+                    ble_hs_hci_util_handle_pb_bc_join(handle, pb_flag, 0);
     put_le16(&hci_hdr.hdh_len, OS_MBUF_PKTHDR(om)->omp_len);
-
     om2 = os_mbuf_prepend(om, sizeof hci_hdr);
-    if (om2 == NULL) {
+
+    if(om2 == NULL) {
         return NULL;
     }
 
     om = om2;
     om = os_mbuf_pullup(om, sizeof hci_hdr);
-    if (om == NULL) {
+
+    if(om == NULL) {
         return NULL;
     }
 
     memcpy(om->om_data, &hci_hdr, sizeof hci_hdr);
-
 #if !BLE_MONITOR
-    BLE_HS_LOG(DEBUG, "host tx hci data; handle=%d length=%d\n", handle,
+    BLE_HS_LOG(DEBUG, "host tx hci data; handle=%d length=%d\r\n", handle,
                get_le16(&hci_hdr.hdh_len));
 #endif
-
     return om;
 }
 
@@ -501,13 +490,11 @@ ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om)
     struct os_mbuf *frag;
     uint8_t pb;
     int rc;
-
     BLE_HS_DBG_ASSERT(ble_hs_locked_by_cur_task());
-
     txom = *om;
     *om = NULL;
 
-    if (!(conn->bhc_flags & BLE_HS_CONN_F_TX_FRAG)) {
+    if(!(conn->bhc_flags & BLE_HS_CONN_F_TX_FRAG)) {
         /* The first fragment uses the first-non-flush packet boundary value.
          * After sending the first fragment, pb gets set appropriately for all
          * subsequent fragments in this packet.
@@ -518,16 +505,18 @@ ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om)
     }
 
     /* Send fragments until the entire packet has been sent. */
-    while (txom != NULL && ble_hs_hci_avail_pkts > 0) {
+    while(txom != NULL && ble_hs_hci_avail_pkts > 0) {
         frag = mem_split_frag(&txom, ble_hs_hci_max_acl_payload_sz(conn),
                               ble_hs_hci_frag_alloc, NULL);
-        if (frag == NULL) {
+
+        if(frag == NULL) {
             *om = txom;
             return BLE_HS_EAGAIN;
         }
 
         frag = ble_hs_hci_acl_hdr_prepend(frag, conn->bhc_handle, pb);
-        if (frag == NULL) {
+
+        if(frag == NULL) {
             rc = BLE_HS_ENOMEM;
             goto err;
         }
@@ -535,11 +524,11 @@ ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om)
 #if !BLE_MONITOR
         BLE_HS_LOG(DEBUG, "ble_hs_hci_acl_tx(): ");
         ble_hs_log_mbuf(frag);
-        BLE_HS_LOG(DEBUG, "\n");
+        BLE_HS_LOG(DEBUG, "\r\n");
 #endif
-
         rc = ble_hs_tx_data(frag);
-        if (rc != 0) {
+
+        if(rc != 0) {
             goto err;
         }
 
@@ -548,13 +537,12 @@ ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om)
          */
         conn->bhc_flags |= BLE_HS_CONN_F_TX_FRAG;
         pb = BLE_HCI_PB_MIDDLE;
-
         /* Account for the controller buf that will hold the txed fragment. */
         conn->bhc_outstanding_pkts++;
         ble_hs_hci_avail_pkts--;
     }
 
-    if (txom != NULL) {
+    if(txom != NULL) {
         /* The controller couldn't accommodate some or all of the packet. */
         *om = txom;
         return BLE_HS_EAGAIN;
@@ -562,12 +550,9 @@ ble_hs_hci_acl_tx_now(struct ble_hs_conn *conn, struct os_mbuf **om)
 
     /* The entire packet was transmitted. */
     conn->bhc_flags &= ~BLE_HS_CONN_F_TX_FRAG;
-
     return 0;
-
 err:
     BLE_HS_DBG_ASSERT(rc != 0);
-
     conn->bhc_flags &= ~BLE_HS_CONN_F_TX_FRAG;
     os_mbuf_free_chain(txom);
     return rc;
@@ -592,7 +577,7 @@ ble_hs_hci_acl_tx(struct ble_hs_conn *conn, struct os_mbuf **om)
     BLE_HS_DBG_ASSERT(ble_hs_locked_by_cur_task());
 
     /* If this conn is already backed up, don't even try to send. */
-    if (STAILQ_FIRST(&conn->bhc_tx_q) != NULL) {
+    if(STAILQ_FIRST(&conn->bhc_tx_q) != NULL) {
         return BLE_HS_EAGAIN;
     }
 
@@ -627,13 +612,10 @@ void
 ble_hs_hci_init(void)
 {
     int rc;
-
     rc = ble_npl_sem_init(&ble_hs_hci_sem, 0);
     BLE_HS_DBG_ASSERT_EVAL(rc == 0);
-
     rc = ble_npl_mutex_init(&ble_hs_hci_mutex);
     BLE_HS_DBG_ASSERT_EVAL(rc == 0);
-
     rc = mem_init_mbuf_pool(ble_hs_hci_frag_data,
                             &ble_hs_hci_frag_mempool,
                             &ble_hs_hci_frag_mbuf_pool,
@@ -646,7 +628,6 @@ void
 ble_hs_hci_deinit(void)
 {
     ble_npl_mutex_deinit(&ble_hs_hci_mutex);
-
     ble_npl_sem_deinit(&ble_hs_hci_sem);
 }
 

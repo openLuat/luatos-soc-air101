@@ -44,6 +44,10 @@
 #include "host/ble_store.h"
 #include "host/ble_uuid.h"
 #include "nimble/nimble_npl.h"
+#include "nimble/nimble_port.h"
+#include "nimble/tls_nimble.h"
+#include "transport/uart/ble_hci_uart.h"
+
 #include "wm_mem.h"
 
 #ifdef __cplusplus
@@ -214,21 +218,21 @@ struct ble_hs_cfg {
      *
      * If set proper flag in Pairing Request/Response will be set.
      */
-    unsigned sm_oob_data_flag:1;
+    unsigned sm_oob_data_flag: 1;
 
     /** @brief Security Manager Bond flag
      *
      * If set proper flag in Pairing Request/Response will be set. This results
      * in storing keys distributed during bonding.
      */
-    unsigned sm_bonding:1;
+    unsigned sm_bonding: 1;
 
     /** @brief Security Manager MITM flag
      *
      * If set proper flag in Pairing Request/Response will be set. This results
      * in requiring Man-In-The-Middle protection when pairing.
      */
-    unsigned sm_mitm:1;
+    unsigned sm_mitm: 1;
 
     /** @brief Security Manager Secure Connections flag
      *
@@ -236,13 +240,13 @@ struct ble_hs_cfg {
      * in using LE Secure Connections for pairing if also supported by remote
      * device. Fallback to legacy pairing if not supported by remote.
      */
-    unsigned sm_sc:1;
+    unsigned sm_sc: 1;
 
     /** @brief Security Manager Key Press Notification flag
      *
      * Currently unsupported and should not be set.
      */
-    unsigned sm_keypress:1;
+    unsigned sm_keypress: 1;
 
     /** @brief Security Manager Local Key Distribution Mask */
     uint8_t sm_our_key_dist;
@@ -282,6 +286,8 @@ struct ble_hs_cfg {
 
     /** Storage Delete callback handles deletion of security material */
     ble_store_delete_fn *store_delete_cb;
+
+    ble_store_flush_fn *store_flush_cb;
 
     /** @brief Storage Status callback.
      *
@@ -387,7 +393,7 @@ void ble_hs_deinit(void);
  *                                  HAL_RESET_[...] codes or an
  *                                  implementation-defined value.
  *
- * @return                      SYSDOWN_IN_PROGRESS. 
+ * @return                      SYSDOWN_IN_PROGRESS.
  */
 int ble_hs_shutdown(int reason);
 

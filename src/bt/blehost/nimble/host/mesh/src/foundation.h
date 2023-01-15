@@ -116,17 +116,17 @@
 #define STATUS_INVALID_BINDING             0x11
 
 enum {
-	BT_MESH_VA_CHANGED,	/* Label information changed */
+    BT_MESH_VA_CHANGED, /* Label information changed */
 };
 
 struct label {
-	u16_t ref;
-	u16_t addr;
-	u8_t  uuid[16];
-	atomic_t flags[1];
+    u16_t ref;
+    u16_t addr;
+    u8_t  uuid[16];
+    atomic_t flags[1];
 };
 
-void bt_mesh_cfg_reset(void);
+void bt_mesh_cfg_reset(bool store);
 
 void bt_mesh_heartbeat(u16_t src, u16_t dst, u8_t hops, u16_t feat);
 
@@ -154,18 +154,18 @@ struct bt_mesh_app_key *bt_mesh_app_key_alloc(u16_t app_idx);
 void bt_mesh_app_key_del(struct bt_mesh_app_key *key, bool store);
 
 static inline void key_idx_pack(struct os_mbuf *buf,
-				u16_t idx1, u16_t idx2)
+                                u16_t idx1, u16_t idx2)
 {
-	net_buf_simple_add_le16(buf, idx1 | ((idx2 & 0x00f) << 12));
-	net_buf_simple_add_u8(buf, idx2 >> 4);
+    net_buf_simple_add_le16(buf, idx1 | ((idx2 & 0x00f) << 12));
+    net_buf_simple_add_u8(buf, idx2 >> 4);
 }
 
 static inline void key_idx_unpack(struct os_mbuf *buf,
-				  u16_t *idx1, u16_t *idx2)
+                                  u16_t *idx1, u16_t *idx2)
 {
-	*idx1 = sys_get_le16(&buf->om_data[0]) & 0xfff;
-	*idx2 = sys_get_le16(&buf->om_data[1]) >> 4;
-	net_buf_simple_pull(buf, 3);
+    *idx1 = sys_get_le16(&buf->om_data[0]) & 0xfff;
+    *idx2 = sys_get_le16(&buf->om_data[1]) >> 4;
+    net_buf_simple_pull(buf, 3);
 }
 
 #endif

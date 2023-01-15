@@ -32,9 +32,19 @@ touchsensor_cb tc_callback = NULL;
 int tls_touchsensor_init_config(u32 sensorno, u8 scan_period, u8 window, u32 enable)
 {
 	u32 regval = 0;
+#if 0
+	/*cfg touch bias*/
+	regval = tls_reg_read32(HR_PMU_WLAN_STTS);
+	regval &=~(0x70);
+	regval |=(0x20);
+	tls_reg_write32(HR_PMU_WLAN_STTS, regval);
+#endif
 
-	regval = tls_reg_read32(HR_TC_CONFIG);
-	if (scan_period >=0x3F)
+	regval = tls_reg_read32(HR_TC_CONFIG);	
+	/*firstly, disable scan function */
+	tls_reg_write32(HR_TC_CONFIG,regval&(~(1<<TOUCH_SENSOR_EN_BIT)));
+
+	if (scan_period <= 0x3F)
 	{
 		regval &= ~(0x3F<<SCAN_PERID_SHIFT_BIT);
 		regval |= (scan_period<<SCAN_PERID_SHIFT_BIT);
@@ -49,7 +59,6 @@ int tls_touchsensor_init_config(u32 sensorno, u8 scan_period, u8 window, u32 ena
 	if (sensorno && (sensorno <= 15))
 	{
 		regval |= (1<<(sensorno-1+TOUCH_SENSOR_SEL_SHIFT_BIT));
-
 	}
 
 	if (enable)
@@ -57,6 +66,111 @@ int tls_touchsensor_init_config(u32 sensorno, u8 scan_period, u8 window, u32 ena
 		regval |= (1<<TOUCH_SENSOR_EN_BIT);
 	}
 	
+	tls_reg_write32(HR_TC_CONFIG,regval);
+
+	return 0;
+}
+
+/**
+ * @brief          This function is used to initialize touch scan channel.
+ *
+ * @param[in]      sensorno    is the touch sensor number from 1-15
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_chan_config(u32 sensorno)
+{
+	u32 regval = 0;
+
+	regval = tls_reg_read32(HR_TC_CONFIG);	
+	if (sensorno && (sensorno <= 15))
+	{
+		regval |= (1<<(sensorno-1+TOUCH_SENSOR_SEL_SHIFT_BIT));
+	}
+	
+	tls_reg_write32(HR_TC_CONFIG,regval);
+
+	return 0;
+}
+
+/**
+ * @brief          This function is used to initialize touch general configuration.
+ *
+ * @param[in]      scanperiod  is scan period for per touch sensor ,unit:16ms, >0
+ * @param[in]      window      is count window, window must be greater than 2.Real count window is window - 2.
+ * @param[in]      bias        is touch sensor bias current
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_config(u8 scanperiod, u8 window, u8 bias)
+{
+	u32 regval = 0;
+
+	regval = tls_reg_read32(HR_PMU_WLAN_STTS);
+	if (bias <= 7)
+	{
+		regval &=~(0x70);
+		regval |=(bias<<4);
+	}
+	else
+	{
+		regval &=~(0x70);
+		regval |=(0x4<<4);
+	}
+	tls_reg_write32(HR_PMU_WLAN_STTS, regval);
+	
+	regval = tls_reg_read32(HR_TC_CONFIG);	
+	if (scanperiod <= 0x3F)
+	{
+		regval &= ~(0x3F<<SCAN_PERID_SHIFT_BIT);
+		regval |= (scanperiod<<SCAN_PERID_SHIFT_BIT);
+	}
+
+	if (window)
+	{
+		regval &= ~(0x3F<<CAPDET_CNT_SHIFT_BIT);
+		regval |= (window<<CAPDET_CNT_SHIFT_BIT);
+	}
+	tls_reg_write32(HR_TC_CONFIG,regval);
+
+	return 0;
+}
+
+/**
+ * @brief          This function is used to start touch scan
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_start(void)
+{
+	u32 regval = 0;
+
+	regval = tls_reg_read32(HR_TC_CONFIG);	
+	regval |= (1<<TOUCH_SENSOR_EN_BIT);
+	tls_reg_write32(HR_TC_CONFIG,regval);
+
+	return 0;
+}
+
+/**
+ * @brief          This function is used to stop touch scan
+ *
+ * @retval         0:success
+ *
+ * @note           if use touch sensor, user must configure the IO multiplex by API wm_touch_sensor_config.
+ */
+int tls_touchsensor_scan_stop(void)
+{
+	u32 regval = 0;
+
+	regval = tls_reg_read32(HR_TC_CONFIG);	
+	regval &= ~(1<<TOUCH_SENSOR_EN_BIT);
 	tls_reg_write32(HR_TC_CONFIG,regval);
 
 	return 0;
