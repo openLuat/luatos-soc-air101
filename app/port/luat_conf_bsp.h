@@ -50,8 +50,6 @@
 //#define LUAt_USE_I2S 1
 
 // 外置网络支持
-// #define LUAT_USE_NETWORK 1
-// #define LUAT_USE_W5500 1
 // #define LUAT_USE_DHCP 1
 // #define LUAT_USE_DNS 1
 
