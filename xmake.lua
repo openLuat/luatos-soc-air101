@@ -303,6 +303,8 @@ target("air10x")
     add_files(luatos.."luat/modules/*.c")
     add_files(luatos.."luat/vfs/*.c")
     remove_files(luatos.."luat/vfs/luat_fs_posix.c")
+    add_files(luatos.."luat/freertos/*.c")
+    add_files(luatos.."components/rtos/freertos/*.c")
 
     add_files(luatos.."components/lcd/*.c")
     add_files(luatos.."components/sfd/*.c")
@@ -404,15 +406,15 @@ target("air10x")
     -- iotauth
     add_files(luatos.."components/iotauth/luat_lib_iotauth.c")
 
-    -- -- network
-    -- add_includedirs(luatos.."components/network/adapter",{public = true})
-    -- add_files(luatos.."components/network/adapter/*.c")
+    -- network
+    add_includedirs(luatos.."components/network/adapter",{public = true})
+    add_files(luatos.."components/network/adapter/*.c")
 
-    -- -- w5500
-    -- add_includedirs(luatos.."components/ethernet/common",{public = true})
-    -- add_files(luatos.."components/ethernet/common/*.c")
-    -- add_includedirs(luatos.."components/ethernet/w5500",{public = true})
-    -- add_files(luatos.."components/ethernet/w5500/*.c")
+    -- w5500
+    add_includedirs(luatos.."components/ethernet/common",{public = true})
+    add_files(luatos.."components/ethernet/common/*.c")
+    add_includedirs(luatos.."components/ethernet/w5500",{public = true})
+    add_files(luatos.."components/ethernet/w5500/*.c")
 
     
     add_includedirs(luatos.."components/mempool/tlsf3")
