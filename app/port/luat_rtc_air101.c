@@ -51,3 +51,7 @@ int luat_rtc_timer_stop(int id) {
     tls_rtc_timer_stop();
     return 0;
 }
+
+int luat_rtc_timezone(int* timezone) {
+    return 32; // 暂不支持
+}
