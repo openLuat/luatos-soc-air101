@@ -1106,7 +1106,7 @@ void wm_gpio_af_disable(void)
 #endif
     tls_reg_write32(HR_GPIOB_AFSEL, 0x0);
 
-    tls_reg_write32(HR_GPIOA_DATA_PULLEN, 0xffff);
-    tls_reg_write32(HR_GPIOB_DATA_PULLEN, 0xffffffff);
+    tls_reg_write32(HR_GPIOA_DATA_PULLEN, 0);
+    tls_reg_write32(HR_GPIOB_DATA_PULLEN, 0);
 }
 
