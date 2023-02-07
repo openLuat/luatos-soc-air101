@@ -7,7 +7,7 @@
 #include <string.h>
 #include "wm_gpio_afsel.h"
 
-#define LUAT_LOG_TAG "luat.i2c"
+#define LUAT_LOG_TAG "i2c"
 #include "luat_log.h"
 
 int luat_i2c_exist(int id) {

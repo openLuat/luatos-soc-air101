@@ -142,11 +142,11 @@ void tls_i2c_init(u32 freq)
 	u32 div = 0;
 	tls_sys_clk clk;
 	
-	if (freq < I2C_FREQ_MIN)
+	if (freq <= I2C_FREQ_MIN)
 	{
 		freq = I2C_FREQ_MIN;
 	}		
-	else if (freq > I2C_FREQ_MAX)
+	else if (freq >= I2C_FREQ_MAX)
 	{
 		freq = I2C_FREQ_MAX;
 	}

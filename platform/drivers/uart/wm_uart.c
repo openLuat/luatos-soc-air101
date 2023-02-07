@@ -591,7 +591,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
                 if (TLS_UART_FLOW_CTRL_HARDWARE == port->fcStatus)
                 {
                     tls_set_uart_rx_status(port->uart_no, TLS_UART_RX_DISABLE);
-                    rx_fifocnt = 0; // 锟斤拷锟斤拷锟接诧拷锟斤拷锟斤拷兀锟斤拷乇战锟斤拷眨锟斤拷锟斤拷锟斤拷一锟斤拷锟街凤拷锟脚斤拷锟斤拷锟斤拷buffer锟斤拷
+                    rx_fifocnt = 0; // 如果有硬件流控，关闭接收，把最后一个字符放进环形buffer中
                 }
                 else
                     break;
