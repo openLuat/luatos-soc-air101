@@ -215,6 +215,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_RSA
   {"rsa", luaopen_rsa},
 #endif
+#ifdef LUAT_USE_FATFS
+  {"fatfs",  luaopen_fatfs},              // SD卡/tf卡
+#endif
   {NULL, NULL}
 };
 

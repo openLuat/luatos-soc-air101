@@ -297,7 +297,6 @@ target("air10x")
     add_includedirs("include/arch/xt804/csi_dsp")
     add_includedirs("platform/sys")
     add_includedirs("src/app/mbedtls/ports")
-    add_includedirs("src/app/fatfs")
 
     add_files(luatos.."lua/src/*.c")
     add_files(luatos.."luat/modules/*.c")
@@ -439,6 +438,10 @@ target("air10x")
     -- 添加fskv
     add_includedirs(luatos.."components/fskv")
     add_files(luatos.."components/fskv/*.c")
+
+    -- fatfs
+    add_includedirs(luatos.."components/fatfs")
+    add_files(luatos.."components/fatfs/*.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
