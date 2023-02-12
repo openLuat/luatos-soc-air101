@@ -1543,4 +1543,31 @@ int32_t tls_spi_xfer(const void *data_out, void *data_in, uint32_t num_out, uint
     return (ret == TLS_SPI_STATUS_OK) ? 0 : -1;
 }	
 	
+int tls_spi_set_speed(u32 fclk) {
+    if (spi_port->speed_hz == fclk)
+        return 0;
+    tls_sys_clk sysclk;
+    tls_sys_clk_get(&sysclk);
 
+    if ((fclk < TLS_SPI_FCLK_MIN) || (fclk > sysclk.apbclk*UNIT_MHZ/2))		//TLS_SPI_FCLK_MAX
+    {
+        TLS_DBGPRT_ERR("@fclk is invalid!\n");
+        return TLS_SPI_STATUS_ECLKNOSUPPORT;
+    }
+    else
+    {
+        spi_port->speed_hz = fclk;
+    }
+
+#ifdef SPI_USE_DMA
+    if (SPI_DMA_TRANSFER == spi_port->transtype)
+    {
+        SpiMasterInit(spi_port->mode, TLS_SPI_CS_LOW, fclk);
+        return TLS_SPI_STATUS_OK;
+    }
+#endif
+
+    spi_port->reconfig = 1;
+
+    return TLS_SPI_STATUS_OK;
+}

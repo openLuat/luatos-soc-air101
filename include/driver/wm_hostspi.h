@@ -278,6 +278,8 @@ int tls_spi_write_with_cmd(const u8 * cmd, u32 n_cmd, const u8 * txbuf, u32 n_tx
  */
 void tls_spi_trans_type(u8 type);
 
+int tls_spi_set_speed(u32 speed);
+
 /**
  * @}
  */
