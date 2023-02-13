@@ -231,7 +231,11 @@ target("air10x")
     set_targetdir("$(buildir)/out")
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        AIR10X_FLASH_FS_REGION_SIZE = conf_data:match("#define FLASH_FS_REGION_SIZE (%d+)")
+        local LUAT_LUADB_ZONE_SIZE = tonumber(conf_data:match("#define LUAT_LUADB_ZONE_SIZE        (%d+)"))
+        local LUAT_SCRIPT_SIZE = tonumber(conf_data:match("#define LUAT_SCRIPT_SIZE            (%d+)"))
+
+        AIR10X_FLASH_FS_REGION_SIZE = LUAT_LUADB_ZONE_SIZE + LUAT_SCRIPT_SIZE
+        -- print(AIR10X_FLASH_FS_REGION_SIZE)
         AIR10X_VERSION = conf_data:match("#define LUAT_BSP_VERSION \"(%w+)\"")
         local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
         if LVGL_CONF then target:add("deps", "lvgl") end
@@ -242,7 +246,7 @@ target("air10x")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
         local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
         
-        local fs_size = AIR10X_FLASH_FS_REGION_SIZE and tonumber(AIR10X_FLASH_FS_REGION_SIZE) or 112
+        local fs_size = AIR10X_FLASH_FS_REGION_SIZE or 112
         if FDB_CONF or fs_size > 112 then
             local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
             local I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x08010800 , LENGTH = 0x(%x+)")
