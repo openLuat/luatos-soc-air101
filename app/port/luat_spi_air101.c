@@ -186,3 +186,12 @@ int luat_spi_send(int spi_id, const char* send_buf, size_t length) {
 int luat_spi_config_dma(int spi_id, uint32_t tx_channel, uint32_t rx_channel) {
     return 0;
 }
+
+int luat_spi_change_speed(int spi_id, uint32_t speed) {
+    int ret = tls_spi_set_speed(speed);
+    if (ret != 0) {
+        LLOGW("spi set speed %d fail %d", speed, ret);
+    }
+    return ret;
+}
+
