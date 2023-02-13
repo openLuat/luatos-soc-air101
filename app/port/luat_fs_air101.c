@@ -33,6 +33,7 @@ extern const struct luat_vfs_filesystem vfs_fs_lfs2;
 extern const char luadb_inline_sys[];
 extern const struct luat_vfs_filesystem vfs_fs_luadb;
 extern const struct luat_vfs_filesystem vfs_fs_ram;
+extern size_t luat_luadb_act_size;
 
 #ifdef LUAT_USE_LVGL
 #include "lvgl.h"
@@ -114,6 +115,7 @@ int luat_fs_init(void) {
 		.mount_point = "/luadb/",
 	};
 	luat_fs_mount(&conf2);
+    luat_luadb_act_size = (FLASH_FS_REGION_SIZE - 112);
 
 	#ifdef LUAT_USE_LVGL
 	luat_lv_fs_init();
