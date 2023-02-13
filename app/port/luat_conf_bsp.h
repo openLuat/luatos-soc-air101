@@ -91,8 +91,9 @@
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
 // 从v0006开始默认关闭之, 需要用到就打开吧
 #define LUAT_USE_FATFS
-// #define FF_USE_LFN 3
-// #define FF_LFN_UNICODE 3
+#define LUAT_TF_SPI_FAST
+// #define LUAT_FF_USE_LFN 3
+// #define LUAT_FF_LFN_UNICODE 3
 
 //----------------------------
 // 高通字体, 需配合芯片使用
