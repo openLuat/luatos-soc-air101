@@ -26,6 +26,8 @@
 #define LUAT_LOG_TAG "main"
 #include "luat_log.h"
 
+#define LUAT_HEAP_MIN_SIZE (128*1024)
+
 #ifndef LUAT_HEAP_SIZE
 #ifdef LUAT_USE_NIMBLE
 #define LUAT_HEAP_SIZE (128+16)*1024
@@ -34,8 +36,13 @@
 #endif
 #endif
 
-#if (LUAT_HEAP_SIZE > 128*1024)
- __attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - 128*1024) / 8];
+#if (LUAT_HEAP_SIZE < LUAT_HEAP_MIN_SIZE)
+#undef LUAT_HEAP_SIZE
+#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
+#endif
+
+#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
+__attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE) / 8];
 #endif
 
 #ifdef LUAT_USE_TLSF
@@ -47,9 +54,9 @@ pool_t luavm_tlsf_ext;
 static void luat_start(void *sdata){
 	// 毕竟sram还是快很多的, 优先sram吧
 #ifndef LUAT_USE_TLSF
-	bpool((void*)0x20028000, 128*1024);
+	bpool((void*)0x20028000, LUAT_HEAP_MIN_SIZE);
 #else
-	luavm_tlsf = tlsf_create_with_pool((void*)0x20028000, 128*1024);
+	luavm_tlsf = tlsf_create_with_pool((void*)0x20028000, LUAT_HEAP_MIN_SIZE);
 #endif
 
 #ifdef LUAT_USE_PSRAM
@@ -74,11 +81,11 @@ static void luat_start(void *sdata){
 	}
 #else
 	// 暂时还是放在这里吧, 考虑改到0x20028000之前
-	#if (LUAT_HEAP_SIZE > 128*1024)
+	#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
 #ifndef LUAT_USE_TLSF
-	bpool((void*)heap_ext, LUAT_HEAP_SIZE - 128*1024);
+	bpool((void*)heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
 #else
-	luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - 128*1024);
+	luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
 #endif
 	#endif
 #endif
