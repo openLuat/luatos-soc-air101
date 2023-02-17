@@ -267,7 +267,7 @@ unsigned int tls_get_wifi_ver(void)
 {
 	return (WiFiVer[0]<<16)|(WiFiVer[1]<<8)|WiFiVer[2];
 }
-
+unsigned int heap_size_max;
 unsigned int total_mem_size;
 void tls_mem_get_init_available_size(void)
 {
@@ -301,6 +301,8 @@ void task_start (void *data)
 #if TLS_CONFIG_CRYSTAL_24M
     tls_wl_hw_using_24m_crystal();
 #endif
+    heap_size_max = (unsigned int)&__heap_end - (unsigned int)&__heap_start;
+    total_mem_size = heap_size_max;
 
 	//tls_mem_get_init_available_size();
     /* must call first to configure gpio Alternate functions according the hardware design */

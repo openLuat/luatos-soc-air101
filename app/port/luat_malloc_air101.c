@@ -39,6 +39,28 @@ void* luat_heap_realloc(void* ptr, size_t len) {
 void* luat_heap_calloc(size_t count, size_t _size) {
     return tls_mem_calloc(count, _size);
 }
+
+#if configUSE_HEAP3
+extern size_t xTotalHeapSize;
+extern size_t xFreeBytesRemaining;
+extern size_t xFreeBytesMin;
+#endif
+
+extern unsigned int heap_size_max;
+extern unsigned int total_mem_size;
+void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
+{
+#if configUSE_HEAP3
+    *used = xTotalHeapSize - xFreeBytesRemaining;
+    *max_used = xTotalHeapSize - xFreeBytesMin;
+    *total = xTotalHeapSize;
+#else
+    *used = heap_size_max - total_mem_size - xPortGetFreeHeapSize();
+    *max_used = *used;
+    *total = heap_size_max;
+#endif
+}
+
 //------------------------------------------------
 
 //------------------------------------------------

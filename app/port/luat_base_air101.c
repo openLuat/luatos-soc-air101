@@ -240,26 +240,6 @@ void luat_openlibs(lua_State *L) {
 #include "FreeRTOS.h"
 #include "task.h"
 
-#if configUSE_HEAP3
-extern size_t xTotalHeapSize;
-extern size_t xFreeBytesRemaining;
-extern size_t xFreeBytesMin;
-#endif
-
-void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
-{
-#if configUSE_HEAP3
-  *used = xTotalHeapSize - xFreeBytesRemaining;
-  *max_used = xTotalHeapSize - xFreeBytesMin;
-  *total = xTotalHeapSize;
-#else
-  *used = configTOTAL_HEAP_SIZE - xPortGetFreeHeapSize();
-	*max_used = *used;
-  *total = configTOTAL_HEAP_SIZE;
-#endif
-}
-
-
 const char* luat_os_bsp(void)
 {
 #ifdef AIR103
