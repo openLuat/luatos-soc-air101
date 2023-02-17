@@ -65,7 +65,7 @@ static void luat_start(void *sdata){
 		memset(psram_ptr, 0, 1024);
 		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
 		#ifdef LUAT_USE_TLSF
-		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - 128*1024);
+		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, psram_ptr, 4*1024*1024);
 		#else
 		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
 		#endif
