@@ -55,7 +55,7 @@ void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
     *max_used = xTotalHeapSize - xFreeBytesMin;
     *total = xTotalHeapSize;
 #else
-    *used = heap_size_max - total_mem_size - xPortGetFreeHeapSize();
+    *used = heap_size_max - total_mem_size;
     *max_used = *used;
     *total = heap_size_max;
 #endif
