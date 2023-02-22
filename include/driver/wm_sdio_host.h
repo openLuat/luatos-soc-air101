@@ -130,6 +130,9 @@ int wm_sd_card_blocks_read(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t b
  */
 int wm_sd_card_blocks_write(uint32_t rca, uint32_t sd_addr, char *buf, uint32_t buflen);
 
+void sdio_spi_init(u32 fclk);
+int sdio_spi_send(const u8 * buf, u32 len);
+
 /**
  * @}
  */

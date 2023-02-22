@@ -4,18 +4,25 @@
 #include "luat_spi.h"
 
 #include "wm_include.h"
-
+#include "wm_sdio_host.h"
 #include "wm_hostspi.h"
 #include "wm_gpio_afsel.h"
 #include "wm_cpu.h"
+#include "wm_dma.h"
+#include "wm_pmu.h"
 
 #define LUAT_LOG_TAG "luat.spi"
 #include "luat_log.h"
 #include "luat_timer.h"
 
+
 static uint8_t luat_spi_mode = 1;
 
 int luat_spi_device_config(luat_spi_device_t* spi_dev) {
+    if (spi_dev->bus_id == 5){
+        sdio_spi_init(spi_dev->spi_config.bandrate);
+        return 0;
+    }
     unsigned int clk;
     uint8_t TLS_SPI_MODE = 0x00 ;
     clk = spi_dev->spi_config.bandrate;
@@ -52,6 +59,13 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
 	    wm_spi_ck_config(WM_IO_PB_24);
 	    wm_spi_di_config(WM_IO_PB_25);
 	    wm_spi_do_config(WM_IO_PB_26);
+    }
+    else if (bus_id == 5) {
+        tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);/*CK*/
+        tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);/*CMD*/
+        tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
+        tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
+        return 0;
     }
     // #endif
     else{
@@ -94,6 +108,17 @@ int luat_spi_setup(luat_spi_t* spi) {
 	    wm_spi_ck_config(WM_IO_PB_24);
 	    wm_spi_di_config(WM_IO_PB_25);
 	    wm_spi_do_config(WM_IO_PB_26);
+    }
+    else if (spi->id == 5) {
+        if (spi->cs == 0 || spi->cs == WM_IO_PB_23)
+	        wm_spi_cs_config(WM_IO_PB_23);
+        tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);/*CK*/
+        tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);/*CMD*/
+        tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
+        tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
+
+        sdio_spi_init(spi->bandrate);
+        return 0;
     }
     // #endif
     else {
@@ -163,6 +188,11 @@ int luat_spi_recv(int spi_id, char* recv_buf, size_t length) {
 //发SPI数据，返回发送字节数
 int luat_spi_send(int spi_id, const char* send_buf, size_t length) {
     int ret;
+    if (spi_id==5){
+        ret = sdio_spi_send(send_buf, length);
+        return ret?-1:length;
+    }
+    
     if(length <= SPI_DMA_BUF_MAX_SIZE)
     {
         ret = tls_spi_write(send_buf, length);

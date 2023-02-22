@@ -756,3 +756,59 @@ end:
 	return ret;
 }
 
+void sdio_spi_init(u32 fclk){
+	sdio_host_reset();
+	tls_sys_clk sysclk;	
+	tls_sys_clk_get(&sysclk);
+	SDIO_HOST->MMC_CARDSEL = 0xC0 | (sysclk.cpuclk / 2 - 1);
+	uint8_t ti= sysclk.cpuclk / 2 / fclk;
+	SDIO_HOST->MMC_CTL = 0x542 | (ti << 3);
+	SDIO_HOST->MMC_CTL = 0x542;
+	SDIO_HOST->MMC_INT_MASK = 0x100; // unmask sdio data interrupt.
+	SDIO_HOST->MMC_CRCCTL = 0x00; 
+	SDIO_HOST->MMC_TIMEOUTCNT = 0;
+	SDIO_HOST->MMC_BYTECNTL = 0;
+}
+
+int sdio_spi_send(const u8 * buf, u32 len){
+    if ((buf == NULL) || (len == 0)){
+        return -1;
+    }
+    if (len < 4) {          // 直接传输，这样做的原因是DMA不能连续传输少于4个字节的数据
+        SDIO_HOST->BUF_CTL = 0x4820;
+        SDIO_HOST->DATA_BUF[0] = *((u32 *)buf);
+        SDIO_HOST->MMC_BYTECNTL = len;
+        SDIO_HOST->MMC_IO = 0x01;
+		while (1) {
+			if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
+				break;
+		}
+    } else {                   // DMA传输
+		u32 sendlen,txlen;
+		txlen = len & 0xfffffffc;   // 不够字的最后单独发
+		sendlen = txlen/4;
+		SDIO_HOST->BUF_CTL = 0x4000; //disable dma,
+		unsigned char sdio_spi_dma_channel = wm_sd_card_dma_config((u32 *) buf, sendlen, 1);
+		SDIO_HOST->BUF_CTL = 0xC20; //enable dma, write sd card
+		SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
+		SDIO_HOST->MMC_BYTECNTL = txlen;
+		SDIO_HOST->MMC_IO = 0x01;
+		tls_dma_free(sdio_spi_dma_channel);
+        while(1){
+            if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
+                break;
+        }
+		if (len > txlen){
+			SDIO_HOST->BUF_CTL = 0x4820;
+			SDIO_HOST->DATA_BUF[0] = *((u32 *)buf + sendlen);
+			SDIO_HOST->MMC_BYTECNTL = len-txlen;
+			SDIO_HOST->MMC_IO = 0x01;
+			while (1) {
+				if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
+					break;
+			}
+		}
+    }
+    return 0;
+}
+
