@@ -32,6 +32,7 @@ int luat_nimble_trace_level(int level) {
 
 int luat_nimble_init_peripheral(uint8_t uart_idx, char* name, int mode);
 int luat_nimble_init_central(uint8_t uart_idx, char* name, int mode);
+int luat_nimble_init_ibeacon(uint8_t uart_idx, char* name, int mode);
 
 int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
 
@@ -54,6 +55,9 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
     else if (mode == 1) {
         LLOGD("CALL luat_nimble_init_central");
         ret = luat_nimble_init_central(uart_idx, name, mode);
+    }
+    else if (mode == 2) {
+        ret = luat_nimble_init_ibeacon(uart_idx, name, mode);
     }
     else {
         return -1;
