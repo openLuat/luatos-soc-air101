@@ -218,6 +218,12 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FATFS
   {"fatfs",  luaopen_fatfs},              // SD卡/tf卡
 #endif
+//#ifdef LUAT_USE_NES   
+//  {"nes", luaopen_nes}, 
+//#endif
+#ifdef LUAT_USE_MAX30102
+  {"max30102", luaopen_max30102},
+#endif
   {NULL, NULL}
 };
 

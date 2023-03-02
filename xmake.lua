@@ -44,9 +44,11 @@ local flto = ""
 --add macro defination
 add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
 
-set_warnings("all")
+set_warnings("allextra")
+
 -- set_optimize("fastest")
 set_optimize("smallest")
+
 -- set language: c99
 set_languages("c99")
 add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config_air101.h\"")
@@ -446,6 +448,14 @@ target("air10x")
     -- fatfs
     add_includedirs(luatos.."components/fatfs")
     add_files(luatos.."components/fatfs/*.c")
+
+    add_files(luatos.."components/max30102/*.c")
+    add_includedirs(luatos.."components/max30102")
+    
+    -- -- 添加nes
+    -- add_includedirs(luatos.."components/nes/inc")
+    -- add_includedirs(luatos.."components/nes/port")
+    -- add_files(luatos.."components/nes/**.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
