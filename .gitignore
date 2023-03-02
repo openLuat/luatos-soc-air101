@@ -47,3 +47,4 @@ tools/xt804/AIR103_secboot.img
 tools/xt804/wm_tool
 releases/
 *.lua
+doc/*

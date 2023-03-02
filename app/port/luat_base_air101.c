@@ -218,6 +218,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FATFS
   {"fatfs",  luaopen_fatfs},              // SD卡/tf卡
 #endif
+#ifdef LUAT_USE_GMSSL
+  {"gmssl",  luaopen_gmssl},              // 国密算法
+#endif
 //#ifdef LUAT_USE_NES   
 //  {"nes", luaopen_nes}, 
 //#endif
