@@ -455,12 +455,8 @@ target("air10x")
 
     -- 国密算法, by chenxudong1208, 基于GMSSL
     add_includedirs(luatos.."components/gmssl/include")
-    add_includedirs(luatos.."components/gmssl/include/internal")
-    add_includedirs(luatos.."components/gmssl/include/openssl")
-    add_includedirs(luatos.."components/gmssl/include/sm2")
-    add_includedirs(luatos.."components/gmssl/include/sm3")
-    add_includedirs(luatos.."components/gmssl/include/sm4")
     add_files(luatos.."components/gmssl/src/**.c")
+    add_files(luatos.."components/gmssl/bind/*.c")
     
     -- -- 添加nes
     -- add_includedirs(luatos.."components/nes/inc")
