@@ -178,9 +178,9 @@ int main(void)
     // printf("HR_PMU_BK_REG PowerOn RTC %08X\n", CHECK_BIT(value, 5));
     // printf("HR_PMU_BK_REG PowerOn Wakeup Pin %08X\n", CHECK_BIT(value, 2));
     value &= ~(BIT(19));
-    value &= ~(BIT(8));
-    value &= ~(BIT(5));
-    value &= ~(BIT(2));
+    // value &= ~(BIT(8));
+    // value &= ~(BIT(5));
+    // value &= ~(BIT(2));
     // printf("HR_PMU_BK_REG write %08X\n", value);
     tls_reg_write32(HR_PMU_BK_REG, value);
 
