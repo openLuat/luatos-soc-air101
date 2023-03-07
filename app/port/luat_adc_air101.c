@@ -25,8 +25,10 @@ int luat_adc_open(int ch, void *args)
         wm_adc_config(ch);
         break;
 // #endif
+    case 10:
     case LUAT_ADC_CH_CPU:
         return 0; // 温度传感器
+    case 11:
     case LUAT_ADC_CH_VBAT:
         return 0; // VBAT电压
     default:
