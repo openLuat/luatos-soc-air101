@@ -22,6 +22,7 @@
  ******************************************************************************/
 #include <csi_config.h>
 #include "wm_regs.h"
+#include "../../../../app/port/luat_conf_bsp.h"
 
 extern void systick_handler(void);
 extern void socv_SysTick_Handler(void);
@@ -147,8 +148,8 @@ ATTRIBUTE_ISR void SPI_HS_IRQHandler(void)
 ATTRIBUTE_ISR void MAC_IRQHandler(void)
 {
     CSI_INTRPT_ENTER();
-#ifndef CONFIG_NO_WIFI
-    // tls_wl_mac_isr();
+#ifdef LUAT_USE_WLAN
+    tls_wl_mac_isr();
 #endif
     CSI_INTRPT_EXIT();
 }
@@ -156,8 +157,8 @@ ATTRIBUTE_ISR void MAC_IRQHandler(void)
 ATTRIBUTE_ISR void SEC_IRQHandler(void)
 {
     CSI_INTRPT_ENTER();
-#ifndef CONFIG_NO_WIFI
-    // tls_wl_rx_isr();
+#ifdef LUAT_USE_WLAN
+    tls_wl_rx_isr();
 #endif
     CSI_INTRPT_EXIT();
 }

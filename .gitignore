@@ -48,3 +48,4 @@ tools/xt804/wm_tool
 releases/
 *.lua
 doc/*
+build2/

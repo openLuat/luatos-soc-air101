@@ -1,11 +1,10 @@
 #include "luat_rtc.h"
 #include "luat_msgbus.h"
 #include "wm_rtc.h"
+#include "time.h"
 
 #define LUAT_LOG_TAG "rtc"
 #include "luat_log.h"
-
-extern int Base_year;
 
 static int luat_rtc_handler(lua_State *L, void* ptr) {
     lua_getglobal(L, "sys_pub");
@@ -54,4 +53,11 @@ int luat_rtc_timer_stop(int id) {
 
 int luat_rtc_timezone(int* timezone) {
     return 32; // 暂不支持
+}
+
+void luat_rtc_set_tamp32(uint32_t tamp) {
+    time_t t;
+    t = tamp + (8*3600); // 固定东八区
+    struct tm *tblock = gmtime(&t);
+    luat_rtc_set(tblock);
 }

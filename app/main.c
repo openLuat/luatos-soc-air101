@@ -20,13 +20,20 @@
 #include "wm_psram.h"
 #include "wm_efuse.h"
 #include "wm_regs.h"
+#include "wm_wifi.h"
 
 #include "FreeRTOS.h"
 
 #define LUAT_LOG_TAG "main"
 #include "luat_log.h"
 
+#ifdef LUAT_USE_WLAN
+#define LUAT_HEAP_MIN_SIZE (100*1024)
+#undef LUAT_HEAP_SIZE
+#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
+#else
 #define LUAT_HEAP_MIN_SIZE (128*1024)
+#endif
 
 #ifndef LUAT_HEAP_SIZE
 #ifdef LUAT_USE_NIMBLE
@@ -54,9 +61,9 @@ pool_t luavm_tlsf_ext;
 static void luat_start(void *sdata){
 	// 毕竟sram还是快很多的, 优先sram吧
 #ifndef LUAT_USE_TLSF
-	bpool((void*)0x20028000, LUAT_HEAP_MIN_SIZE);
+	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
 #else
-	luavm_tlsf = tlsf_create_with_pool((void*)0x20028000, LUAT_HEAP_MIN_SIZE);
+	luavm_tlsf = tlsf_create_with_pool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
 #endif
 
 #ifdef LUAT_USE_PSRAM

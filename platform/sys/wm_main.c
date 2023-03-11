@@ -44,11 +44,12 @@
 #include "wm_pmu.h"
 #include "wm_ram_config.h"
 #include "wm_uart.h"
-
-#include "wm_io.h"
-#include "wm_gpio.h"
-
-// #define SYS_MEM_DEBUG 0
+#include "luat_conf_bsp.h"
+#include "wm_watchdog.h"
+#include "wm_wifi.h"
+#if TLS_CONFIG_ONLY_FACTORY_ATCMD
+#include "../../src/app/factorycmd/factory_atcmd.h"
+#endif
 
 /* c librayr mutex */
 tls_os_sem_t    *libc_sem;
@@ -122,7 +123,7 @@ extern int wpa_supplicant_init(u8 *mac_addr);
 extern void tls_sys_auto_mode_run(void);
 extern void UserMain(void);
 extern void tls_bt_entry();
-
+void tls_mem_get_init_available_size(void);
 void task_start (void *data);
 
 /****************/
@@ -143,14 +144,6 @@ void wm_gpio_config()
     wm_uart0_tx_config(WM_IO_PB_19);
     wm_uart0_rx_config(WM_IO_PB_20);
 
-    //wm_uart1_rx_config(WM_IO_PB_07);
-    //wm_uart1_tx_config(WM_IO_PB_06);
-#if (0)
-	wm_spi_ck_config(WM_IO_PB_01);
-	wm_spi_cs_config(WM_IO_PB_04);
-	wm_spi_do_config(WM_IO_PB_05);
-	wm_spi_di_config(WM_IO_PB_00);
-#endif
 }
 #if MAIN_TASK_DELETE_AFTER_START_FTR
 void task_start_free()
@@ -171,17 +164,19 @@ int main(void)
 {
     u32 value = 0;
 
+	/*standby reason setting in here,because pmu irq will clear it.*/
+	if ((tls_reg_read32(HR_PMU_INTERRUPT_SRC)>>7)&0x1)
+	{
+		tls_sys_set_reboot_reason(REBOOT_REASON_STANDBY);
+	}
+	
+    /*32K switch to use RC circuit & calibration*/
+    tls_pmu_clk_select(0);
+
+    /*Switch to DBG*/
     value = tls_reg_read32(HR_PMU_BK_REG);
     power_bk_reg = value;
-    // printf("HR_PMU_BK_REG PowerOn %08X\n", value);
-    // printf("HR_PMU_BK_REG PowerOn Reson %08X\n", CHECK_BIT(value, 8));
-    // printf("HR_PMU_BK_REG PowerOn RTC %08X\n", CHECK_BIT(value, 5));
-    // printf("HR_PMU_BK_REG PowerOn Wakeup Pin %08X\n", CHECK_BIT(value, 2));
     value &= ~(BIT(19));
-    // value &= ~(BIT(8));
-    // value &= ~(BIT(5));
-    // value &= ~(BIT(2));
-    // printf("HR_PMU_BK_REG write %08X\n", value);
     tls_reg_write32(HR_PMU_BK_REG, value);
 
     /*32K switch to use RC circuit & calibration*/
@@ -193,18 +188,20 @@ int main(void)
     value &= ~(BIT(5));
     tls_reg_write32(HR_PMU_PS_CR, value);
 
-	//value = tls_reg_read32(HR_PMU_WLAN_STTS);
-	//value &= ~(0xE);
-	//tls_reg_write32(HR_PMU_WLAN_STTS, value);
-
-    /*Close those not initialized clk except uart0,sdadc,gpio,rfcfg*/
+    /*Close those not initialized clk except touchsensor/trng, uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);
     value &= ~0x3fffff;
+    #ifdef LUAT_USE_WLAN
+    value |= 0x201a02;
+    #else
     value |= 0x1a02;
+    #endif
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
+    #ifndef LUAT_USE_WLAN
 	/* Close bbp clk */
 	tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x0F);
+    #endif
 
     tls_sys_clk_set(CPU_CLK_80M);
     tls_os_init(NULL);
@@ -214,8 +211,10 @@ int main(void)
 
     /*configure wake up source begin*/
 	csi_vic_set_wakeup_irq(SDIO_IRQn);
-    // csi_vic_set_wakeup_irq(MAC_IRQn);
-    // csi_vic_set_wakeup_irq(SEC_IRQn);
+    #ifdef LUAT_USE_WLAN
+    csi_vic_set_wakeup_irq(MAC_IRQn);
+    csi_vic_set_wakeup_irq(SEC_IRQn);
+    #endif
     csi_vic_set_wakeup_irq(DMA_Channel0_IRQn);
     csi_vic_set_wakeup_irq(DMA_Channel1_IRQn);
     csi_vic_set_wakeup_irq(DMA_Channel2_IRQn);
@@ -225,7 +224,9 @@ int main(void)
     csi_vic_set_wakeup_irq(I2C_IRQn);
     csi_vic_set_wakeup_irq(ADC_IRQn);
     csi_vic_set_wakeup_irq(SPI_LS_IRQn);
-	// csi_vic_set_wakeup_irq(SPI_HS_IRQn);
+    #ifdef LUAT_USE_WLAN
+	csi_vic_set_wakeup_irq(SPI_HS_IRQn);
+    #endif
     csi_vic_set_wakeup_irq(GPIOA_IRQn);
     csi_vic_set_wakeup_irq(GPIOB_IRQn);
     csi_vic_set_wakeup_irq(UART0_IRQn);
@@ -242,6 +243,9 @@ int main(void)
     csi_vic_set_wakeup_irq(PMU_IRQn);
     csi_vic_set_wakeup_irq(TIMER_IRQn);
     csi_vic_set_wakeup_irq(WDG_IRQn);
+	/*should be here because main stack will be allocated and deallocated after task delete*/
+	tls_mem_get_init_available_size();
+	
     /*configure wake up source end*/
 	TaskStartStk = tls_mem_alloc(sizeof(u32)*TASK_START_STK_SIZE);
 	if (TaskStartStk)
@@ -273,6 +277,7 @@ void tls_mem_get_init_available_size(void)
 {
 	u8 *p = NULL;
 	total_mem_size = (unsigned int)&__heap_end - (unsigned int)&__heap_start;
+    heap_size_max = total_mem_size;
 	while(total_mem_size > 512)
 	{
 		p = malloc(total_mem_size);
@@ -286,6 +291,16 @@ void tls_mem_get_init_available_size(void)
 	}
 }
 
+void tls_pmu_chipsleep_callback(int sleeptime)
+{
+	//wm_printf("c:%d\r\n", sleeptime);
+	/*set wakeup time*/
+	tls_pmu_timer1_start(sleeptime);
+	/*enter chip sleep*/
+	tls_pmu_sleep_start();
+}
+
+
 /*****************************************************************************
  * Function Name        // task_start
  * Descriptor             // before create multi_task, we create a task_start task
@@ -296,15 +311,13 @@ void tls_mem_get_init_available_size(void)
  ****************************************************************************/
 void task_start (void *data)
 {
-	//u8 enable = 0;
-    //u8 mac_addr[6] = {0x00, 0x25, 0x08, 0x09, 0x01, 0x0F};
+	u8 enable = 0;
+    u8 mac_addr[6] = {0x00, 0x25, 0x08, 0x09, 0x01, 0x0F};
+
 #if TLS_CONFIG_CRYSTAL_24M
     tls_wl_hw_using_24m_crystal();
 #endif
-    heap_size_max = (unsigned int)&__heap_end - (unsigned int)&__heap_start;
-    total_mem_size = heap_size_max;
 
-	//tls_mem_get_init_available_size();
     /* must call first to configure gpio Alternate functions according the hardware design */
     wm_gpio_config();
 
@@ -323,17 +336,50 @@ void task_start (void *data)
     tls_fls_sys_param_postion_init();
 
     /*PARAM GAIN,MAC default*/
-    //tls_ft_param_init();
-    //tls_crypto_init();
+#ifdef LUAT_USE_WLAN
+    tls_ft_param_init();
+    tls_param_load_factory_default();
+    tls_param_init(); /*add param to init sysparam_lock sem*/
 
-// 仅调试内存大小时使用
-#if 0
-    tls_mem_get_init_available_size();
-    printf("sys memory max %d kb\n", total_mem_size / 1024);
-    printf("heap memory max %d kb\n", ((unsigned int)&__heap_end - (unsigned int)&__heap_start) / 1024);
+    tls_get_tx_gain(&tx_gain_group[0]);
+    TLS_DBGPRT_INFO("tx gain ");
+    TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
+    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 3)) /*wifi tx&rx mem customized interface*/
+    {
+        TLS_DBGPRT_INFO("wl mem initial failured\n");
+    }
+
+    tls_get_mac_addr(&mac_addr[0]);
+    TLS_DBGPRT_INFO("mac addr ");
+    TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
+    if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
+    {
+        TLS_DBGPRT_INFO("wl driver initial failured\n");
+    }
+    if (wpa_supplicant_init(mac_addr))
+    {
+        TLS_DBGPRT_INFO("supplicant initial failured\n");
+    }
+	/*wifi-temperature compensation,default:open*/
+	tls_wifi_set_tempcomp_flag(0);
+	tls_wifi_set_psm_chipsleep_flag(0);
+	tls_wifi_psm_chipsleep_cb_register((tls_wifi_psm_chipsleep_callback)tls_pmu_chipsleep_callback, NULL, NULL);
+    tls_ethernet_init();
+
+    tls_sys_init();
+
+	tls_param_get(TLS_PARAM_ID_PSM, &enable, TRUE);	
+	if (enable != TRUE)
+	{
+	    enable = TRUE;
+	    tls_param_set(TLS_PARAM_ID_PSM, &enable, TRUE);	  
+	}
 #endif
-
     UserMain();
+
+#ifdef LUAT_USE_WLAN
+    tls_sys_auto_mode_run();
+#endif
 
     // for (;;)
     // {
@@ -343,15 +389,13 @@ void task_start (void *data)
     		tls_os_task_del_by_task_handle(tststarthdl,task_start_free);
             // break;
 		}
+        // tls_os_time_delay(0x10000000);
+#else
+        // //printf("start up\n");
+        // extern void tls_os_disp_task_stat_info(void);
+        // tls_os_disp_task_stat_info();
+        // tls_os_time_delay(1000);
 #endif
-// #if 1
-//         tls_os_time_delay(0x10000000);
-// #else
-//         //printf("start up\n");
-//         extern void tls_os_disp_task_stat_info(void);
-//         tls_os_disp_task_stat_info();
-//         tls_os_time_delay(1000);
-// #endif
     // }
 }
 

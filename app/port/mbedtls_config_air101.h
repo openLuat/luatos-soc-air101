@@ -703,7 +703,7 @@
  *      MBEDTLS_TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_RSA_PSK_WITH_RC4_128_SHA
  */
-//#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
@@ -731,7 +731,7 @@
  *      MBEDTLS_TLS_RSA_WITH_RC4_128_SHA
  *      MBEDTLS_TLS_RSA_WITH_RC4_128_MD5
  */
-// #define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED
@@ -1263,7 +1263,7 @@
  *
  * Comment this macro to disable support for TLS 1.0
  */
-// #define MBEDTLS_SSL_PROTO_TLS1
+#define MBEDTLS_SSL_PROTO_TLS1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_1
@@ -1275,7 +1275,7 @@
  *
  * Comment this macro to disable support for TLS 1.1 / DTLS 1.0
  */
-// #define MBEDTLS_SSL_PROTO_TLS1_1
+#define MBEDTLS_SSL_PROTO_TLS1_1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_2
@@ -1287,7 +1287,7 @@
  *
  * Comment this macro to disable support for TLS 1.2 / DTLS 1.2
  */
-// #define MBEDTLS_SSL_PROTO_TLS1_2
+#define MBEDTLS_SSL_PROTO_TLS1_2
 
 /**
  * \def MBEDTLS_SSL_PROTO_DTLS
@@ -2517,7 +2517,7 @@
  *
  * This module is required for SSL/TLS.
  */
-// #define MBEDTLS_SSL_TLS_C
+#define MBEDTLS_SSL_TLS_C
 
 /**
  * \def MBEDTLS_THREADING_C
@@ -2590,7 +2590,7 @@
  *
  * This module is required for the X.509 parsing modules.
  */
-// #define MBEDTLS_X509_USE_C
+#define MBEDTLS_X509_USE_C
 
 /**
  * \def MBEDTLS_X509_CRT_PARSE_C
@@ -2606,7 +2606,7 @@
  *
  * This module is required for X.509 certificate parsing.
  */
-// #define MBEDTLS_X509_CRT_PARSE_C
+#define MBEDTLS_X509_CRT_PARSE_C
 
 /**
  * \def MBEDTLS_X509_CRL_PARSE_C

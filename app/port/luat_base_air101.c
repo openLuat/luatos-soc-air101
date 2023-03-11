@@ -196,8 +196,14 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 #ifdef LUAT_USE_NETWORK
   {"socket", luaopen_socket_adapter},
+  {"http", luaopen_http},
+  {"mqtt", luaopen_mqtt},
+  {"websocket", luaopen_websocket},
 #ifdef LUAT_USE_W5500
   {"w5500", luaopen_w5500},
+#endif
+#ifdef LUAT_USE_FTP
+  {"ftp", luaopen_ftp},
 #endif
 #endif
 #ifdef LUAT_USE_LORA
@@ -226,6 +232,9 @@ static const luaL_Reg loadedlibs[] = {
 //#endif
 #ifdef LUAT_USE_MAX30102
   {"max30102", luaopen_max30102},
+#endif
+#ifdef LUAT_USE_WLAN
+  {"wlan", luaopen_wlan},
 #endif
   {NULL, NULL}
 };

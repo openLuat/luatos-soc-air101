@@ -82,7 +82,8 @@ add_includedirs(luatos.."components/mbedtls/include")
 add_includedirs("src/os/rtos/include",{public = true})
 
 add_includedirs("include/driver",{public = true})
-
+add_includedirs("src/network/lwip2.1.3/include",{public = true})
+add_includedirs("src/network/api_wm",{public = true})
 
 target("app")
     set_kind("static")
@@ -225,6 +226,24 @@ target("eink")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+target("network")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+
+    -- lwip
+    add_files("src/network/**.c")
+    add_includedirs("src/app/dhcpserver")
+    add_includedirs("src/app/dnsserver")
+    add_includedirs("src/app/oneshotconfig")
+    
+
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -276,6 +295,7 @@ target("air10x")
     add_deps("blehost")
     add_deps("u8g2")
     add_deps("eink")
+    add_deps("network")
 
     -- add files
     add_files("app/*.c")
@@ -421,7 +441,44 @@ target("air10x")
     add_includedirs(luatos.."components/ethernet/w5500",{public = true})
     add_files(luatos.."components/ethernet/w5500/*.c")
 
+    -- http_parser
+    add_includedirs(luatos.."components/network/http_parser",{public = true})
+    add_files(luatos.."components/network/http_parser/*.c")
     
+    -- libftp
+    -- add_includedirs(luatos.."components/network/libftp",{public = true})
+    -- add_files(luatos.."components/network/libftp/*.c")
+    
+    -- websocket
+    -- add_includedirs(luatos.."components/network/websocket",{public = true})
+    -- add_files(luatos.."components/network/websocket/*.c")
+
+    
+    -- http
+    add_includedirs(luatos.."components/network/libhttp",{public = true})
+    add_files(luatos.."components/network/libhttp/*.c")
+
+    -- libftp
+    add_includedirs(luatos.."components/network/libftp",{public = true})
+    add_files(luatos.."components/network/libftp/*.c")
+    
+    -- websocket
+    add_includedirs(luatos.."components/network/websocket",{public = true})
+    add_files(luatos.."components/network/websocket/*.c")
+
+    -- sntp
+    add_includedirs(luatos.."components/network/libsntp",{public = true})
+    add_files(luatos.."components/network/libsntp/*.c")
+
+    -- mqtt
+    add_includedirs(luatos.."components/network/libemqtt",{public = true})
+    add_files(luatos.."components/network/libemqtt/*.c")
+
+    -- errdump
+    -- add_includedirs(luatos.."components/network/errdump",{public = true})
+    -- add_files(luatos.."components/network/errdump/*.c")
+
+    -- tlfs3
     add_includedirs(luatos.."components/mempool/tlsf3")
     add_files(luatos.."components/mempool/tlsf3/*.c")
     
@@ -462,6 +519,10 @@ target("air10x")
     -- add_includedirs(luatos.."components/nes/inc")
     -- add_includedirs(luatos.."components/nes/port")
     -- add_files(luatos.."components/nes/**.c")
+
+    -- wlan
+    add_includedirs(luatos.."components/wlan")
+    add_files(luatos.."components/wlan/**.c")
 
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
