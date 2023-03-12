@@ -3,6 +3,7 @@
 
 #include "wm_include.h"
 #include "wm_cpu.h"
+#include "wm_internal_flash.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
