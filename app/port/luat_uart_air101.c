@@ -4,6 +4,8 @@
 #include "luat_uart.h"
 #define LUAT_LOG_TAG "luat.uart.101"
 #include "luat_log.h"
+#include "luat_gpio.h"
+#include "luat_hwtimer.h"
 
 #include "wm_include.h"
 #include "wm_uart.h"

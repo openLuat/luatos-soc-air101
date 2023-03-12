@@ -5,6 +5,8 @@
 #define LUAT_LOG_TAG "sdio"
 #include "luat_log.h"
 
+#include "wm_include.h"
+#include "wm_gpio_afsel.h"
 #include "wm_sdio_host.h"
 #include "luat_fs.h"
 #include "ff.h"

@@ -5,6 +5,10 @@
 #include "luat_gpio.h"
 #include "wm_include.h"
 #include "luat_irq.h"
+#include "luat_gpio.h"
+#include "luat_hwtimer.h"
+
+int luat_gpio_irq_default(int pin, void* args);
 
 typedef struct gpio_cb_args
 {
@@ -115,9 +119,9 @@ int luat_gpio_set(int pin, int level)
 //hyj
 void luat_gpio_pulse(int pin, uint8_t *level, uint16_t len,uint16_t delay_ns)
 {
-    if (pin < 0 || pin > WM_IO_PB_31) return 0;
+    if (pin < 0 || pin > WM_IO_PB_31) return;
     tls_gpio_pulse(pin,level,len,delay_ns);
-    return 0;
+    return;
 }
 
 int luat_gpio_get(int pin)

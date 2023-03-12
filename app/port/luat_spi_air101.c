@@ -73,6 +73,7 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
         return -1;
     }
     tls_spi_trans_type(SPI_DMA_TRANSFER);
+    return 0;
 }
 
 //初始化配置SPI各项参数，并打开SPI

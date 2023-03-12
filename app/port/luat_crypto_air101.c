@@ -13,6 +13,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+int tls_crypto_random_bytes_range(unsigned char *out, u32 len, u32 range);
+
 int luat_crypto_trng(char* buff, size_t len) {
     #define TMP_LEN (8)
     char tmp[TMP_LEN];

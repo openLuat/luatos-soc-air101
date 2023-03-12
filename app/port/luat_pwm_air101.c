@@ -13,6 +13,8 @@
 #include "wm_io.h"
 #include "luat_msgbus.h"
 
+#include "wm_gpio_afsel.h"
+
 uint32_t pwmDmaCap0[10]={0}; 
 uint32_t pwmDmaCap4[10]={0};
 
@@ -48,12 +50,13 @@ int l_pwm_dma_capture(lua_State *L, void* ptr) {
 
 static void pwm_dma_callback(void * channel)
 {
+	u8 ch = (u8)(channel);
+	tls_pwm_stop(ch);
+	tls_dma_free(1);
 	rtos_msg_t msg={0};
 	msg.handler = l_pwm_dma_capture;
-	msg.arg1 = (int)channel;
+	msg.arg1 = ch;
 	luat_msgbus_put(&msg, 0);
-	tls_pwm_stop(channel);
-	tls_dma_free(1);
 }
 
 int luat_pwm_setup(luat_pwm_conf_t* conf) {
