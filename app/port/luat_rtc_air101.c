@@ -25,6 +25,7 @@ static void luat_rtc_cb(void *arg) {
 int luat_rtc_set(struct tm *tblock) {
     if (tblock == NULL)
         return -1;
+    tblock->tm_mon ++;
     tls_set_rtc(tblock);
     return 0;
 }
@@ -33,6 +34,7 @@ int luat_rtc_get(struct tm *tblock) {
     if (tblock == NULL)
         return -1;
     tls_get_rtc(tblock);
+    tblock->tm_mon --;
     return 0;
 }
 
@@ -60,4 +62,20 @@ void luat_rtc_set_tamp32(uint32_t tamp) {
     t = tamp + (8*3600); // 固定东八区
     struct tm *tblock = gmtime(&t);
     luat_rtc_set(tblock);
+}
+
+time_t time(time_t* _tm)
+{
+  struct tm tmt = {0};
+  tls_get_rtc(&tmt);
+  tmt.tm_mon --;
+  time_t t = mktime(&tmt);
+  if (_tm != NULL)
+    memcpy(_tm, &t, sizeof(time_t));
+  return t;
+}
+
+clock_t clock(void)
+{
+  return (clock_t)time(NULL);
 }

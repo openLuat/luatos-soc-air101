@@ -13,19 +13,6 @@
 LUAMOD_API int luaopen_gtfont( lua_State *L );
 LUAMOD_API int luaopen_nimble( lua_State *L );
 
-time_t time(time_t* _tm)
-{
-  struct tm tmt = {0};
-  tls_get_rtc(&tmt);
-  time_t t = mktime(&tmt);
-  if (_tm != NULL)
-    memcpy(_tm, &t, sizeof(time_t));
-  return t;
-}
-clock_t clock(void)
-{
-  return (clock_t)time(NULL);
-}
 
 static const luaL_Reg loadedlibs[] = {
   {"_G", luaopen_base}, // _G
