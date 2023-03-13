@@ -6,6 +6,7 @@
 #include <string.h>//add for memset
 #include "bget.h"
 #include "luat_malloc.h"
+#include "FreeRTOS.h"
 
 #define LUAT_LOG_TAG "heap"
 #include "luat_log.h"
@@ -48,12 +49,21 @@ extern size_t xFreeBytesMin;
 
 extern unsigned int heap_size_max;
 extern unsigned int total_mem_size;
+extern size_t __heap_start;
+extern size_t __heap_end;
 void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
 {
 #if configUSE_HEAP3
     *used = xTotalHeapSize - xFreeBytesRemaining;
     *max_used = xTotalHeapSize - xFreeBytesMin;
     *total = xTotalHeapSize;
+#elif configUSE_HEAP4
+    extern void vPortGetHeapStats( HeapStats_t *pxHeapStats );
+    HeapStats_t stat = {0};
+    vPortGetHeapStats(&stat);
+    *total = (size_t)(&__heap_end) - (size_t)(&__heap_start);
+    *max_used = *total - stat.xMinimumEverFreeBytesRemaining;
+    *used = (*total) - (stat.xAvailableHeapSpaceInBytes);
 #else
     *used = heap_size_max - total_mem_size;
     *max_used = *used;

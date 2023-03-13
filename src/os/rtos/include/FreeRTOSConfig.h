@@ -83,6 +83,7 @@
 #define configUSE_16_BIT_TICKS		0	
 #define configIDLE_SHOULD_YIELD		1	
 #define configUSE_HEAP3				0
+#define configUSE_HEAP4				1
 
 #define configQUEUE_REGISTRY_SIZE 	0
 #define configSEMAPHORE_INIT_VALUE	5	

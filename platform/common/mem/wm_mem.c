@@ -17,6 +17,8 @@
 #include "list.h"
 #include <string.h>
 
+#if 0
+
 extern u8 tls_get_isr_count(void);
 /**
  * This variable is set if the memory mananger has been initialized.
@@ -853,4 +855,4 @@ END:
 }
 
 
-
+#endif

@@ -244,7 +244,7 @@ int main(void)
     csi_vic_set_wakeup_irq(TIMER_IRQn);
     csi_vic_set_wakeup_irq(WDG_IRQn);
 	/*should be here because main stack will be allocated and deallocated after task delete*/
-	tls_mem_get_init_available_size();
+	// tls_mem_get_init_available_size();
 	
     /*configure wake up source end*/
 	TaskStartStk = tls_mem_alloc(sizeof(u32)*TASK_START_STK_SIZE);

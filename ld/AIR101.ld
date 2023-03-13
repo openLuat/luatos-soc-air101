@@ -27,7 +27,7 @@ MEMORY
 	V-SRAM : ORIGIN = 0x20000000 , LENGTH = 0x100   /* off-chip SRAM 8MB */
 }
 
-__min_heap_size = 0x2000;
+__min_heap_size = 0x100;
 PROVIDE (__ram_end  = 0x20028000);
 PROVIDE (__heap_end = __ram_end);
 
@@ -152,7 +152,7 @@ SECTIONS
   __bss_end__ = .;
  } > REGION_BSS
  ._user_heap : {
-  . = ALIGN(0x4) ;
+  . = ALIGN(0x8) ;
   __heap_start = .;
   . += __min_heap_size;
   . = ALIGN(0x4) ;

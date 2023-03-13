@@ -42,7 +42,7 @@ set_toolchains("csky@csky")
 local flto = ""
 
 --add macro defination
-add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__")
+add_defines("GCC_COMPILE=1","TLS_CONFIG_CPU_XT804=1","NIMBLE_FTR=1","__LUATOS__","__USER_CODE__")
 
 set_warnings("allextra")
 
@@ -103,6 +103,12 @@ add_includedirs("include/arch/xt804/csi_dsp")
 add_includedirs("platform/sys")
 add_includedirs("src/app/mbedtls/ports")
 
+add_ldflags(" -Wl,--wrap=malloc ",{force = true})
+add_ldflags(" -Wl,--wrap=free ",{force = true})
+add_ldflags(" -Wl,--wrap=zalloc ",{force = true})
+add_ldflags(" -Wl,--wrap=calloc ",{force = true})
+add_ldflags(" -Wl,--wrap=realloc ",{force = true})
+
 target("app")
     set_kind("static")
     set_plat("cross")
@@ -157,6 +163,8 @@ target("blehost")
     add_includedirs("include/os",{public = true})
     add_includedirs("include/arch/xt804",{public = true})
     add_includedirs("include/arch/xt804/csi_core",{public = true})
+
+    remove_files("src/app/bleapp/wm_ble_server_wifi_app.c")
 
 target_end()
 
