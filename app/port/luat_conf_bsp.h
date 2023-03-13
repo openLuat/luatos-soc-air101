@@ -61,7 +61,10 @@
 // #define LUAT_USE_LWIP
 // #define LUAT_USE_NETWORK
 // #define LUAT_USE_DNS
+
+// 内存不足, 无法开启TLS
 // #define LUAT_USE_TLS
+
 // #define LUAT_USE_SNTP
 
 #define LUAT_USE_IOTAUTH 1
