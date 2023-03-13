@@ -4482,6 +4482,14 @@ static int wm_tool_xmodem_download(const char *image)
         wm_tool_printf("can not open image to download.\r\n");
 		return -1;
     }
+    size_t fz = 0;
+    fseek(imgfp, 0L, SEEK_END);
+    fz = ftell(imgfp);
+    fseek(imgfp, 0L, SEEK_SET);
+    if (fz == 0) {
+        wm_tool_printf("image is emtry.\r\n");
+		return -1;
+    }
 
 	sndlen = 0;
 	pack_counter = 0;
@@ -4549,7 +4557,7 @@ static int wm_tool_xmodem_download(const char *image)
 	                	if (sndlen % 10240 == 0)
                         {
     						//wm_tool_printf("#");
-                            wm_tool_printf("#download %d%%\r\n", sndlen >= 1024*1000 ? 99 : sndlen / (10240));
+                            wm_tool_printf("#download %d%%\r\n", sndlen >= fz ? 99 : sndlen / (fz));
 						}
 	                }
 					else
