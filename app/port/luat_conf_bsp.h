@@ -97,7 +97,7 @@
 #define LUAT_USE_RSA 1
 
 // 国密算法 SM2/SM3/SM4
-// #define LUAT_USE_GMSSL 1
+#define LUAT_USE_GMSSL 1
 
 
 // // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
