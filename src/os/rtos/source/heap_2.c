@@ -47,7 +47,7 @@
 
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 #if TLS_OS_FREERTOS
-#if !configUSE_HEAP3
+#if !configUSE_HEAP3 && !configUSE_HEAP4
 #if ( configSUPPORT_DYNAMIC_ALLOCATION == 0 )
     #error This file must not be used if configSUPPORT_DYNAMIC_ALLOCATION is 0
 #endif
