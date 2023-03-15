@@ -5,7 +5,7 @@
 #include "wm_osal.h"
 #include "wm_config.h"
 
-#define LWIP_STK_SIZE	     512
+#define LWIP_STK_SIZE	     2048
 #define LWIP_TASK_MAX	     1	
 /* The user can change this priority level. 
  * It is important that there was no crossing with other levels.
