@@ -108,11 +108,15 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         #ifdef LUAT_USE_NETWORK
         // LLOGD("CALL net_lwip_init");
         net_lwip_init();
+        extern void soc_lwip_init_hook(void);
         // LLOGD("CALL net_lwip_register_adapter");
-        net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         struct netif *et0 = tls_get_netif();
-        extern void net_lwip_set_netif(uint8_t adapter_index, struct netif *netif, void *init, uint8_t is_default);
-        net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0, NULL, 1);
+        //extern void net_lwip_set_netif(uint8_t adapter_index, struct netif *netif, void *init, uint8_t is_default);
+        //net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0, NULL, 1);
+        // extern void net_lwip_set_netif(struct netif *netif);
+        net_lwip_set_netif(et0);
+        soc_lwip_init_hook();
+        net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         #endif
     }
 	return 0;
