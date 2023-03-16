@@ -361,8 +361,10 @@ void task_start (void *data)
         TLS_DBGPRT_INFO("supplicant initial failured\n");
     }
 	/*wifi-temperature compensation,default:open*/
-	tls_wifi_set_tempcomp_flag(0);
-	tls_wifi_set_psm_chipsleep_flag(0);
+    if (tls_wifi_get_tempcomp_flag() != 0)
+	    tls_wifi_set_tempcomp_flag(0);
+    if (tls_wifi_get_psm_chipsleep_flag() != 0)
+	    tls_wifi_set_psm_chipsleep_flag(0);
 	tls_wifi_psm_chipsleep_cb_register((tls_wifi_psm_chipsleep_callback)tls_pmu_chipsleep_callback, NULL, NULL);
     tls_ethernet_init();
 
@@ -378,7 +380,7 @@ void task_start (void *data)
     UserMain();
 
 #ifdef LUAT_USE_WLAN
-    tls_sys_auto_mode_run();
+    //tls_sys_auto_mode_run();
 #endif
 
     // for (;;)
