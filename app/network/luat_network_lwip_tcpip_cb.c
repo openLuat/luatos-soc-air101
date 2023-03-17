@@ -8,6 +8,8 @@
 #include "lwip/tcpip.h"
 #include "lwip/udp.h"
 
+#ifdef LUAT_USE_NETWORK
+
 #define LUAT_LOG_TAG "net"
 #include "luat_log.h"
 
@@ -2040,3 +2042,5 @@ void net_lwip_set_netif(struct netif *netif)
 	}
 	return;
 }
+
+#endif
