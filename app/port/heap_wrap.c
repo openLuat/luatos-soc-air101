@@ -1,12 +1,20 @@
 #include "wm_include.h"
 #include "FreeRTOS.h"
 
+#include "stdio.h"
+
 void* __wrap_malloc(size_t len) {
     return pvPortMalloc(len);
 }
 
 void __wrap_free(void* ptr) {
-    return vPortFree(ptr);
+    if (ptr == NULL)
+        return;
+    u32 addr = (u32)ptr;
+    if (addr >= 0x20000000 && addr <= 0x40000000) {
+        // printf("free %p\n", ptr);
+        vPortFree(ptr);
+    }
 }
 
 void *pvPortRealloc( void *pv, size_t xWantedSize );
