@@ -43,9 +43,15 @@ tlsf_t luavm_tlsf;
 pool_t luavm_tlsf_ext;
 #endif
 
+#ifdef LUAT_USE_PROFILER
+#include "luat_profiler.h"
+extern int luat_profiler_memdebug;
+extern luat_profiler_mem_t profiler_memregs[];
+#endif
+
+
+
 void luat_heap_init(void) {
-
-
 	// 毕竟sram还是快很多的, 优先sram吧
 #ifndef LUAT_USE_TLSF
 	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
@@ -164,6 +170,7 @@ void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
 
 #else
 void* __attribute__((section (".ram_run"))) luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+    (void)ud;
     if (ptr == NULL && nsize == 0)
         return NULL;
 #ifdef LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP
@@ -220,3 +227,207 @@ void luat_meminfo_luavm(size_t *total, size_t *used, size_t *max_used) {
 }
 #endif
 //-----------------------------------------------------------------------------
+
+#include "wm_include.h"
+#include "FreeRTOS.h"
+
+#include "stdio.h"
+
+#ifdef LUAT_USE_PROFILER
+
+void* __wrap_malloc(size_t len) {
+    #ifdef LUAT_USE_PROFILER
+    void* ptr = pvPortMalloc(len);
+    if (luat_profiler_memdebug) {
+        printf("malloc %d %p\n", len, ptr);
+        if (ptr == NULL)
+            return NULL;
+        for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+        {
+            if (profiler_memregs[i].addr == 0) {
+                profiler_memregs[i].addr = (uint32)ptr;
+                profiler_memregs[i].len = len;
+                break;
+            }
+        }
+        
+    }
+    return ptr;
+    #else
+    return pvPortMalloc(len);
+    #endif
+}
+
+void __wrap_free(void* ptr) {
+    if (ptr == NULL)
+        return;
+    #ifdef LUAT_USE_PROFILER
+    if (luat_profiler_memdebug)
+        printf("free %p\n", ptr);
+    #endif
+    u32 addr = (u32)ptr;
+    if (addr >= 0x20000000 && addr <= 0x40000000) {
+        // printf("free %p\n", ptr);
+        vPortFree(ptr);
+        #ifdef LUAT_USE_PROFILER
+            for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+            {
+                if (profiler_memregs[i].addr == addr) {
+                    profiler_memregs[i].len = 0;
+                    profiler_memregs[i].addr = 0;
+                    break;
+                }
+            }
+        #endif
+    }
+}
+
+void *pvPortRealloc( void *pv, size_t xWantedSize );
+void* __wrap_realloc(void*ptr, size_t len) {
+    #ifdef LUAT_USE_PROFILER
+    void* newptr = pvPortRealloc(ptr, len);
+    if (luat_profiler_memdebug && newptr) {
+        printf("realloc %p %d %p\n", ptr, len, newptr);
+        uint32_t addr = (uint32_t)ptr;
+        uint32_t naddr = (uint32_t)newptr;
+        if (ptr == newptr) {
+            // 相同内存地址, 只是扩容了
+            for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+            {
+                if (profiler_memregs[i].addr == addr) {
+                    profiler_memregs[i].len = len;
+                    addr = 0;
+                    break;
+                }
+            }
+            if (0 != addr) {
+                for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+                {
+                    if (profiler_memregs[i].addr == 0) {
+                        profiler_memregs[i].addr = addr;
+                        profiler_memregs[i].len = len;
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            if (ptr == NULL) {
+                for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+                {
+                    if (profiler_memregs[i].addr == 0) {
+                        profiler_memregs[i].addr = naddr;
+                        profiler_memregs[i].len = len;
+                        break;
+                    }
+                }
+            }
+            else {
+                for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+                {
+                    if (profiler_memregs[i].addr == addr) {
+                        profiler_memregs[i].addr = 0;
+                        profiler_memregs[i].len = 0;
+                        break;
+                    }
+                }
+                for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+                {
+                    if (profiler_memregs[i].addr == 0) {
+                        profiler_memregs[i].addr = naddr;
+                        profiler_memregs[i].len = len;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return newptr;
+    #endif
+    return pvPortRealloc(ptr, len);
+}
+
+void* __wrap_calloc(size_t itemCount, size_t itemSize) {
+    void* ptr = pvPortMalloc(itemCount * itemSize);
+    #ifdef LUAT_USE_PROFILER
+    if (luat_profiler_memdebug) {
+        printf("calloc %p %d\n", ptr, itemCount * itemSize);
+        if (ptr) {
+            for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+            {
+                if (profiler_memregs[i].addr == 0) {
+                    profiler_memregs[i].addr = (uint32_t)ptr;
+                    profiler_memregs[i].len = itemCount * itemSize;
+                    break;
+                }
+            }
+        }
+    }
+    #endif
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0, itemCount * itemSize);
+    return ptr;
+}
+
+void* __wrap_zalloc(size_t size) {
+    void* ptr = pvPortMalloc(size);
+    #ifdef LUAT_USE_PROFILER
+    if (luat_profiler_memdebug) {
+        printf("zalloc %p %d\n", ptr, size);
+        if (ptr) {
+            for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
+            {
+                if (profiler_memregs[i].addr == 0) {
+                    profiler_memregs[i].addr = (uint32_t)ptr;
+                    profiler_memregs[i].len = size;
+                    break;
+                }
+            }
+        }
+    }
+    #endif
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0, size);
+    return ptr;
+}
+#else
+
+// 标准实现
+void* __wrap_malloc(size_t len) {
+    return pvPortMalloc(len);
+}
+
+void __wrap_free(void* ptr) {
+    if (ptr == NULL)
+        return;
+    u32 addr = (u32)ptr;
+    if (addr >= 0x20000000 && addr <= 0x40000000) {
+        vPortFree(ptr);
+    }
+}
+
+void *pvPortRealloc( void *pv, size_t xWantedSize );
+void* __wrap_realloc(void*ptr, size_t len) {
+    return pvPortRealloc(ptr, len);
+}
+
+void* __wrap_calloc(size_t itemCount, size_t itemSize) {
+    void* ptr = pvPortMalloc(itemCount * itemSize);
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0, itemCount * itemSize);
+    return ptr;
+}
+
+void* __wrap_zalloc(size_t size) {
+    void* ptr = pvPortMalloc(size);
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0, size);
+    return ptr;
+}
+#endif
+
+
