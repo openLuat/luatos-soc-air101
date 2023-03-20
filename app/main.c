@@ -3,6 +3,7 @@
 #include "wm_psram.h"
 #include "wm_internal_flash.h"
 #include "wm_rtc.h"
+#include "wm_osal.h"
 
 #ifdef __LUATOS__
 #include "string.h"
@@ -27,75 +28,11 @@
 #define LUAT_LOG_TAG "main"
 #include "luat_log.h"
 
-#ifdef LUAT_USE_WLAN
-#define LUAT_HEAP_MIN_SIZE (100*1024)
-#undef LUAT_HEAP_SIZE
-#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
-#else
-#define LUAT_HEAP_MIN_SIZE (128*1024)
-#endif
+void luat_heap_init(void);
 
-#ifndef LUAT_HEAP_SIZE
-#ifdef LUAT_USE_NIMBLE
-#define LUAT_HEAP_SIZE (128+16)*1024
-#else
-#define LUAT_HEAP_SIZE (128+48)*1024
-#endif
-#endif
-
-#if (LUAT_HEAP_SIZE < LUAT_HEAP_MIN_SIZE)
-#undef LUAT_HEAP_SIZE
-#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
-#endif
-
-#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
-__attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE) / 8];
-#endif
-
-#ifdef LUAT_USE_TLSF
-#include "tlsf.h"
-tlsf_t luavm_tlsf;
-pool_t luavm_tlsf_ext;
-#endif
 
 static void luat_start(void *sdata){
-	// 毕竟sram还是快很多的, 优先sram吧
-#ifndef LUAT_USE_TLSF
-	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
-#else
-	luavm_tlsf = tlsf_create_with_pool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
-#endif
-
-#ifdef LUAT_USE_PSRAM
-	char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
-	char* psram_ptr = (void*)0x30010000;
-	LLOGD("check psram ...");
-	memcpy(psram_ptr, test, 4);
-	if (memcmp(psram_ptr, test, 4)) {
-		LLOGE("psram is enable, but can't access!!");
-	}
-	else {
-		LLOGD("psram is ok");
-		memset(psram_ptr, 0, 1024);
-		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
-		#ifdef LUAT_USE_TLSF
-		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, psram_ptr, 4*1024*1024);
-		#else
-		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
-		#endif
-		luat_main();
-		return;
-	}
-#else
-	// 暂时还是放在这里吧, 考虑改到0x20028000之前
-	#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
-#ifndef LUAT_USE_TLSF
-	bpool((void*)heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
-#else
-	luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
-#endif
-	#endif
-#endif
+	luat_heap_init();
 	luat_main();
 }
 
@@ -127,7 +64,7 @@ static void lvgl_timer_cb(void *ptmr, void *parg) {
 // static OS_STK __attribute__((aligned(4)))			LVGLTaskStk[LVGL_TASK_SIZE] = {0};
 #endif
 
-#define    TASK_START_STK_SIZE         4096
+#define    TASK_START_STK_SIZE         (3*1024) // 实际*4, 即12k
 static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] = {0};
 
 #endif
@@ -142,6 +79,13 @@ extern unsigned int  TLS_FLASH_PARAM_RESTORE_ADDR   ;
 extern unsigned int  TLS_FLASH_OTA_FLAG_ADDR        ;
 extern unsigned int  TLS_FLASH_END_ADDR             ;
 #endif
+
+static void check_stack(void* ptr) {
+	while (1) {
+		vTaskDelay(1000);
+		tls_os_disp_task_stat_info();
+	}
+}
 
 void UserMain(void){
 	char unique_id [18] = {0};
@@ -270,13 +214,14 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
-	tls_os_task_create(NULL, NULL,
+	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,
 				(void *)TaskStartStk,          /* task's stack start address */
 				TASK_START_STK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
-				31,
+				9,
 				0);
+	// tls_os_task_create(NULL, "cstack", check_stack, NULL, NULL, 2048, 10, 0);
 #else
 	printf("hello word\n");
 	while (1);
