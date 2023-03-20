@@ -280,6 +280,11 @@ BlockLink_t *pxLink;
 		/* This casting is to keep the compiler from issuing warnings. */
 		pxLink = ( void * ) puc;
 
+		if (( pxLink->xBlockSize & xBlockAllocatedBit ) == 0) {
+			printf("double free %p\n", pv);
+			return;
+		}
+
 		/* Check the block is actually allocated. */
 		configASSERT( ( pxLink->xBlockSize & xBlockAllocatedBit ) != 0 );
 		configASSERT( pxLink->pxNextFreeBlock == NULL );
@@ -585,7 +590,15 @@ void *pvPortRealloc( void *pv, size_t xWantedSize )
 
 int xPortMemIsKernel(void *mem)
 {
-    return 1;
+    if (mem == NULL)
+		return 0;
+	size_t memaddr = (size_t)mem;
+	size_t start = (size_t) (&__heap_start);
+	size_t end = (size_t)&__heap_end;
+	if (start < memaddr && memaddr < end) {
+		return 1;
+	}
+	return 0;
 }
 
 #endif
