@@ -470,19 +470,6 @@ static err_t net_lwip_dns_recv_cb(void *arg, struct udp_pcb *pcb, struct pbuf *p
 				if (out_p)
 				{
 					out_p->payload = tx_msg_buf.Data;
-					// if (prvlwip.dns_client.dns_server[i].type == IPADDR_TYPE_V4)
-					// {
-						prvlwip.dns_udp->local_ip = prvlwip.lwip_netif->ip_addr;
-
-					// }
-					// else
-					// {
-					// 	t_ip = net_lwip_get_ip6();
-					// 	if (t_ip)
-					// 	{
-					// 		prvlwip.dns_udp->local_ip = *t_ip;
-					// 	}
-					// }
 					err_t err = udp_sendto(prvlwip.dns_udp, out_p, &prvlwip.dns_client.dns_server[i], DNS_SERVER_PORT);
 					pbuf_free(out_p);
 				}
@@ -515,23 +502,6 @@ static void net_lwip_dns_tx_next(Buffer_Struct *tx_msg_buf)
 		if (p)
 		{
 			p->payload = tx_msg_buf->Data;
-			// if (prvlwip.dns_client.dns_server[i].type == IPADDR_TYPE_V4)
-			// {
-				prvlwip.dns_udp->local_ip = prvlwip.lwip_netif->ip_addr;
-
-			// }
-			// else
-			// {
-			// 	for (i = 0; i < LWIP_IPV6_NUM_ADDRESSES; i++)
-			// 	{
-			// 		if (prvlwip.lwip_netif->ip6_addr_state[i] & IP6_ADDR_VALID)
-			// 		{
-			// 			prvlwip.dns_udp->local_ip = prvlwip.lwip_netif->ip6_addr[i];
-			// 			break;
-			// 		}
-			// 	}
-			// }
-
 			err = udp_sendto(prvlwip.dns_udp, p, &prvlwip.dns_client.dns_server[i], DNS_SERVER_PORT);
 			pbuf_free(p);
 		}
@@ -540,13 +510,6 @@ static void net_lwip_dns_tx_next(Buffer_Struct *tx_msg_buf)
 		prvlwip.dns_client.new_result = 0;
 	}
 
-}
-
-uint32_t net_lwip_rand()
-{
-	PV_Union uPV;
-	luat_crypto_trng(uPV.u8, 4);
-	return uPV.u32;
 }
 
 void net_lwip_init(void)
@@ -560,15 +523,9 @@ void net_lwip_init(void)
 		INIT_LLIST_HEAD(&prvlwip.socket[i].rx_head);
 		prvlwip.socket[i].mutex = platform_create_mutex();
 	}
-	// mbedtls_debug_set_threshold(0);
 	prvlwip.dns_timer = platform_create_timer(net_lwip_timer_cb, (void *)EV_LWIP_COMMON_TIMER, 0);
 }
 
-// void net_lwip_set_local_ip6(ip6_addr_t *ip)
-// {
-// 	prvlwip.ec618_ipv6.u_addr.ip6 = *ip;
-// 	prvlwip.ec618_ipv6.type = IPADDR_TYPE_V6;
-// }
 
 static void net_lwip_close_tcp(int socket_id)
 {
@@ -713,26 +670,26 @@ static void net_lwip_task(void *param)
 			break;
 		}
 		p_ip = (ip_addr_t *)event.Param2;
-		local_ip = NULL;
+		//local_ip = NULL;
 		// if (p_ip->type == IPADDR_TYPE_V4)
 		// {
-			local_ip = &prvlwip.lwip_netif->ip_addr;
+		//	local_ip = &prvlwip.lwip_netif->ip_addr;
 		// }
 		// else
 		// {
 		// 	local_ip = net_lwip_get_ip6();
 
 		// }
-		if (!local_ip)
-		{
-			NET_DBG("netif no ip !!!!!!");
-			net_lwip_tcp_error(adapter_index, socket_id);
-			break;
-		}
+		// if (!local_ip)
+		// {
+		// 	NET_DBG("netif no ip !!!!!!");
+		// 	net_lwip_tcp_error(adapter_index, socket_id);
+		// 	break;
+		// }
 		if (prvlwip.socket[socket_id].is_tcp)
 		{
 
-			tcp_bind(prvlwip.socket[socket_id].pcb.tcp, local_ip, prvlwip.socket[socket_id].local_port);
+			//tcp_bind(prvlwip.socket[socket_id].pcb.tcp, local_ip, prvlwip.socket[socket_id].local_port);
 			error = tcp_connect(prvlwip.socket[socket_id].pcb.tcp, p_ip, prvlwip.socket[socket_id].remote_port, net_lwip_tcp_connected_cb);
 			if (error)
 			{
@@ -746,7 +703,7 @@ static void net_lwip_task(void *param)
 		}
 		else
 		{
-			udp_bind(prvlwip.socket[socket_id].pcb.udp, local_ip, prvlwip.socket[socket_id].local_port);
+			//udp_bind(prvlwip.socket[socket_id].pcb.udp, local_ip, prvlwip.socket[socket_id].local_port);
 			error = udp_connect(prvlwip.socket[socket_id].pcb.udp, p_ip, prvlwip.socket[socket_id].remote_port);
 			if (error)
 			{
@@ -1428,7 +1385,7 @@ void soc_lwip_init_hook(void)
     prvlwip.task_handle = NULL;
 	prvlwip.dns_udp = udp_new();
 	prvlwip.dns_udp->recv = net_lwip_dns_recv_cb;
-	udp_bind(prvlwip.dns_udp, NULL, 55);
+	// udp_bind(prvlwip.dns_udp, NULL, 55);
 	dns_init_client(&prvlwip.dns_client);
 }
 
