@@ -219,7 +219,7 @@ TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
 				NULL,
 				(void *)TaskStartStk,          /* task's stack start address */
 				TASK_START_STK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
-				9,
+				21,
 				0);
 	// tls_os_task_create(NULL, "cstack", check_stack, NULL, NULL, 2048, 10, 0);
 #else
