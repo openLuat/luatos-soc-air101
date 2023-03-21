@@ -22,6 +22,7 @@
 #define SOCKET_BUF_LEN	(3 * TCP_MSS)
 #endif
 
+static int network_state = 0;
 
 
 enum
@@ -68,7 +69,7 @@ typedef struct
 	uint64_t socket_tag;
 	dns_client_t dns_client;
 	socket_ctrl_t socket[MAX_SOCK_NUM];
-	ip_addr_t ec618_ipv6;
+	// ip_addr_t ec618_ipv6;
 	struct netif *lwip_netif;
 	CBFuncEx_t socket_cb;
 	void *user_data;
@@ -815,7 +816,7 @@ static void net_lwip_check_network_ready(uint8_t adapter_index)
 {
 	int i;
 	uint8_t ip_string[64];
-	uint8_t active_flag = (prvlwip.lwip_netif)?1:0;
+	uint8_t active_flag = network_state;
 	if (prvlwip.netif_network_ready != active_flag)
 	{
 		prvlwip.netif_network_ready = active_flag;
@@ -1371,6 +1372,7 @@ int net_lwip_check_all_ack(int socket_id)
 
 void net_lwip_set_link_state(uint8_t adapter_index, uint8_t updown)
 {
+	network_state = updown;
 	platform_send_event(prvlwip.task_handle, EV_LWIP_NETIF_LINK_STATE, updown, 0, adapter_index);
 }
 
