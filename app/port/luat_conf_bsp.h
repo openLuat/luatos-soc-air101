@@ -53,19 +53,21 @@
 // i2s
 //#define LUAt_USE_I2S 1
 
-// 外置网络支持
-// #define LUAT_USE_DHCP 1
-// #define LUAT_USE_DNS 1
-
+// wlan库相关
 // #define LUAT_USE_WLAN
 // #define LUAT_USE_LWIP
 // #define LUAT_USE_NETWORK
 // #define LUAT_USE_DNS
+// #define LUAT_USE_SNTP
+// #define LUAT_USE_HTTPSRV
+
+// 外置网络支持
+// #define LUAT_USE_W5500_XXX
+// #define LUAT_USE_DHCP
 
 // 内存不足, 无法开启TLS
 // #define LUAT_USE_TLS
 
-// #define LUAT_USE_SNTP
 
 #define LUAT_USE_IOTAUTH 1
 

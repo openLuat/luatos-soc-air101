@@ -12,6 +12,12 @@
 #include "luat_log.h"
 #include "wm_mem.h"
 
+void* __wrap_malloc(size_t len);
+void  __wrap_free(void* ptr);
+void* __wrap_calloc(size_t itemCount, size_t itemSize);
+void* __wrap_zalloc(size_t size);
+void* __wrap_realloc(void*ptr, size_t len);
+
 #ifdef LUAT_USE_WLAN
 #define LUAT_HEAP_MIN_SIZE (100*1024)
 #undef LUAT_HEAP_SIZE
@@ -93,24 +99,53 @@ void luat_heap_init(void) {
 
 //------------------------------------------------
 //  管理系统内存
-
+#ifdef LUAT_USE_PROFILER_XXX
 void* luat_heap_malloc(size_t len) {
-    return tls_mem_alloc(len);
+    void* ptr = __wrap_malloc(len);
+    printf("luat_heap_malloc %p %d\n", ptr, len);
+    return ptr;
 }
 
 void luat_heap_free(void* ptr) {
     if (ptr == NULL)
         return;
-    tls_mem_free(ptr);
+    printf("luat_heap_free %p\n", ptr);
+    __wrap_free(ptr);
 }
 
 void* luat_heap_realloc(void* ptr, size_t len) {
-    return tls_mem_realloc(ptr, len);
+    void* nptr = __wrap_realloc(ptr, len);
+    printf("luat_heap_realloc %p %d %p\n", ptr, len, nptr);
+    return nptr;
 }
 
 void* luat_heap_calloc(size_t count, size_t _size) {
-    return tls_mem_calloc(count, _size);
+    void* ptr = __wrap_calloc(count, _size);
+    printf("luat_heap_calloc %p\n", ptr);
+    return ptr;
 }
+#else
+void* luat_heap_malloc(size_t len) {
+    if (len == 212) {
+        printf("luat_heap_malloc %d\n", len);
+    }
+    return __wrap_malloc(len);
+}
+
+void luat_heap_free(void* ptr) {
+    if (ptr == NULL)
+        return;
+    __wrap_free(ptr);
+}
+
+void* luat_heap_realloc(void* ptr, size_t len) {
+    return __wrap_realloc(ptr, len);
+}
+
+void* luat_heap_calloc(size_t count, size_t _size) {
+    return __wrap_calloc(count, _size);
+}
+#endif
 
 extern unsigned int heap_size_max;
 extern unsigned int total_mem_size;
@@ -239,7 +274,7 @@ void* __wrap_malloc(size_t len) {
     #ifdef LUAT_USE_PROFILER
     void* ptr = pvPortMalloc(len);
     if (luat_profiler_memdebug) {
-        printf("malloc %d %p\n", len, ptr);
+        // printf("malloc %d %p\n", len, ptr);
         if (ptr == NULL)
             return NULL;
         for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
@@ -262,8 +297,8 @@ void __wrap_free(void* ptr) {
     if (ptr == NULL)
         return;
     #ifdef LUAT_USE_PROFILER
-    if (luat_profiler_memdebug)
-        printf("free %p\n", ptr);
+    // if (luat_profiler_memdebug)
+    //     printf("free %p\n", ptr);
     #endif
     u32 addr = (u32)ptr;
     if (addr >= 0x20000000 && addr <= 0x40000000) {
@@ -287,7 +322,7 @@ void* __wrap_realloc(void*ptr, size_t len) {
     #ifdef LUAT_USE_PROFILER
     void* newptr = pvPortRealloc(ptr, len);
     if (luat_profiler_memdebug && newptr) {
-        printf("realloc %p %d %p\n", ptr, len, newptr);
+        // printf("realloc %p %d %p\n", ptr, len, newptr);
         uint32_t addr = (uint32_t)ptr;
         uint32_t naddr = (uint32_t)newptr;
         if (ptr == newptr) {
@@ -351,7 +386,7 @@ void* __wrap_calloc(size_t itemCount, size_t itemSize) {
     void* ptr = pvPortMalloc(itemCount * itemSize);
     #ifdef LUAT_USE_PROFILER
     if (luat_profiler_memdebug) {
-        printf("calloc %p %d\n", ptr, itemCount * itemSize);
+        // printf("calloc %p %d\n", ptr, itemCount * itemSize);
         if (ptr) {
             for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
             {
@@ -374,7 +409,7 @@ void* __wrap_zalloc(size_t size) {
     void* ptr = pvPortMalloc(size);
     #ifdef LUAT_USE_PROFILER
     if (luat_profiler_memdebug) {
-        printf("zalloc %p %d\n", ptr, size);
+        // printf("zalloc %p %d\n", ptr, size);
         if (ptr) {
             for (size_t i = 0; i < LUAT_PROFILER_MEMDEBUG_ADDR_COUNT; i++)
             {

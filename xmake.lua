@@ -288,9 +288,9 @@ target("network")
     add_includedirs(luatos.."components/network/http_parser",{public = true})
     add_files(luatos.."components/network/http_parser/*.c")
     
-    -- libftp
-    -- add_includedirs(luatos.."components/network/libftp",{public = true})
-    -- add_files(luatos.."components/network/libftp/*.c")
+    -- httpsrv
+    add_includedirs(luatos.."components/network/httpsrv/inc",{public = true})
+    add_files(luatos.."components/network/httpsrv/src/*.c")
 
     
     -- http
@@ -370,6 +370,7 @@ target("air10x")
     add_deps("u8g2")
     add_deps("eink")
     add_deps("network")
+    -- add_deps("opus131")
 
     -- add files
     add_files("app/*.c")
@@ -532,6 +533,20 @@ target("air10x")
     -- add_includedirs(luatos.."components/nes/port")
     -- add_files(luatos.."components/nes/**.c")
 
+    -- profiler
+    add_files(luatos.."components/mempool/profiler/**.c")
+    add_includedirs(luatos.."components/mempool/profiler/include")
+
+    
+    -- local opus_dir = luatos .. "components/opus/"
+    -- add_includedirs(opus_dir .. "opus-1.3.1/src", 
+    --                 opus_dir .. "opus-1.3.1/include", 
+    --                 opus_dir .. "opus-1.3.1/silk", 
+    --                 opus_dir .. "opus-1.3.1/silk/fixed", 
+    --                 opus_dir .. "opus-1.3.1/celt")
+    -- add_defines("FIXED_POINT=1", "USE_ALLOCA=1", "OPUS_BUILD=1")
+    -- add_files(opus_dir .. "bind/*.c")
+
 	after_build(function(target)
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
@@ -620,3 +635,24 @@ target("air10x")
     end)
 target_end()
 
+--[[
+target("opus131")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+    set_optimize("fastest")
+    local opus_dir = luatos .. "/components/opus/"
+    add_includedirs(opus_dir .. "opus-1.3.1/src", 
+                    opus_dir .. "opus-1.3.1/include", 
+                    opus_dir .. "opus-1.3.1/silk", 
+                    opus_dir .. "opus-1.3.1/silk/fixed", 
+                    opus_dir .. "opus-1.3.1/celt")
+
+    add_defines("FIXED_POINT=1", "USE_ALLOCA=1", "OPUS_BUILD=1")
+
+    add_files(opus_dir .. "opus-1.3.1/src/*.c", opus_dir .. "opus-1.3.1/silk/*.c", opus_dir .. "opus-1.3.1/silk/fixed/*.c")
+    add_files(opus_dir .. "opus-1.3.1/celt/*.c")
+    -- add_files(opus_dir .. "opusfile-0.11/src/*.c")
+    -- add_files(opus_dir .. "libogg-1.3.5/src/*.c")
+target_end()
+]]
