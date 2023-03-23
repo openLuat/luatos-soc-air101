@@ -33,13 +33,18 @@ static int wlan_state;
 static int l_wlan_cb(lua_State*L, void* ptr) {
     u8 ssid[33]= {0};
     u8 pwd[65] = {0};
+    char sta_ip[16] = {0};
     rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
     lua_getglobal(L, "sys_pub");
     switch (msg->arg1)
     {
     case NETIF_IP_NET_UP:
+        luat_wlan_get_ip(0, sta_ip);
+        LLOGD("IP_EVENT_STA_GOT_IP %s", sta_ip);
         lua_pushstring(L, "IP_READY");
-        lua_call(L, 1, 0); // 暂时只发个IP_READY
+        lua_pushstring(L, sta_ip);
+        lua_pushinteger(L, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
+        lua_call(L, 3, 0);
         net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
         break;
     case NETIF_WIFI_DISCONNECTED:
