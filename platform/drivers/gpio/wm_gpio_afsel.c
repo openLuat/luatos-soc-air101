@@ -830,15 +830,15 @@ void wm_i2c_sda_config(enum tls_io_name io_name)
     switch(io_name)
     {
     case WM_IO_PA_04:
-        // tls_gpio_cfg(io_name, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_PULLHIGH);
+        tls_gpio_cfg(io_name, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_PULLHIGH);
         tls_io_cfg_set(io_name, WM_IO_OPTION2);
-        tls_bitband_write(HR_GPIOA_DATA_PULLEN,4, 0);
+        // tls_bitband_write(HR_GPIOA_DATA_PULLEN,4, 0);
         break;
 
     case WM_IO_PB_19:
-        // tls_gpio_cfg(io_name, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_PULLHIGH);
+        tls_gpio_cfg(io_name, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_PULLHIGH);
         tls_io_cfg_set(io_name, WM_IO_OPTION4);
-        tls_bitband_write(HR_GPIOB_DATA_PULLEN,19, 0);
+        // tls_bitband_write(HR_GPIOB_DATA_PULLEN,19, 0);
         break;
 
     default:
