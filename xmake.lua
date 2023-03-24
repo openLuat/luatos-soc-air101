@@ -64,6 +64,9 @@ set_objectdir("$(buildir)/.objs")
 
 set_policy("build.across_targets_in_parallel", false)
 
+
+add_includedirs("app/port",{public = true})
+
 add_includedirs("include",{public = true})
 add_includedirs("include/app",{public = true})
 add_includedirs("include/driver",{public = true})

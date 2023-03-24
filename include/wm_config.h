@@ -10,6 +10,7 @@
 #ifndef __WM_CONFIG_H__
 #define __WM_CONFIG_H__
 #include <csi_config.h>
+#include "luat_conf_bsp.h"
 
 #define	CFG_ON											1
 #define CFG_OFF											0
@@ -76,7 +77,11 @@ CRYPTO
 #define TLS_CONFIG_NTP 									CFG_OFF
 
 #if NIMBLE_FTR
+#ifdef LUAT_USE_NIMBLE
 #define TLS_CONFIG_BLE                                  CFG_ON
+#else
+#define TLS_CONFIG_BLE                                  CFG_OFF
+#endif
 #define TLS_CONFIG_BR_EDR								CFG_OFF
 #else
 #define TLS_CONFIG_BLE                                  CFG_OFF
