@@ -704,7 +704,7 @@ static void net_lwip_task(void *param)
 		}
 		else
 		{
-			//udp_bind(prvlwip.socket[socket_id].pcb.udp, local_ip, prvlwip.socket[socket_id].local_port);
+			udp_bind(prvlwip.socket[socket_id].pcb.udp, NULL, prvlwip.socket[socket_id].local_port);
 			error = udp_connect(prvlwip.socket[socket_id].pcb.udp, p_ip, prvlwip.socket[socket_id].remote_port);
 			if (error)
 			{
