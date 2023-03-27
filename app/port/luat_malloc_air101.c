@@ -60,9 +60,9 @@ extern luat_profiler_mem_t profiler_memregs[];
 void luat_heap_init(void) {
 	// 毕竟sram还是快很多的, 优先sram吧
 #ifndef LUAT_USE_TLSF
-	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
+	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE - 64);
 #else
-	luavm_tlsf = tlsf_create_with_pool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE);
+	luavm_tlsf = tlsf_create_with_pool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE - 64);
 #endif
 
 #ifdef LUAT_USE_PSRAM

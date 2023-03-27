@@ -4,6 +4,7 @@
 #include "wm_internal_flash.h"
 #include "wm_rtc.h"
 #include "wm_osal.h"
+#include "wm_watchdog.h"
 
 #ifdef __LUATOS__
 #include "string.h"
@@ -87,16 +88,39 @@ static void check_stack(void* ptr) {
 	}
 }
 
+static const const char* reason[] = {
+	"power or reset",
+	"by charge", // 不可能
+	"wakeup by rtc",
+	"reset by software",
+	"unkown",
+	"reset by key",
+	"reboot by exception",
+	"reboot by tool",
+	"reset by watchdoy",
+	"reset by pad",
+	"by charge" // 不可能
+};
+
+extern int luat_pm_get_poweron_reason(void);
+extern int power_bk_reg;
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 void UserMain(void){
 	char unique_id [18] = {0};
 
-	tls_uart_options_t opt;
+	tls_uart_options_t opt = {0};
 	opt.baudrate = UART_BAUDRATE_B921600;
 	opt.charlength = TLS_UART_CHSIZE_8BIT;
 	opt.flow_ctrl = TLS_UART_FLOW_CTRL_NONE;
 	opt.paritytype = TLS_UART_PMODE_DISABLED;
 	opt.stopbits = TLS_UART_ONE_STOPBITS;
 	tls_uart_port_init(0, &opt, 0);
+
+	LLOGD("poweron: %s", reason[luat_pm_get_poweron_reason()]);
+	// printf("Bit 8 -- %d\n", CHECK_BIT(power_bk_reg, 8));
+	// printf("Bit 5 -- %d\n", CHECK_BIT(power_bk_reg, 5));
+	// printf("Bit 2 -- %d\n", CHECK_BIT(power_bk_reg, 2));
+	//printf("bsp reboot_reason %d\n", tls_sys_get_reboot_reason());
 
 	struct tm tblock = {0};
 	
