@@ -97,7 +97,7 @@ static const const char* reason[] = {
 	"reset by key",
 	"reboot by exception",
 	"reboot by tool",
-	"reset by watchdoy",
+	"reset by watchdog",
 	"reset by pad",
 	"by charge" // 不可能
 };
