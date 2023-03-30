@@ -111,6 +111,10 @@ add_ldflags(" -Wl,--wrap=free ",{force = true})
 add_ldflags(" -Wl,--wrap=zalloc ",{force = true})
 add_ldflags(" -Wl,--wrap=calloc ",{force = true})
 add_ldflags(" -Wl,--wrap=realloc ",{force = true})
+add_ldflags(" -Wl,--wrap=localtime ",{force = true})
+add_ldflags(" -Wl,--wrap=gmtime ",{force = true})
+add_ldflags(" -Wl,--wrap=mktime ",{force = true})
+
 
 target("app")
     set_kind("static")
