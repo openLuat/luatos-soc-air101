@@ -125,7 +125,7 @@ void UserMain(void){
 
 	struct tm tt = {0};
 	luat_rtc_get(&tt);
-	printf("main get %d-%d-%d %d:%d:%d\n", tt.tm_year + 1900, tt.tm_mon + 1, tt.tm_mday, tt.tm_hour, tt.tm_min, tt.tm_sec);
+	// printf("main get %d-%d-%d %d:%d:%d\n", tt.tm_year + 1900, tt.tm_mon + 1, tt.tm_mday, tt.tm_hour, tt.tm_min, tt.tm_sec);
 	
 	// uint32_t rtc_ctrl1 = tls_reg_read32(HR_PMU_RTC_CTRL1);
 	// printf("rtc_ctrl1 %ld\n", rtc_ctrl1);
