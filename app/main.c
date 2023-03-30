@@ -13,6 +13,7 @@
 #include "luat_base.h"
 #include "luat_msgbus.h"
 #include "luat_pm.h"
+#include "luat_rtc.h"
 
 #include <string.h>
 #include "wm_irq.h"
@@ -122,16 +123,19 @@ void UserMain(void){
 	// printf("Bit 2 -- %d\n", CHECK_BIT(power_bk_reg, 2));
 	//printf("bsp reboot_reason %d\n", tls_sys_get_reboot_reason());
 
-	struct tm tblock = {0};
+	struct tm tt = {0};
+	luat_rtc_get(&tt);
+	printf("main get %d-%d-%d %d:%d:%d\n", tt.tm_year + 1900, tt.tm_mon + 1, tt.tm_mday, tt.tm_hour, tt.tm_min, tt.tm_sec);
 	
-	uint32_t rtc_ctrl1 = tls_reg_read32(HR_PMU_RTC_CTRL1);
+	// uint32_t rtc_ctrl1 = tls_reg_read32(HR_PMU_RTC_CTRL1);
+	// printf("rtc_ctrl1 %ld\n", rtc_ctrl1);
 	// 如果RTC计数少于1, 那肯定是第一次开机, 启动RTC并设置到1970年.
 	// uint32_t rtc_ctrl2 = tls_reg_read32(HR_PMU_RTC_CTRL2);
-	if (0x2 > rtc_ctrl1) {
-		tblock.tm_mday = 1;
-		tblock.tm_mon = 0;
-		tblock.tm_year = 70;
-		tls_set_rtc(&tblock);
+	if (tt.tm_year == 0) {
+		tt.tm_mday = 1;
+		tt.tm_mon = 0;
+		tt.tm_year = 71;
+		luat_rtc_set(&tt);
 	}
 	else {
 		// 只需要确保RTC启用
