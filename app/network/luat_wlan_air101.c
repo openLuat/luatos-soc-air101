@@ -221,13 +221,12 @@ int luat_wlan_get_ip(int type, char* data) {
 
 // 设置和获取省电模式
 int luat_wlan_set_ps(int mode) {
-    LLOGW("not support yet");
-    return -1;
+    tls_wifi_set_psm_chipsleep_flag(mode == 0 ? 0 : 1);
+    return 0;
 }
 
 int luat_wlan_get_ps(void) {
-    LLOGW("not support yet");
-    return -1;
+    return tls_wifi_get_psm_chipsleep_flag();
 }
 
 int luat_wlan_get_ap_bssid(char* buff) {
