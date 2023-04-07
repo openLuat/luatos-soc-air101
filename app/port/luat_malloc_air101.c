@@ -126,24 +126,21 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 }
 #else
 void* luat_heap_malloc(size_t len) {
-    if (len == 212) {
-        printf("luat_heap_malloc %d\n", len);
-    }
-    return __wrap_malloc(len);
+    return malloc(len);
 }
 
 void luat_heap_free(void* ptr) {
     if (ptr == NULL)
         return;
-    __wrap_free(ptr);
+    free(ptr);
 }
 
 void* luat_heap_realloc(void* ptr, size_t len) {
-    return __wrap_realloc(ptr, len);
+    return realloc(ptr, len);
 }
 
 void* luat_heap_calloc(size_t count, size_t _size) {
-    return __wrap_calloc(count, _size);
+    return calloc(count, _size);
 }
 #endif
 

@@ -17,7 +17,7 @@
 #include "list.h"
 #include <string.h>
 
-#if 0
+#if 1
 
 extern u8 tls_get_isr_count(void);
 /**
