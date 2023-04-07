@@ -19,7 +19,7 @@ void* __wrap_zalloc(size_t size);
 void* __wrap_realloc(void*ptr, size_t len);
 
 #ifdef LUAT_USE_WLAN
-#define LUAT_HEAP_MIN_SIZE (100*1024)
+#define LUAT_HEAP_MIN_SIZE (96*1024)
 #undef LUAT_HEAP_SIZE
 #define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
 #else
