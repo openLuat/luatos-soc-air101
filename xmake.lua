@@ -325,6 +325,22 @@ target("network")
     -- add_files(luatos.."components/network/errdump/*.c")
 target_end()
 
+target("nes")
+    set_kind("static")
+    set_plat("cross")
+    set_optimize("fastest",{force = true})
+    set_targetdir("$(buildir)/lib")
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+    add_includedirs(luatos.."components/lcd",{public = true})
+    add_includedirs(luatos.."components/u8g2",{public = true})
+    add_includedirs(luatos.."components/nes/inc")
+    add_includedirs(luatos.."components/nes/port")
+    add_files(luatos.."components/nes/**.c")
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -378,7 +394,8 @@ target("air10x")
     add_deps("eink")
     add_deps("network")
     -- add_deps("opus131")
-
+    add_deps("nes")
+    
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
