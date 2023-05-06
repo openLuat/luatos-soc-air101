@@ -76,32 +76,11 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 		pulse = precision;
 
 	if (precision == 100)
-		pulse = pulse * 2.55;
-	else if (precision == 256) {
-		if (pulse > 0)
-			pulse --;
-	}
+		pulse = pulse * 2.56;
 
     int ret = -1;
     switch (channel)
 	{
-// #ifdef AIR101
-// 		case 0:
-// 			wm_pwm0_config(WM_IO_PB_00);
-// 			break;
-// 		case 1:
-// 			wm_pwm1_config(WM_IO_PB_01);
-// 			break;
-// 		case 2:
-// 			wm_pwm2_config(WM_IO_PB_02);
-// 			break;
-// 		case 3:
-// 			wm_pwm3_config(WM_IO_PB_03);
-// 			break;
-// 		case 4:
-// 			wm_pwm4_config(WM_IO_PA_07);
-// 			break;
-// #else
 		case 00:
 			wm_pwm0_config(WM_IO_PB_00);
 			break;
