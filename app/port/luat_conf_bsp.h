@@ -229,4 +229,7 @@
 #define LUAT_RT_RET_TYPE	void
 #define LUAT_RT_CB_PARAM void *param
 
+// 单纯为了生成文档的宏
+#define LUAT_USE_PIN 1
+
 #endif
