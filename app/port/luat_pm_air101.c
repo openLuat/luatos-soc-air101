@@ -30,11 +30,13 @@ int luat_pm_dtimer_start(int id, size_t timeout) {
     if (id == 0 && timeout > 0) {
         // 单位秒
         tls_pmu_timer0_start((timeout + 999) / 1000);
+        tls_pmu_clk_select(1);
         return 0;
     }
     else if (id == 1 && timeout > 0) {
         // 单位毫妙
         tls_pmu_timer1_start(timeout);
+        tls_pmu_clk_select(1);
         return 0;
     }
     return -1;
