@@ -120,15 +120,15 @@
                         "dft": false
                     },
                     {
-                        "name": "sdio",
-                        "content": "挂载SD卡",
+                        "name": "@sdio",
+                        "content": "挂载SD卡, 请改用fatfs库,若编译失败请新建一个构建",
                         "rsize": 26264,
                         "fsize": 297616,
                         "dft": false
                     },
                     {
                         "name": "fatfs",
-                        "content": "通过SPI挂载SD卡",
+                        "content": "通过SPI/SDIO挂载SD卡",
                         "rsize": 90856,
                         "fsize": 481276,
                         "dft": false,
