@@ -28,7 +28,7 @@ void* __wrap_realloc(void*ptr, size_t len);
 
 #ifndef LUAT_HEAP_SIZE
 #ifdef LUAT_USE_NIMBLE
-#define LUAT_HEAP_SIZE (128+16)*1024
+#define LUAT_HEAP_SIZE (128)*1024
 #else
 #define LUAT_HEAP_SIZE (128+48)*1024
 #endif
