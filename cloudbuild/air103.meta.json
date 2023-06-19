@@ -44,21 +44,6 @@
         "component": [
             {
                 "icon": "zmdi-input-composite",
-                "name": "@Basic",
-                "content": "基础配置",
-                "rsize": 0,
-                "children": [
-                    {
-                        "name": "LUAT_CONF_VM_64bit",
-                        "content": "64bit虚拟机,默认为32bit.",
-                        "rsize": 193240,
-                        "fsize": 1024,
-                        "dft": false
-                    }
-                ]
-            },
-            {
-                "icon": "zmdi-input-composite",
                 "name": "@DEV",
                 "content": "基础外设",
                 "rsize": 0,
@@ -212,11 +197,61 @@
                 "dft": false
             },
             {
+                "icon": "zmdi-input-composite",
+                "name": "@EXTS2",
+                "content": "高级配置",
+                "rsize": 0,
+                "children": [
+                    {
+                        "name": "@exts_comments",
+                        "content": "本节均为高级配置,慎选",
+                        "rsize": 193240,
+                        "fsize": 1024,
+                        "dft": false
+                    },
+                    {
+                        "name": "LUAT_CONF_VM_64bit",
+                        "content": "64bit虚拟机,默认为32bit.",
+                        "rsize": 193240,
+                        "fsize": 1024,
+                        "dft": false
+                    },
+                    {
+                        "name": "LUAT_FS_SIZE_112K",
+                        "content": "文件系统调整到112k,默认48k,非脚本区大小",
+                        "rsize": 64000,
+                        "fsize": 1024,
+                        "dft": false
+                    },
+                    {
+                        "name": "LUAT_FS_SIZE_176K",
+                        "content": "文件系统调整到176k,默认48k,非脚本区大小",
+                        "rsize": 128000,
+                        "fsize": 1024,
+                        "dft": false
+                    },
+                    {
+                        "name": "LUAT_FS_SIZE_240K",
+                        "content": "文件系统调整到240k,默认48k,非脚本区大小",
+                        "rsize": 192000,
+                        "fsize": 1024,
+                        "dft": false
+                    }
+                ]
+            },
+            {
                 "icon": "zmdi-card-sd",
                 "name": "@LIB",
                 "content": "工具库",
                 "rsize": 0,
                 "children": [
+                    {
+                        "name": "repl",
+                        "content": "REPL(读取-解析-执行)循环",
+                        "rsize": 10908,
+                        "fsize": 284260,
+                        "dft": false
+                    },
                     {
                         "name": "cjson",
                         "content": "JSON序列化与反序列化",

@@ -229,6 +229,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_PROFILER
   {"profiler", luaopen_profiler},
 #endif
+#ifdef LUAT_USE_REPL
+  {"repl", luaopen_repl},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };

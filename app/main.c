@@ -157,7 +157,7 @@ void UserMain(void){
 	// rst_sta = tls_reg_read32(HR_CLK_RST_STA);
 	// tls_reg_write32(HR_CLK_RST_STA, 0xFF);
 
-#ifdef LUAT_USE_SHELL
+#if defined(LUAT_USE_SHELL) || defined(LUAT_USE_REPL)
 	luat_shell_poweron(0);
 #endif
 

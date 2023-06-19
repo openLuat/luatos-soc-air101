@@ -561,6 +561,10 @@ target("air10x")
     add_files(luatos.."components/mempool/profiler/**.c")
     add_includedirs(luatos.."components/mempool/profiler/include")
 
+    -- profiler
+    add_files(luatos.."components/repl/**.c")
+    add_includedirs(luatos.."components/repl/")
+
     
     -- local opus_dir = luatos .. "components/opus/"
     -- add_includedirs(opus_dir .. "opus-1.3.1/src", 
