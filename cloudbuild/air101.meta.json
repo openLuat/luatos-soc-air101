@@ -737,6 +737,90 @@
                         "rsize": 27888,
                         "children": [
                             {
+                                "name": "USE_U8G2_SARASA_M8_CHINESE",
+                                "content": "等宽字体 英文字体和特殊符号",
+                                "rsize": 191216,
+                                "fsize": 304416,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M8_CHINESE",
+                                "content": "8pix等宽中文字体,调用时使用 lcd.font_sarasa_m8_chinese",
+                                "rsize": 251984,
+                                "fsize": 604416,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M10_CHINESE",
+                                "content": "10pix等宽中文字体 lcd.font_sarasa_m10_chinese",
+                                "rsize": 331664,
+                                "fsize": 604416,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M12_CHINESE",
+                                "content": "12pix等宽中文字体,同理,u8g2.font_sarasa_m12_chinese 也可以的",
+                                "rsize": 388176,
+                                "fsize": 604416,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M14_CHINESE",
+                                "content": "14pix等宽中文字体",
+                                "rsize": 454592,
+                                "fsize": 604416,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M16_CHINESE",
+                                "content": "16pix等宽中文字体",
+                                "rsize": 547432,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M18_CHINESE",
+                                "content": "18pix等宽中文字体",
+                                "rsize": 654527,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M20_CHINESE",
+                                "content": "20pix等宽中文字体",
+                                "rsize": 759421,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M22_CHINESE",
+                                "content": "22pix等宽中文字体",
+                                "rsize": 864352,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M24_CHINESE",
+                                "content": "24pix等宽中文字体",
+                                "rsize": 975376,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M26_CHINESE",
+                                "content": "26pix等宽中文字体",
+                                "rsize": 1084724,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
+                                "name": "USE_U8G2_SARASA_M28_CHINESE",
+                                "content": "28pix等宽中文字体",
+                                "rsize": 11947457,
+                                "fsize": 749372,
+                                "dft": false
+                            },
+                            {
                                 "name": "USE_U8G2_OPPOSANSM_ENGLISH",
                                 "content": "英文字体和特殊符号",
                                 "rsize": 48176,
