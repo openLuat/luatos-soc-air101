@@ -251,32 +251,34 @@ int luat_wlan_get_ap_gateway(char* buff) {
 }
 
 // AP类
-int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo) {
-    struct tls_softap_info_t softap = {0};
-    struct tls_ip_info_t ip = {
-        .ip_addr = {192, 168, 191, 1},
+int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
+    int ret = 0;
+    struct tls_softap_info_t apinfo = {0};
+    struct tls_ip_info_t ipinfo = {
+        .ip_addr = {192, 168, 4, 1},
         .netmask = {255, 255, 255, 0}
     };
-    memcpy(softap.ssid, apinfo->ssid, strlen(apinfo->ssid));
-    if (strlen(apinfo->password)) {
-        softap.keyinfo.format = 1;
-        softap.keyinfo.key_len = strlen(apinfo->password);
-        memcpy(softap.keyinfo.key, apinfo->password, strlen(apinfo->ssid));
-        softap.encrypt = IEEE80211_ENCRYT_TKIP_WPA2;
+    memcpy(apinfo.ssid, apinfo2->ssid, strlen(apinfo2->ssid) + 1);
+    if (strlen(apinfo2->password)) {
+        apinfo.keyinfo.format = 1;
+        apinfo.keyinfo.key_len = strlen(apinfo2->password);
+        apinfo.keyinfo.index = 1;
+        memcpy(apinfo.keyinfo.key, apinfo2->password, strlen(apinfo2->password)+1);
+        apinfo.encrypt = IEEE80211_ENCRYT_CCMP_WPA;
     }
     else {
-        softap.encrypt = IEEE80211_ENCRYT_NONE;
+        apinfo.encrypt = IEEE80211_ENCRYT_NONE;
     }
-    softap.channel = 6;
+    apinfo.channel = 6;
     // ----------------------------
     // 这部分有必要不?? 拿不准
     // ----------------------------
     u8 mac[6] = {0};
     tls_get_mac_addr(mac);
-    sprintf_(ip.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
 
-    int ret = tls_wifi_softap_create(&softap, &ip);
+    ret = tls_wifi_softap_create(&apinfo, &ipinfo);
     LLOGD("tls_wifi_softap_create %d", ret);
     return ret;
 }
