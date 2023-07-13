@@ -258,6 +258,12 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
         .ip_addr = {192, 168, 4, 1},
         .netmask = {255, 255, 255, 0}
     };
+    if (apinfo2->gateway > 0) {
+        memcpy(ipinfo.ip_addr, apinfo2->gateway, 4);
+    }
+    if (apinfo2->netmask > 0) {
+        memcpy(ipinfo.netmask, apinfo2->netmask, 4);
+    }
     memcpy(apinfo.ssid, apinfo2->ssid, strlen(apinfo2->ssid) + 1);
     if (strlen(apinfo2->password)) {
         apinfo.keyinfo.format = 1;
@@ -269,7 +275,15 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     else {
         apinfo.encrypt = IEEE80211_ENCRYT_NONE;
     }
-    apinfo.channel = 6;
+    if (apinfo2->channel > 0)
+        apinfo.channel = apinfo2->channel;
+    else {
+        apinfo.channel = 6;
+    }
+    LLOGD("AP GW %d.%d.%d.%d MASK %d.%d.%d.%d", 
+                ipinfo.ip_addr[0],ipinfo.ip_addr[1],ipinfo.ip_addr[2],ipinfo.ip_addr[3],
+                ipinfo.netmask[0],ipinfo.netmask[1],ipinfo.netmask[2],ipinfo.netmask[3]
+    );
     // ----------------------------
     // 这部分有必要不?? 拿不准
     // ----------------------------
