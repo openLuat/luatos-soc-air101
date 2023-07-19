@@ -37,12 +37,14 @@ int luat_pm_dtimer_start(int id, size_t timeout) {
     tls_pmu_clk_select(1);
     if (id == 0 && timeout > 0) {
         // 单位秒
+        tls_pmu_timer0_stop();
         tls_pmu_timer0_isr_register((tls_pmu_irq_callback)pmu_timer0_irq, NULL);
         tls_pmu_timer0_start((timeout + 999) / 1000);
         return 0;
     }
     else if (id == 1 && timeout > 0) {
         // 单位毫妙
+        tls_pmu_timer1_stop();
         tls_pmu_timer1_isr_register((tls_pmu_irq_callback)pmu_timer1_irq, NULL);
         tls_pmu_timer1_start(timeout);
         return 0;
