@@ -77,6 +77,7 @@ static void netif_event_cb(u8 status) {
     {
     case NETIF_WIFI_JOIN_FAILED:
         LLOGI("join failed");
+        tls_auto_reconnect(3);
         break;
     case NETIF_WIFI_DISCONNECTED:
         wlan_state = 0;
@@ -92,6 +93,8 @@ static void netif_event_cb(u8 status) {
         LLOGI("IP READY");
         msg.arg1 = status;
         luat_msgbus_put(&msg, 0);
+        break;
+    case NETIF_WIFI_SOFTAP_SUCCESS :
         break;
     default:
         break;
