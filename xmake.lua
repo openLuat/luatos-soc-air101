@@ -280,6 +280,8 @@ target("network")
     -- network
     add_includedirs(luatos.."components/network/adapter",{public = true})
     add_files(luatos.."components/network/adapter/*.c")
+    add_includedirs(luatos.."components/network/adapter_lwip2",{public = true})
+    add_files(luatos.."components/network/adapter_lwip2/*.c")
 
     -- w5500
     add_includedirs(luatos.."components/ethernet/common",{public = true})
