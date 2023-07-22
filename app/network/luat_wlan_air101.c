@@ -123,9 +123,11 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         //net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0, NULL, 1);
         // extern void net_lwip_set_netif(struct netif *netif);
         net_lwip_set_netif(et0, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
+        net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
         net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         #endif
     }
+    tls_wifi_set_psflag(FALSE, FALSE);
 	return 0;
 }
 
