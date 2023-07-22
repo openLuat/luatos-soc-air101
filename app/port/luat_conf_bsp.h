@@ -245,4 +245,6 @@
 // 单纯为了生成文档的宏
 #define LUAT_USE_PIN 1
 
+#define LUAT_GPIO_PIN_MAX (48)
+
 #endif
