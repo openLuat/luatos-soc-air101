@@ -374,7 +374,7 @@ ethernetif_init(struct netif *netif)
     u8* mac_addr = wpa_supplicant_get_mac();
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
-    sprintf(host_name, "LOS_%02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    sprintf(host_name, "LUATOS_%02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 	netif->hostname = host_name;
 #endif /* LWIP_NETIF_HOSTNAME */
 

@@ -40,7 +40,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     {
     case NETIF_IP_NET_UP:
         luat_wlan_get_ip(0, sta_ip);
-        LLOGD("IP_EVENT_STA_GOT_IP %s", sta_ip);
+        LLOGD("sta ip %s", sta_ip);
         lua_pushstring(L, "IP_READY");
         lua_pushstring(L, sta_ip);
         lua_pushinteger(L, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
@@ -72,6 +72,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
 
 static void netif_event_cb(u8 status) {
     rtos_msg_t msg = {0};
+    LLOGD("netif_event %d", status);
     msg.handler = l_wlan_cb;
 	switch (status)
     {
