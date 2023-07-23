@@ -30,6 +30,8 @@ void net_lwip_set_link_state(uint8_t adapter_index, uint8_t updown);
 static int wlan_init;
 static int wlan_state;
 
+char luat_sta_hostname[32];
+
 static int l_wlan_cb(lua_State*L, void* ptr) {
     u8 ssid[33]= {0};
     u8 pwd[65] = {0};
@@ -111,6 +113,7 @@ static void scan_event_cb(void) {
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
     if (wlan_init == 0) {
+        luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
         tls_netif_add_status_event(netif_event_cb);
         tls_wifi_scan_result_cb_register(scan_event_cb);
@@ -292,12 +295,28 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     // ----------------------------
     // 这部分有必要不?? 拿不准
     // ----------------------------
-    u8 mac[6] = {0};
-    tls_get_mac_addr(mac);
-    sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    // u8 mac[6] = {0};
+    // tls_get_mac_addr(mac);
+    // sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
 
     ret = tls_wifi_softap_create(&apinfo, &ipinfo);
     LLOGD("tls_wifi_softap_create %d", ret);
     return ret;
+}
+
+const char* luat_wlan_get_hostname(int id) {
+    if (luat_sta_hostname[0] == 0) {
+        u8* mac_addr = wpa_supplicant_get_mac();
+        sprintf_(luat_sta_hostname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    }
+    return (const char*)luat_sta_hostname;
+}
+
+int luat_wlan_set_hostname(int id, char* hostname) {
+    if (hostname == NULL || hostname[0] == 0) {
+        return 0;
+    }
+    memcpy(luat_sta_hostname, hostname, strlen(hostname) + 1);
+    return 0;
 }

@@ -354,7 +354,7 @@ static err_t ethernetif_igmp_mac_filter(struct netif *netif,
 }
 #endif
 
-static char host_name[64] = {0};
+extern char luat_sta_hostname[];
 /**
  * Should be called at the beginning of the program to set up the
  * network interface. It calls the function low_level_init() to do the
@@ -371,11 +371,10 @@ err_t
 ethernetif_init(struct netif *netif)
 {
   LWIP_ASSERT("netif != NULL", (netif != NULL));
-    u8* mac_addr = wpa_supplicant_get_mac();
+    
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
-    sprintf(host_name, "LUATOS_%02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-	netif->hostname = host_name;
+	netif->hostname = luat_sta_hostname;
 #endif /* LWIP_NETIF_HOSTNAME */
 
   /*
