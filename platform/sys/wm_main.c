@@ -309,6 +309,7 @@ void tls_pmu_chipsleep_callback(int sleeptime)
  * Output
  * Return
  ****************************************************************************/
+extern const u8 default_mac[];
 void task_start (void *data)
 {
 	u8 enable = 0;
@@ -341,15 +342,30 @@ void task_start (void *data)
     tls_param_load_factory_default();
     tls_param_init(); /*add param to init sysparam_lock sem*/
 
+	// 读wifi的mac, 如果是默认值,就根据unique_id读取
+    char unique_id [18] = {0};
+    tls_fls_read_unique_id(unique_id);
+	// 缺省mac C0:25:08:09:01:10
+	tls_get_mac_addr(mac_addr);
+	if (!memcmp(mac_addr, default_mac, 6)) { // 看来是默认MAC, 那就改一下吧
+		if (unique_id[1] == 0x10){
+			memcpy(mac_addr, unique_id + 12, 6);
+		}
+		else {
+			memcpy(mac_addr, unique_id + 4, 6);
+		}
+		tls_set_mac_addr(mac_addr);
+	}
+
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
     TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 4)) /*wifi tx&rx mem customized interface*/
+    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 7)) /*wifi tx&rx mem customized interface*/
     {
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }
 
-    tls_get_mac_addr(&mac_addr[0]);
+    // tls_get_mac_addr(&mac_addr[0]);
     TLS_DBGPRT_INFO("mac addr ");
     TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
     if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
@@ -371,10 +387,10 @@ void task_start (void *data)
     tls_sys_init();
 
 	tls_param_get(TLS_PARAM_ID_PSM, &enable, TRUE);	
-	if (enable != TRUE)
+	if (enable != FALSE)
 	{
-	    enable = TRUE;
-	    tls_param_set(TLS_PARAM_ID_PSM, &enable, TRUE);	  
+	    enable = FALSE;
+	    tls_param_set(TLS_PARAM_ID_PSM, &enable, TRUE);
 	}
 #endif
     UserMain();

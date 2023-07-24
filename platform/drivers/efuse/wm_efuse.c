@@ -66,7 +66,7 @@ typedef struct FT_PARAM_VER1
 	unsigned char       _reversed[FT_PARAM_EXT_REVERSED_LEN];
 }FT_PARAM_ST_VER1;
 
-static u8 default_mac[6] = {0x00,0x25,0x08,0x09,0x01,0x0F};
+const u8 default_mac[6] = {0x00,0x25,0x08,0x09,0x01,0x0F};
 
 FT_PARAM_ST_VER1  gftParamVer1;
 
