@@ -41,18 +41,22 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     switch (msg->arg1)
     {
     case NETIF_IP_NET_UP:
+        #ifdef LUAT_USE_NETWORK
+        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
+        #endif
         luat_wlan_get_ip(0, sta_ip);
         LLOGD("sta ip %s", sta_ip);
         lua_pushstring(L, "IP_READY");
         lua_pushstring(L, sta_ip);
         lua_pushinteger(L, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         lua_call(L, 3, 0);
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
         break;
     case NETIF_WIFI_DISCONNECTED:
+        #ifdef LUAT_USE_NETWORK
+        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
+        #endif
         lua_pushstring(L, "IP_LOSE");
         lua_call(L, 1, 0); // 暂时只发个IP_LOSE
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
         break;
     case SCAN_DONE :
         lua_pushstring(L, "WLAN_SCAN_DONE");
