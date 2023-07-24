@@ -967,6 +967,7 @@ __STATIC_INLINE uint32_t csi_vic_get_vector(int32_t IRQn)
  */
 __STATIC_INLINE uint32_t csi_coret_config(uint32_t ticks, int32_t IRQn)
 {
+    (void)IRQn;
     if ((ticks - 1UL) > CORET_LOAD_RELOAD_Msk) {
         return (1UL);                                                   /* Reload value impossible */
     }
