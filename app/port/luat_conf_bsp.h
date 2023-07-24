@@ -120,6 +120,8 @@
 // #define LUAT_USE_GTFONT 1
 // #define LUAT_USE_GTFONT_UTF8
 
+// #define LUAT_USE_YMODEM
+
 //----------------------------
 // 高级功能, 推荐使用REPL, 因为SHELL已废弃
 // #define LUAT_USE_SHELL 1
