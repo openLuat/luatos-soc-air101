@@ -71,18 +71,7 @@ static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] =
 
 #endif
 
-// uint32_t rst_sta = 0;
-
-#ifdef __LUATOS__
-extern unsigned int  TLS_FLASH_PARAM_DEFAULT        ;
-extern unsigned int  TLS_FLASH_PARAM1_ADDR          ;
-extern unsigned int  TLS_FLASH_PARAM2_ADDR          ;
-extern unsigned int  TLS_FLASH_PARAM_RESTORE_ADDR   ;
-extern unsigned int  TLS_FLASH_OTA_FLAG_ADDR        ;
-extern unsigned int  TLS_FLASH_END_ADDR             ;
-#endif
-
-static void check_stack(void* ptr) {
+void check_stack(void* ptr) {
 	while (1) {
 		vTaskDelay(1000);
 		tls_os_disp_task_stat_info();
@@ -107,7 +96,7 @@ extern int luat_pm_get_poweron_reason(void);
 extern int power_bk_reg;
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 void UserMain(void){
-	char unique_id [18] = {0};
+	char unique_id [20] = {0};
 
 	tls_uart_options_t opt = {0};
 	opt.baudrate = UART_BAUDRATE_B921600;
@@ -166,7 +155,7 @@ void UserMain(void){
 	luat_mcu_tick64_init();
 	
 	tls_fls_read_unique_id(unique_id);
-	if (unique_id[1] == 0x10){
+	if (unique_id[1] == 0x10) {
 		printf("I/main auth ok %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X %s\n",
 			unique_id[0], unique_id[1], unique_id[2], unique_id[3], unique_id[4],
 			unique_id[5], unique_id[6], unique_id[7], unique_id[8], unique_id[9],
@@ -181,39 +170,7 @@ void UserMain(void){
 	}
 #endif
 
-#ifdef AIR103
-TLS_FLASH_PARAM_DEFAULT        =		  (0x80FB000UL);
-TLS_FLASH_PARAM1_ADDR          =		  (0x80FC000UL);
-TLS_FLASH_PARAM2_ADDR          =		  (0x80FD000UL);
-TLS_FLASH_PARAM_RESTORE_ADDR   =	      (0x80FE000UL);
-TLS_FLASH_OTA_FLAG_ADDR        =	      (0x80FF000UL);
-TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
-#endif
 
-#ifdef LUAT_USE_NIMBLE
-	// TODO 注意, 除了启用LUAT_USE_NIMBTE外
-	// 1. 修改FreeRTOSConfig.h的configTICK_RATE_HZ为500, 并重新make lib
-	// 2. 若修改libblehost.a相关代码,需要手工复制bin目录下的文件,拷贝到lib目录. 
-    tls_ft_param_init();
-    tls_param_load_factory_default();
-    tls_param_init(); /*add param to init sysparam_lock sem*/
-
-	// 读蓝牙mac, 如果是默认值,就根据unique_id读取
-	uint8_t bt_mac[6];
-	// 缺省mac C0:25:08:09:01:10
-	uint8_t bt_default_mac[] = {0xC0,0x25,0x08,0x09,0x01,0x10};
-	tls_get_bt_mac_addr(bt_mac);
-	if (!memcmp(bt_mac, bt_default_mac, 6)) { // 看来是默认MAC, 那就改一下吧
-		if (unique_id[1] == 0x10){
-			memcpy(bt_mac, unique_id + 10, 6);
-		}
-		else {
-			memcpy(bt_mac, unique_id + 2, 6);
-		}
-		tls_set_bt_mac_addr(bt_mac);
-	}
-	LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
-#endif
 
 // 如要使用psram,启用以下代码,并重新编译sdk
 #ifdef LUAT_USE_PSRAM
