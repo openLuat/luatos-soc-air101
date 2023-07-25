@@ -182,7 +182,7 @@ int LFS_Init(void)
     // this should only happen on the first boot
     if (err)
     {
-        luat_timer_mdelay(1000);
+        luat_timer_mdelay(100);
         LLOGI("lfs mount fail ret=%d , exec format", err);
         err = lfs_format(&lfs, &lfs_cfg);
         //printf("lfs_format %d\r\n",err);
