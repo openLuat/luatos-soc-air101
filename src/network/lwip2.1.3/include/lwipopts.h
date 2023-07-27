@@ -14,8 +14,8 @@
  * instead of the lwip internal allocator. Can save code size if you
  * already use it.
  */
-#define MEM_LIBC_MALLOC                 1
-#define MEMP_MEM_MALLOC                 1
+#define MEM_LIBC_MALLOC                 0
+#define MEMP_MEM_MALLOC                 0
 #define MEM_USE_POOLS                   0
 #define MEMP_USE_CUSTOM_POOLS           0
 #define MEMP_OVERFLOW_CHECK             2
@@ -29,7 +29,8 @@
 #define LWIP_UDP                        (TLS_CONFIG_SOCKET_RAW || TLS_CONFIG_SOCKET_STD)
 #define LWIP_ARP                        (TLS_CONFIG_SOCKET_RAW || TLS_CONFIG_SOCKET_STD)
 
-#define MEM_SIZE                        30000
+#define MEM_SIZE                        (8 * 1024)
+#define MEMP_NUM_SYS_TIMEOUT            (16)
 
 /**
  * TCP_WND: The size of a TCP window.  This must be at least 
