@@ -129,21 +129,21 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 }
 #else
 void* luat_heap_malloc(size_t len) {
-    return malloc(len);
+    return tls_mem_alloc(len);
 }
 
 void luat_heap_free(void* ptr) {
     if (ptr == NULL)
         return;
-    free(ptr);
+    tls_mem_free(ptr);
 }
 
 void* luat_heap_realloc(void* ptr, size_t len) {
-    return realloc(ptr, len);
+    return tls_mem_realloc(ptr, len);
 }
 
 void* luat_heap_calloc(size_t count, size_t _size) {
-    return calloc(count, _size);
+    return tls_mem_calloc(count, _size);
 }
 #endif
 
