@@ -310,6 +310,13 @@
                         "dft": false
                     },
                     {
+                        "name": "fastlz",
+                        "content": "另一种LZ压缩和解压库,压缩的内存需求比miniz小",
+                        "rsize": 12768,
+                        "fsize": 317120,
+                        "dft": false
+                    },
+                    {
                         "name": "sfud",
                         "content": "通用spi flash驱动库",
                         "rsize": 13196,

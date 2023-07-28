@@ -237,6 +237,22 @@ target("miniz")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+
+
+target("fastlz")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_files(luatos.."components/fastlz/*.c")
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+    add_includedirs(luatos.."components/fastlz")
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("eink")
     set_kind("static")
     set_plat("cross")
@@ -364,6 +380,7 @@ target("air10x")
         local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
         if LVGL_CONF then target:add("deps", "lvgl") end
         target:add("deps", "miniz")
+        target:add("deps", "fastlz")
         VM_64BIT = conf_data:find("\r#define LUAT_CONF_VM_64bit") or conf_data:find("\n#define LUAT_CONF_VM_64bit")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("\r#define AIR101") or custom_data:find("\n#define AIR101")

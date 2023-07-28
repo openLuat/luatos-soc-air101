@@ -97,6 +97,8 @@
 // #define LUAT_USE_MAX30102 1
 // zlib压缩,更快更小的实现
 #define LUAT_USE_MINIZ 1
+// FASTLZ的内存需求小,压缩比不如miniz
+// #define LUAT_USE_FASTLZ 1
 
 // RSA 加解密,加签验签
 #define LUAT_USE_RSA 1

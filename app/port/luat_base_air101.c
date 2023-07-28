@@ -235,6 +235,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_ICONV
   {"iconv", luaopen_iconv},
 #endif
+#ifdef LUAT_USE_FASTLZ
+  {"fastlz", luaopen_fastlz},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };
