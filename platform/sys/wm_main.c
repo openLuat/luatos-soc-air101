@@ -381,7 +381,7 @@ void task_start (void *data)
 		}
 		tls_set_bt_mac_addr(bt_mac);
 	}
-	LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
+	//LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
 #endif
 
     /*PARAM GAIN,MAC default*/
