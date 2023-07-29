@@ -102,6 +102,16 @@ static void netif_event_cb(u8 status) {
         luat_msgbus_put(&msg, 0);
         break;
     case NETIF_WIFI_SOFTAP_SUCCESS :
+        LLOGI("softap create success");
+        break;
+    case NETIF_WIFI_SOFTAP_FAILED:
+        LLOGI("softap create failed");
+        break;
+    case NETIF_WIFI_SOFTAP_CLOSED:
+        LLOGI("softap create closed");
+        break;
+    case NETIF_IP_NET2_UP :
+        LLOGI("softap netif up");
         break;
     default:
         break;
@@ -282,7 +292,7 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
         apinfo.keyinfo.key_len = strlen(apinfo2->password);
         apinfo.keyinfo.index = 1;
         memcpy(apinfo.keyinfo.key, apinfo2->password, strlen(apinfo2->password)+1);
-        apinfo.encrypt = IEEE80211_ENCRYT_CCMP_WPA;
+        apinfo.encrypt = IEEE80211_ENCRYT_TKIP_WPA2;
     }
     else {
         apinfo.encrypt = IEEE80211_ENCRYT_NONE;
@@ -297,12 +307,19 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
                 ipinfo.netmask[0],ipinfo.netmask[1],ipinfo.netmask[2],ipinfo.netmask[3]
     );
     // ----------------------------
-    // 这部分有必要不?? 拿不准
-    // ----------------------------
-    // u8 mac[6] = {0};
-    // tls_get_mac_addr(mac);
-    // sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    u8 mac[6] = {0};
+    tls_get_mac_addr(mac);
+    sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
+
+    u8 wireless_protocol = 0;
+    tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
+    // LLOGD("wireless_protocol %d", wireless_protocol);
+    if (TLS_PARAM_IEEE80211_SOFTAP != wireless_protocol)
+    {
+        wireless_protocol = TLS_PARAM_IEEE80211_SOFTAP;
+        tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
+    }
 
     ret = tls_wifi_softap_create(&apinfo, &ipinfo);
     LLOGD("tls_wifi_softap_create %d", ret);
