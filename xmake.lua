@@ -388,7 +388,7 @@ target("air10x")
         local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
         
         local WLAN_CONF = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN")
-        if WLAN_CONF then AIR10X_VERSION = "AIR601" TARGET_NAME = "AIR601" end
+        if WLAN_CONF then TARGET_NAME = "AIR601" end
         local fs_size = AIR10X_FLASH_FS_REGION_SIZE or 112
         if FDB_CONF or fs_size > 112 then
             local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
