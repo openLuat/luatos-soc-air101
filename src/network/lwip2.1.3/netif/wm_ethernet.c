@@ -212,12 +212,14 @@ struct netif *wm_ip4_route_src(const ip4_addr_t *dest, const ip4_addr_t *src)
 *       NULL : Init IP Statck Fail Because no memory
 * Date : 2014-6-4 
 ****************************************************************************/ 
+#if TLS_CONFIG_AP
+struct netif *nif4apsta = NULL;
+#endif
 struct netif *Tcpip_stack_init()
 {
 //	err_t err;
-#if TLS_CONFIG_AP
-    struct netif *nif4apsta = NULL;
-#endif
+    
+
 	
     /* Setup lwIP. */
     tcpip_init(NULL, NULL);

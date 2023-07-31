@@ -103,12 +103,21 @@ static void netif_event_cb(u8 status) {
         break;
     case NETIF_WIFI_SOFTAP_SUCCESS :
         LLOGI("softap create success");
+        #ifdef LUAT_USE_NETWORK
+        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 1);
+        #endif
         break;
     case NETIF_WIFI_SOFTAP_FAILED:
         LLOGI("softap create failed");
+        #ifdef LUAT_USE_NETWORK
+        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
+        #endif
         break;
     case NETIF_WIFI_SOFTAP_CLOSED:
         LLOGI("softap create closed");
+        #ifdef LUAT_USE_NETWORK
+        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
+        #endif
         break;
     case NETIF_IP_NET2_UP :
         LLOGI("softap netif up");
@@ -127,21 +136,22 @@ static void scan_event_cb(void) {
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
     if (wlan_init == 0) {
+        tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
         tls_netif_add_status_event(netif_event_cb);
         tls_wifi_scan_result_cb_register(scan_event_cb);
         #ifdef LUAT_USE_NETWORK
-        // LLOGD("CALL net_lwip_init");
-        // net_lwip_init();
-        // extern void soc_lwip_init_hook(void);
-        // LLOGD("CALL net_lwip_register_adapter");
+
         struct netif *et0 = tls_get_netif();
-        //extern void net_lwip_set_netif(uint8_t adapter_index, struct netif *netif, void *init, uint8_t is_default);
-        //net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0, NULL, 1);
-        // extern void net_lwip_set_netif(struct netif *netif);
         net_lwip_set_netif(et0, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
-        net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+        #if TLS_CONFIG_AP
+        extern struct netif *nif4apsta;
+        if (nif4apsta) {
+            net_lwip_set_netif(nif4apsta, NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+            net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+        }
+        #endif
         net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         #endif
     }
