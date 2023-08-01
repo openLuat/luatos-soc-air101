@@ -1,7 +1,7 @@
 {
     "version" : 1,
     "chip" : {
-        "type" : "air601",
+        "type" : "air103",
         "ram"  :  {
             "total" : 288,
             "sys" : 64,
