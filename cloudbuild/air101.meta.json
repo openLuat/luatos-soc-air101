@@ -102,7 +102,16 @@
                         "content": "加解密算法",
                         "rsize": 19632,
                         "fsize": 290984,
-                        "dft": false
+                        "dft": false,
+                        "children": [
+                            {
+                                "name" : "LUAT_USE_CRYPTO_AES_MBEDTLS",
+                                "content": "禁用AES硬件加速,启用AES256支持",
+                                "rsize": 19632,
+                                "fsize": 290984,
+                                "dft": false
+                            }
+                        ]
                     },
                     {
                         "name": "@sdio",

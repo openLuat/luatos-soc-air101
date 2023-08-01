@@ -110,6 +110,10 @@
 // // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
 // #define LUAT_USE_TLSF 1
 
+// 禁用AES的硬件加速版本, 改用mbedtls的软件版本
+// 硬件加速的版本只支持AES128,若使用AES256就报错了
+#define LUAT_USE_CRYPTO_AES_MBEDTLS  1
+
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈

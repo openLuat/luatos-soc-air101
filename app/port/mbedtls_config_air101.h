@@ -2839,6 +2839,10 @@
 #undef MBEDTLS_ECDH_C
 #endif
 
+#ifdef LUAT_USE_CRYPTO_AES_MBEDTLS
+#undef MBEDTLS_AES_ALT
+#endif
+
 #include "mbedtls/check_config.h"
 
 #endif /* MBEDTLS_CONFIG_H */
