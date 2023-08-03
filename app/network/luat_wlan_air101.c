@@ -136,7 +136,7 @@ static void scan_event_cb(void) {
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
     if (wlan_init == 0) {
-        tls_wifi_enable_log(1);
+        //tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
         tls_netif_add_status_event(netif_event_cb);
