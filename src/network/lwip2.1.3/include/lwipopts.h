@@ -31,7 +31,7 @@
 
 #define MEM_SIZE                        (8 * 1024)
 #define MEMP_NUM_SYS_TIMEOUT            (16)
-#define MEMP_NUM_UDP_PCB 8
+#define MEMP_NUM_UDP_PCB                6
 
 /**
  * TCP_WND: The size of a TCP window.  This must be at least 
