@@ -136,6 +136,14 @@ static void scan_event_cb(void) {
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
     if (wlan_init == 0) {
+        u8 wireless_protocol = 0;
+        tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
+        // LLOGD("wireless_protocol %d", wireless_protocol);
+        if (TLS_PARAM_IEEE80211_INFRA != wireless_protocol)
+        {
+            wireless_protocol = TLS_PARAM_IEEE80211_INFRA;
+            tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
+        }
         //tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
