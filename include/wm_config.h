@@ -36,7 +36,7 @@
 #define TLS_CONFIG_DHCP_OPTION60						"Air:xt804"
 
 /** SOCKET CONFIG **/
-#define TLS_CONFIG_SOCKET_STD							CFG_ON
+#define TLS_CONFIG_SOCKET_STD							CFG_OFF
 #define TLS_CONFIG_SOCKET_RAW							CFG_ON
 #define TLS_CONFIG_CMD_USE_RAW_SOCKET                   (CFG_ON && TLS_CONFIG_SOCKET_RAW)
 #define TLS_CONFIG_CMD_NET_USE_LIST_FTR                     CFG_ON
