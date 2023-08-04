@@ -187,7 +187,7 @@
 // #define LUAT_USE_VMX 1
 // #define LUAT_USE_NES
 // #define LUAT_USE_PROTOBUF 1
-// #define LUAT_USE_REPL 1
+#define LUAT_USE_REPL 1
 
 //---------------------
 // UI
