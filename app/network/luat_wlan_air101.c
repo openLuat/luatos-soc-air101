@@ -127,12 +127,6 @@ static void netif_event_cb(u8 status) {
     }
 }
 
-static void scan_event_cb(void) {
-    rtos_msg_t msg = {0};
-    msg.handler = l_wlan_cb;
-    msg.arg1 = SCAN_DONE;
-    luat_msgbus_put(&msg, 0);
-}
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
     if (wlan_init == 0) {
@@ -148,7 +142,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
         tls_netif_add_status_event(netif_event_cb);
-        tls_wifi_scan_result_cb_register(scan_event_cb);
+        tls_wifi_scan_result_cb_register(NULL);
         #ifdef LUAT_USE_NETWORK
 
         struct netif *et0 = tls_get_netif();
@@ -192,9 +186,19 @@ int luat_wlan_disconnect(void) {
     return 0;
 }
 
+
+static void scan_event_cb(void *ptmr, void *parg) {
+    rtos_msg_t msg = {0};
+    msg.handler = l_wlan_cb;
+    msg.arg1 = SCAN_DONE;
+    luat_msgbus_put(&msg, 0);
+}
 int luat_wlan_scan(void) {
     int ret = tls_wifi_scan();
     LLOGD("tls_wifi_scan %d", ret);
+    static tls_os_timer_t *scan_timer = NULL;
+	tls_os_timer_create(&scan_timer, scan_event_cb, NULL, 3000, 0, NULL);
+	tls_os_timer_start(scan_timer);
     return ret;
 }
 
@@ -217,7 +221,7 @@ int luat_wlan_scan_get_result(luat_wlan_scan_result_t *results, int ap_limit) {
         memcpy(results[i].bssid, bss_info[i].bssid, ETH_ALEN);
         results[i].rssi = bss_info[i].rssi;
         results[i].ch = bss_info[i].channel;
-        break;
+        // break;
     }
     luat_heap_free(buff);
     return ap_limit;
