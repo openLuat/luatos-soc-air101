@@ -401,7 +401,7 @@ void task_start (void *data)
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
     TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 7, 7)) /*wifi tx&rx mem customized interface*/
+    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 6, 4)) /*wifi tx&rx mem customized interface*/
     {
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }

@@ -21,8 +21,9 @@ void* __wrap_realloc(void*ptr, size_t len);
 #ifdef LUAT_USE_WLAN
 // 与tls_wifi_mem_cfg正相关, 假设tx是7, rx是3
 // (7+3)*2*1638+4096 = 36k , 然后lua可用 128 - 36 = 92
+// (6+4)*2*1638+4096 = 36k , 然后lua可用 128 - 36 = 92
 // (7+7)*2*1638+4096 = 49k , 然后lua可用 128 - 49 = 79
-#define LUAT_HEAP_MIN_SIZE (78*1024)
+#define LUAT_HEAP_MIN_SIZE (92*1024)
 #undef LUAT_HEAP_SIZE
 #define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
 #else
