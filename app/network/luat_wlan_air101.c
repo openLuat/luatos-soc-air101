@@ -314,7 +314,7 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
         apinfo.keyinfo.key_len = strlen(apinfo2->password);
         apinfo.keyinfo.index = 1;
         memcpy(apinfo.keyinfo.key, apinfo2->password, strlen(apinfo2->password)+1);
-        apinfo.encrypt = IEEE80211_ENCRYT_TKIP_WPA2;
+        apinfo.encrypt = IEEE80211_ENCRYT_CCMP_WPA2;
     }
     else {
         apinfo.encrypt = IEEE80211_ENCRYT_NONE;
