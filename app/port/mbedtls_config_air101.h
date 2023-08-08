@@ -1406,7 +1406,7 @@
  *
  * Comment this macro to disable support for server name indication in SSL
  */
-//#define MBEDTLS_SSL_SERVER_NAME_INDICATION
+#define MBEDTLS_SSL_SERVER_NAME_INDICATION
 
 /**
  * \def MBEDTLS_SSL_TRUNCATED_HMAC
@@ -2837,6 +2837,7 @@
 #undef MBEDTLS_GCM_C
 #undef MBEDTLS_ECP_C
 #undef MBEDTLS_ECDH_C
+#undef MBEDTLS_AES_ALT
 #endif
 
 #ifdef LUAT_USE_CRYPTO_AES_MBEDTLS
