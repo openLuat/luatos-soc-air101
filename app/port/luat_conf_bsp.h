@@ -65,7 +65,7 @@
 // #define LUAT_USE_W5500_XXX
 // #define LUAT_USE_DHCP
 
-// 内存不足, 无法开启TLS
+// 开启TLS
 // #define LUAT_USE_TLS
 
 

@@ -64,6 +64,28 @@
                         "dft": false
                     }
                 ]
+            },            {
+                
+                "icon": "zmdi-input-composite",
+                "name": "@NETWORKS",
+                "content": "网络相关",
+                "rsize": 0,
+                "children": [
+                    {
+                        "name": "httpsrv",
+                        "content": "http server库, 支持监听一个端口提供http服务",
+                        "rsize": 3000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "tls",
+                        "content": "启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
+                        "rsize": 50000,
+                        "fsize": 275108,
+                        "dft": false
+                    }
+                ]
             },
             {
                 "icon": "zmdi-input-composite",
