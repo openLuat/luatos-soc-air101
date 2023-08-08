@@ -684,6 +684,8 @@ void * mem_realloc_debug(void *mem_address, u32 size)
 			*mem_re_addr = length;
 			mem_re_addr ++;
 			total_mem_size -= length;
+            if (total_mem_size < min_free_size)
+                min_free_size = total_mem_size;
 		}
         tls_os_release_critical(cpu_sr);	
 		tls_os_sem_release(mem_sem);
@@ -740,6 +742,8 @@ void *mem_calloc_debug(u32 n, u32 size)
 			*buffer = length;
 			buffer ++;
 			total_mem_size -= length;
+            if (total_mem_size < min_free_size)
+                min_free_size = total_mem_size;
 		}
 
         tls_os_release_critical(cpu_sr);	

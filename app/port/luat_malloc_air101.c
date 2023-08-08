@@ -150,6 +150,7 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 
 extern unsigned int heap_size_max;
 extern unsigned int total_mem_size;
+extern unsigned int min_free_size;
 extern size_t __heap_start;
 extern size_t __heap_end;
 void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
@@ -163,7 +164,7 @@ void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
     *used = (*total) - (stat.xAvailableHeapSpaceInBytes);
 #else
     *used = heap_size_max - total_mem_size;
-    *max_used = *used;
+    *max_used = heap_size_max - min_free_size;
     *total = heap_size_max;
 #endif
 }
