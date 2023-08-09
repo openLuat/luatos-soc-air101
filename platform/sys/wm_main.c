@@ -275,6 +275,7 @@ unsigned int tls_get_wifi_ver(void)
 }
 unsigned int heap_size_max;
 unsigned int total_mem_size;
+unsigned int min_free_size;
 void tls_mem_get_init_available_size(void)
 {
 	u8 *p = NULL;
@@ -291,6 +292,7 @@ void tls_mem_get_init_available_size(void)
 		}
 		total_mem_size = total_mem_size - 512;
 	}
+    min_free_size = total_mem_size;
 }
 
 void tls_pmu_chipsleep_callback(int sleeptime)
