@@ -508,6 +508,7 @@ u32 alloc_heap_mem_max_size = 0;
 
 #define USING_ADD_HEADER   1
 extern u32 total_mem_size;
+extern u32 min_free_size;
 void * mem_alloc_debug(u32 size)
 {
     u32 cpu_sr = 0;
