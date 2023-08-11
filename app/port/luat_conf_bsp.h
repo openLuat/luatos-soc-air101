@@ -114,6 +114,8 @@
 // 硬件加速的版本只支持AES128,若使用AES256就报错了
 #define LUAT_USE_CRYPTO_AES_MBEDTLS  1
 
+#define LUAT_USE_MEDIA  1
+
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈

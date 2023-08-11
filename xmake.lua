@@ -275,6 +275,35 @@ target("eink")
     set_targetdir("$(buildir)/lib")
 target_end()
 
+target("audio")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+    add_includedirs(luatos.."components/common",{public = true})
+    
+    add_includedirs(luatos.."components/multimedia/")
+    add_includedirs(luatos.."components/multimedia/mp3_decode")
+    add_includedirs(luatos.."components/multimedia/amr_decode/amr_common/dec/include")
+    add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/common/include")
+    add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/dec/include")
+    add_includedirs(luatos.."components/multimedia/amr_decode/amr_wb/dec/include")
+    add_includedirs(luatos.."components/multimedia/amr_decode/opencore-amrnb")
+    add_includedirs(luatos.."components/multimedia/amr_decode/opencore-amrwb")
+    add_includedirs(luatos.."components/multimedia/amr_decode/oscl")
+    add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/enc/src")
+    add_files(luatos.."components/multimedia/**.c")
+
+    add_includedirs("app/audio_driver",{public = true})
+    add_files("app/audio_driver/*.c")
+
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("network")
     set_kind("static")
     set_plat("cross")
@@ -409,7 +438,7 @@ target("air10x")
         end
 
         target:set("filename", TARGET_NAME..".elf")
-        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/air101_103.ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
+        target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a ./lib/libaispeech_cntts.a ./lib/libghost.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/air101_103.ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)
 
     add_deps("app")
@@ -420,7 +449,7 @@ target("air10x")
     add_deps("network")
     -- add_deps("opus131")
     add_deps("nes")
-    
+    add_deps("audio")
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
@@ -589,7 +618,6 @@ target("air10x")
     -- profiler
     add_files(luatos.."components/repl/**.c")
     add_includedirs(luatos.."components/repl/")
-
     
     -- local opus_dir = luatos .. "components/opus/"
     -- add_includedirs(opus_dir .. "opus-1.3.1/src", 

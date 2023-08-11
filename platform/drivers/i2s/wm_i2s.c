@@ -57,7 +57,7 @@ static void wm_i2s_rx_dma_enable(bool bl)
 	tls_bitband_write(HR_I2S_CTRL, 21, bl);
 }
 
-static void wm_i2s_tx_dma_enable(bool bl)
+void wm_i2s_tx_dma_enable(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 20, bl);
 }
@@ -148,7 +148,7 @@ void wm_i2s_tx_enable(bool bl)
 	tls_bitband_write(HR_I2S_CTRL, 1, bl);
 }
 
-static void wm_i2s_enable(bool bl)
+void wm_i2s_enable(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 0, bl);
 }

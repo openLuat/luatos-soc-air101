@@ -151,6 +151,11 @@ typedef struct wm_i2s_buf_s {
  * @{
  */
 
+void wm_i2s_enable(bool bl);
+void wm_i2s_tx_dma_enable(bool bl);
+void wm_i2s_tx_enable(bool bl);
+void wm_i2s_rx_enable(bool bl);
+
 /**
   * @brief Register a callback function
   * @param  callback pointer to a callback function in which you can prepare the next buffer
