@@ -46,7 +46,6 @@ int luat_audio_start_raw(uint8_t multimedia_id, uint8_t audio_format, uint8_t nu
     };
     luat_i2s_setup(&conf);
 
-	luat_audio_vol(0, 5);
 	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_RATE,sample_rate);
 	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_MODE,CODEC_MODE_SLAVE);
 	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_PA,CODEC_PA_ON);
