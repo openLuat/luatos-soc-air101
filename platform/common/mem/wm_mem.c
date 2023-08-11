@@ -16,6 +16,8 @@
 #include "wm_mem.h"
 #include "list.h"
 #include <string.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 #if 1
 
@@ -516,22 +518,22 @@ void * mem_alloc_debug(u32 size)
 	u32 length = size;
 
 
-	//printf("size:%d\n", size);
-    if (!memory_manager_initialized) {
-        tls_os_status_t os_status;
+	// //printf("size:%d\n", size);
+    // if (!memory_manager_initialized) {
+    //     tls_os_status_t os_status;
 
-		cpu_sr = tls_os_set_critical(); 	
-        memory_manager_initialized = true;
-        //
-        // NOTE: If two thread allocate the very first allocation simultaneously
-        // it could cause double initialization of the memory manager. This is a
-        // highly unlikely scenario and will occur in debug versions only.
-        //
-        os_status = tls_os_sem_create(&mem_sem, 1);
-        if(os_status != TLS_OS_SUCCESS)
-            printf("mem_alloc_debug: tls_os_sem_create mem_sem error\r\n");
-		tls_os_release_critical(cpu_sr);
-    }
+	// 	cpu_sr = tls_os_set_critical(); 	
+    //     memory_manager_initialized = true;
+    //     //
+    //     // NOTE: If two thread allocate the very first allocation simultaneously
+    //     // it could cause double initialization of the memory manager. This is a
+    //     // highly unlikely scenario and will occur in debug versions only.
+    //     //
+    //     os_status = tls_os_sem_create(&mem_sem, 1);
+    //     if(os_status != TLS_OS_SUCCESS)
+    //         printf("mem_alloc_debug: tls_os_sem_create mem_sem error\r\n");
+	// 	tls_os_release_critical(cpu_sr);
+    // }
 
 #if USING_ADD_HEADER
     length += 8;
@@ -550,7 +552,8 @@ void * mem_alloc_debug(u32 size)
     }
     else
     {
-    	tls_os_sem_acquire(mem_sem, 0);
+    	// tls_os_sem_acquire(mem_sem, 0);
+        vTaskSuspendAll();
         cpu_sr = tls_os_set_critical();
         buffer = (u32*)malloc(length);
 	    if(buffer) 
@@ -560,9 +563,12 @@ void * mem_alloc_debug(u32 size)
 			*buffer = length;
 			buffer++;
 			total_mem_size -= length;
+            if (total_mem_size < min_free_size)
+                min_free_size = total_mem_size;
 	    }
         tls_os_release_critical(cpu_sr);	
-		tls_os_sem_release(mem_sem);
+		// tls_os_sem_release(mem_sem);
+        xTaskResumeAll();
     }
 #else
 	tls_os_sem_acquire(mem_sem, 0);
@@ -586,7 +592,8 @@ void mem_free_debug(void *p)
 	isrstatus = tls_get_isr_count();
     if(isrstatus == 0)
     {
-    	tls_os_sem_acquire(mem_sem, 0);
+    	// tls_os_sem_acquire(mem_sem, 0);
+        vTaskSuspendAll();
 		cpu_sr = tls_os_set_critical();
     }
 	
@@ -615,7 +622,8 @@ void mem_free_debug(void *p)
     if(isrstatus == 0)
     {
 		tls_os_release_critical(cpu_sr);
-		tls_os_sem_release(mem_sem);
+		// tls_os_sem_release(mem_sem);
+        xTaskResumeAll();
     }
 #else //UCOSII
 	tls_os_sem_acquire(mem_sem, 0);
@@ -667,7 +675,8 @@ void * mem_realloc_debug(void *mem_address, u32 size)
     }
     else
     {
-    	tls_os_sem_acquire(mem_sem, 0);
+    	// tls_os_sem_acquire(mem_sem, 0);
+        vTaskSuspendAll();
         cpu_sr = tls_os_set_critical();
 		mem_re_addr = (u32*)malloc(length);
 		if(mem_re_addr && mem_address) 
@@ -689,7 +698,8 @@ void * mem_realloc_debug(void *mem_address, u32 size)
                 min_free_size = total_mem_size;
 		}
         tls_os_release_critical(cpu_sr);	
-		tls_os_sem_release(mem_sem);
+		// tls_os_sem_release(mem_sem);
+        xTaskResumeAll();
 
 		mem_free_debug(mem_address);
     }
@@ -732,7 +742,8 @@ void *mem_calloc_debug(u32 n, u32 size)
     }
     else
     {
-    	tls_os_sem_acquire(mem_sem, 0);
+    	// tls_os_sem_acquire(mem_sem, 0);
+        vTaskSuspendAll();
         cpu_sr = tls_os_set_critical();
         buffer = (u32*)malloc(length);
 		if(buffer) 
@@ -747,8 +758,9 @@ void *mem_calloc_debug(u32 n, u32 size)
                 min_free_size = total_mem_size;
 		}
 
-        tls_os_release_critical(cpu_sr);	
-		tls_os_sem_release(mem_sem);
+        tls_os_release_critical(cpu_sr);
+        xTaskResumeAll();	
+		// tls_os_sem_release(mem_sem);
     }
 #else   //UCOSII
 	tls_os_sem_acquire(mem_sem, 0);
@@ -761,6 +773,7 @@ void *mem_calloc_debug(u32 n, u32 size)
 	//{
 	//	printf("calloc error \r\n");
 	//}
+    // printf("calloc %d %p %d\n", size, buffer, total_mem_size);
 	return buffer;
 }
 #endif /* WM_MEM_DEBUG */
@@ -774,11 +787,11 @@ u32 tls_mem_get_avail_heapsize(void)
 	u32 availablemem = 0;
 	u32 cpu_sr;
 
-	tls_os_sem_acquire(mem_sem, 0);
-	cpu_sr = tls_os_set_critical();
+	// tls_os_sem_acquire(mem_sem, 0);
+	// cpu_sr = tls_os_set_critical();
 	availablemem = total_mem_size;
-    tls_os_release_critical(cpu_sr);	
-	tls_os_sem_release(mem_sem);
+    // tls_os_release_critical(cpu_sr);	
+	// tls_os_sem_release(mem_sem);
 
 	return availablemem;
 #else
