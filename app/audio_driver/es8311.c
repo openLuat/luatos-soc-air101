@@ -1,14 +1,18 @@
 
 #include "luat_base.h"
+#include "luat_gpio.h"
 #include "luat_i2c.h"
 #include "luat_audio_air101.h"
-#include "wm_include.h"
+
 #include "es8311.h"
+
+#define LUAT_LOG_TAG "es8311"
+#include "luat_log.h"
 
 static void es8311_write_reg(uint8_t addr, uint8_t data){
     uint8_t temp[] = {addr,data};
     luat_i2c_send(0, ES8311_ADDR, temp, 2 , 1);
-	tls_os_time_delay(1);
+	luat_timer_mdelay(1);
 }
 
 static uint8_t es8311_read_reg(uint8_t addr){
@@ -58,7 +62,7 @@ static int es8311_codec_samplerate(uint16_t samplerate){
         samplerate != 11025 && samplerate != 22050 && samplerate != 44100 &&
         samplerate != 12000 && samplerate != 24000 && samplerate != 48000)
     {
-        printf("samplerate error!\n");
+        LLOGE("samplerate error!\n");
         return -1;
     }
     // uint8_t i = 0;
@@ -165,7 +169,7 @@ static int es8311_update_bits(uint8_t reg, uint8_t mask, uint8_t val){
 
 static int es8311_codec_samplebits(uint8_t samplebits){
     if(samplebits != 8 && samplebits != 16 && samplebits != 24 && samplebits != 32){
-        wm_printf("bit_width error!\n");
+        LLOGE("bit_width error!\n");
         return -1;
     }
     int wl;
@@ -207,10 +211,10 @@ static int es8311_reg_init(void){
     es8311_write_reg(ES8311_RESET_REG00, 0x1F);
     es8311_write_reg(ES8311_GP_REG45, 0x00);
 
-    tls_os_time_delay(10);
+    luat_timer_mdelay(10);
 
     // es8311_write_reg(ES8311_GPIO_REG44, 0x08);
-    // tls_os_time_delay(1);
+    // luat_timer_mdelay(1);
     // es8311_write_reg(ES8311_GPIO_REG44, 0x08);
 
     /* set ADC/DAC CLK */
@@ -232,7 +236,7 @@ static int es8311_reg_init(void){
     es8311_write_reg(ES8311_SYSTEM_REG11, 0x7F);
     /* chip powerup. slave mode */
     es8311_write_reg(ES8311_RESET_REG00, 0x80);
-    tls_os_time_delay(50);
+    luat_timer_mdelay(50);
 
     /* power up analog */
     es8311_write_reg(ES8311_SYSTEM_REG0D, 0x01);
@@ -283,15 +287,15 @@ static int es8311_reg_init(void){
 static int es8311_codec_init(audio_codec_conf_t* conf){
     uint8_t temp1 = 0, temp2 = 0, temp3 = 0;
     if (conf->pa_pin != -1){
-        tls_gpio_cfg(conf->pa_pin, !conf->pa_on_level, WM_GPIO_ATTR_FLOATING);
-        tls_gpio_write(conf->pa_pin, !conf->pa_on_level);
+        luat_gpio_mode(conf->pa_pin, Luat_GPIO_OUTPUT, Luat_GPIO_DEFAULT, !conf->pa_on_level);
+        luat_gpio_set(conf->pa_pin, !conf->pa_on_level);
     }
     luat_i2c_setup(0, I2C_REQ);
     temp1 = es8311_read_reg(ES8311_CHD1_REGFD);
     temp2 = es8311_read_reg(ES8311_CHD2_REGFE);
     temp3 = es8311_read_reg(ES8311_CHVER_REGFF);
     if(temp1 != 0x83 || temp2 != 0x11){
-        printf("codec err, id = 0x%x 0x%x ver = 0x%x\n", temp1, temp2, temp3);
+        LLOGE("codec err, id = 0x%x 0x%x ver = 0x%x", temp1, temp2, temp3);
         return -1;
     }
     es8311_reg_init();
@@ -305,11 +309,11 @@ static int es8311_codec_deinit(audio_codec_conf_t* conf){
 
 static void es8311_codec_pa(audio_codec_conf_t* conf,uint8_t on){
 	if (on){
-        tls_os_time_delay(conf->dummy_time_len);
-        tls_gpio_write(conf->pa_pin, conf->pa_on_level);
-        tls_os_time_delay(conf->pa_delay_time);
+        luat_timer_mdelay(conf->dummy_time_len);
+        luat_gpio_set(conf->pa_pin, conf->pa_on_level);
+        luat_timer_mdelay(conf->pa_delay_time);
 	}else{	
-        tls_gpio_write(conf->pa_pin, !conf->pa_on_level);
+        luat_gpio_set(conf->pa_pin, !conf->pa_on_level);
 	}
 }
 
