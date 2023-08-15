@@ -79,9 +79,16 @@
                         "dft": false
                     },
                     {
-                        "name": "@tls",
-                        "content": "(暂不可用)启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
+                        "name": "tls",
+                        "content": "启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
                         "rsize": 65000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "ftp",
+                        "content": "支持FTP操作",
+                        "rsize": 3000,
                         "fsize": 275108,
                         "dft": false
                     }

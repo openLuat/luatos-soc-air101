@@ -60,6 +60,7 @@
 // #define LUAT_USE_DNS
 // #define LUAT_USE_SNTP
 // #define LUAT_USE_HTTPSRV
+// #define LUAT_USE_FTP
 
 // 外置网络支持
 // #define LUAT_USE_W5500_XXX
