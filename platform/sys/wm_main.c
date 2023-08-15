@@ -320,22 +320,6 @@ void task_start (void *data)
     u8 mac_addr[6] = {0x00, 0x25, 0x08, 0x09, 0x01, 0x0F};
     char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
-#if defined(AIR103) && defined(LUAT_USE_WLAN)
-    // 判断实际flash大小, 为了正确读取系统擦拭能.
-    // AIR101的固件总是2M FLASH, 脚本区直接在1M之后, 单纯这里判断没有意义, 因为info.json写了具体偏移量
-	u8 magic[4] = {0};
-	u8 test[] = {0xFF, 0xFF, 0xFF, 0xFF};
-	int ret = tls_fls_read(TLS_FLASH_PARAM_DEFAULT, magic, 4);
-	if (ret || memcmp(test, magic, 4) == 0) {
-		// LLOGD("1M Flash");
-		TLS_FLASH_PARAM_DEFAULT        =		  (0x80FB000UL);
-		TLS_FLASH_PARAM1_ADDR          =		  (0x80FC000UL);
-		TLS_FLASH_PARAM2_ADDR          =		  (0x80FD000UL);
-		TLS_FLASH_PARAM_RESTORE_ADDR   =	      (0x80FE000UL);
-		TLS_FLASH_OTA_FLAG_ADDR        =	      (0x80FF000UL);
-		TLS_FLASH_END_ADDR             =		  (0x80FFFFFUL);
-	}
-#endif
 
 #if TLS_CONFIG_CRYSTAL_24M
     tls_wl_hw_using_24m_crystal();
@@ -429,12 +413,6 @@ void task_start (void *data)
 
     tls_sys_init();
 
-	tls_param_get(TLS_PARAM_ID_PSM, &enable, TRUE);	
-	if (enable != FALSE)
-	{
-	    enable = FALSE;
-	    tls_param_set(TLS_PARAM_ID_PSM, &enable, TRUE);
-	}
 #endif
     UserMain();
 
