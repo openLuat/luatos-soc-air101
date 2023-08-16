@@ -73,7 +73,7 @@
 #define configUSE_TICK_HOOK			1	
 
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///???????????????
-#ifdef LUAT_USE_NIMBLE
+#if defined(LUAT_USE_NIMBLE) || defined(LUAT_USE_WLAN)
 #define configTICK_RATE_HZ			( ( portTickType ) 500u )	
 #else
 #define configTICK_RATE_HZ			( ( portTickType ) 1000u )	
