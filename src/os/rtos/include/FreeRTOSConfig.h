@@ -54,7 +54,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-
+#include "luat_conf_bsp.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -73,8 +73,11 @@
 #define configUSE_TICK_HOOK			1	
 
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 40000000 )	/* =12.0MHz xtal multiplied by 5 using the PLL. *///???????????????
-
+#ifdef LUAT_USE_NIMBLE
+#define configTICK_RATE_HZ			( ( portTickType ) 500u )	
+#else
 #define configTICK_RATE_HZ			( ( portTickType ) 1000u )	
+#endif
 #define configMAX_PRIORITIES		(63)
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 256 )	
 #define configTOTAL_HEAP_SIZE		( ( size_t ) 12 * 1024 )	
