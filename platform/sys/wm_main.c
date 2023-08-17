@@ -374,10 +374,11 @@ void task_start (void *data)
         mac_ok = 0;
     }
     else {
+        mac_ok = 0;
         for (size_t i = 0; i < 6; i++)
         {
-            if (mac_addr[i] == 0) {
-                mac_ok = 0;
+            if (mac_addr[i]) {
+                mac_ok = 1;
                 break;
             }
         }
@@ -391,10 +392,11 @@ void task_start (void *data)
 		else {
 			memcpy(mac_addr, unique_id + 4, 6);
 		}
-        //printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-		tls_set_mac_addr(mac_addr);
+        mac_addr[0] = 0x0C;
+        tls_set_mac_addr(mac_addr);
+        tls_get_mac_addr(mac_addr);
 	}
-    printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    // printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
