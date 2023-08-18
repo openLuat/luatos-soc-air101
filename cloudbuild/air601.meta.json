@@ -812,7 +812,7 @@
                         "rsize": 27888,
                         "children": [
                             {
-                                "name": "USE_U8G2_SARASA_M8_CHINESE",
+                                "name": "USE_U8G2_SARASA_ENGLISH",
                                 "content": "等宽字体 英文字体和特殊符号",
                                 "rsize": 191216,
                                 "fsize": 304416,
