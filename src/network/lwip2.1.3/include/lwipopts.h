@@ -14,8 +14,8 @@
  * instead of the lwip internal allocator. Can save code size if you
  * already use it.
  */
-#define MEM_LIBC_MALLOC                 0
-#define MEMP_MEM_MALLOC                 0
+#define MEM_LIBC_MALLOC                 1
+#define MEMP_MEM_MALLOC                 1
 #define MEM_USE_POOLS                   0
 #define MEMP_USE_CUSTOM_POOLS           0
 #define MEMP_OVERFLOW_CHECK             2
