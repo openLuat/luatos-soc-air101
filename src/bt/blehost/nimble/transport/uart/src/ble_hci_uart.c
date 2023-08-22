@@ -658,6 +658,18 @@ static void nimble_vhci_task(void *parg)
     }
 }
 #endif
+
+// ble_hci_vuart_acl_buf 和 ble_hci_vuart_evt_lo_buf 需要将近20k内存
+// 单从sys的heap分区已经逼近极限, 这里从lua的内存进行分配
+// 从而实现wifi与蓝牙的分时使用. 初始化蓝牙就不要初始化wifi, 销毁蓝牙之后再初始化wifi
+void* luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+static void* v_alloc(size_t len) {
+    return luat_heap_alloc(NULL, NULL, 0, len);
+}
+static void* v_free(void* ptr) {
+    return luat_heap_alloc(NULL, ptr, 0, 0);
+}
+
 int
 ble_hci_vuart_init(uint8_t uart_idx)
 {
@@ -666,7 +678,7 @@ ble_hci_vuart_init(uint8_t uart_idx)
     SYSINIT_ASSERT_ACTIVE();
 
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-    ble_hci_vuart_acl_buf = (os_membuf_t *)tls_mem_alloc(
+    ble_hci_vuart_acl_buf = (os_membuf_t *)v_alloc(
                                             sizeof(os_membuf_t) *
                                             OS_MEMPOOL_SIZE(MYNEWT_VAL(BLE_ACL_BUF_COUNT), ACL_BLOCK_SIZE));
     assert(ble_hci_vuart_acl_buf != NULL);
@@ -714,7 +726,7 @@ ble_hci_vuart_init(uint8_t uart_idx)
                          "ble_hci_vuart_evt_hi_pool");
     SYSINIT_PANIC_ASSERT(rc == 0);
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
-    ble_hci_vuart_evt_lo_buf = (os_membuf_t *)tls_mem_alloc(
+    ble_hci_vuart_evt_lo_buf = (os_membuf_t *)v_alloc(
             sizeof(os_membuf_t) *
             OS_MEMPOOL_SIZE(MYNEWT_VAL(BLE_HCI_EVT_LO_BUF_COUNT),
                             MYNEWT_VAL(BLE_HCI_EVT_BUF_SIZE)));
@@ -814,7 +826,7 @@ int ble_hci_vuart_deinit()
 #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
         
         if(ble_hci_vuart_acl_buf) {
-            tls_mem_free(ble_hci_vuart_acl_buf);
+            v_free(ble_hci_vuart_acl_buf);
             ble_hci_vuart_acl_buf = NULL;
         }
     
@@ -829,7 +841,7 @@ int ble_hci_vuart_deinit()
         }
     
         if(ble_hci_vuart_evt_lo_buf) {
-            tls_mem_free(ble_hci_vuart_evt_lo_buf);
+            v_free(ble_hci_vuart_evt_lo_buf);
             ble_hci_vuart_evt_lo_buf = NULL;
         }
 #endif

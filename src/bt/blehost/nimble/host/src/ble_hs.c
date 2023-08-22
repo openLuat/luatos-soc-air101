@@ -43,9 +43,13 @@ static void ble_hs_event_start_stage2(struct ble_npl_event *ev);
 static void ble_hs_timer_sched(int32_t ticks_from_now);
 
 struct os_mempool ble_hs_hci_ev_pool;
+#if MYNEWT_VAL(SYS_MEM_DYNAMIC)
+static os_membuf_t* ble_hs_hci_os_event_buf;
+#else
 static os_membuf_t ble_hs_hci_os_event_buf[
                  OS_MEMPOOL_SIZE(BLE_HS_HCI_EVT_COUNT, sizeof(struct ble_npl_event))
  ];
+#endif
 
 /** OS event - triggers tx of pending notifications and indications. */
 static struct ble_npl_event ble_hs_ev_tx_notifications;
@@ -697,6 +701,9 @@ ble_hs_tx_data(struct os_mbuf *om)
     return ble_hci_trans_hs_acl_tx(om);
 }
 
+#include "wm_bt.h"
+#include "wm_mem.h"
+
 void
 ble_hs_init(void)
 {
@@ -704,6 +711,10 @@ ble_hs_init(void)
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
     /* Create memory pool of OS events */
+#if MYNEWT_VAL(SYS_MEM_DYNAMIC)
+    if (ble_hs_hci_os_event_buf == NULL)
+        ble_hs_hci_os_event_buf = tls_mem_alloc(sizeof(os_membuf_t) * OS_MEMPOOL_SIZE(BLE_HS_HCI_EVT_COUNT, sizeof(struct ble_npl_event)));
+#endif
     rc = os_mempool_init(&ble_hs_hci_ev_pool, BLE_HS_HCI_EVT_COUNT,
                          sizeof(struct ble_npl_event), ble_hs_hci_os_event_buf,
                          "ble_hs_hci_ev_pool");
@@ -786,5 +797,11 @@ ble_hs_deinit(void)
     ble_gap_deinit();
     ble_hs_stop_deinit();
     ble_hs_hci_deinit();
+#if MYNEWT_VAL(SYS_MEM_DYNAMIC)
+    if (ble_hs_hci_os_event_buf != NULL) {
+        tls_mem_free(ble_hs_hci_os_event_buf);
+        ble_hs_hci_os_event_buf = NULL;
+    }
+#endif
 }
 
