@@ -83,7 +83,23 @@
                         "content": "启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
                         "rsize": 65000,
                         "fsize": 275108,
-                        "dft": false
+                        "dft": false,
+                        "children": [
+                            {
+                                "name": "MBEDTLS_DEBUG_C",
+                                "content": "开启mbedtls调试信息,需要30k空间",
+                                "rsize": 30000,
+                                "fsize": 275108,
+                                "dft": false
+                            },
+                            {
+                                "name": "MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED",
+                                "content": "开启ECDHE_RSA系列套件,比较安全,建立SSL连接耗时需要2秒",
+                                "rsize": 3000,
+                                "fsize": 275108,
+                                "dft": false
+                            }
+                        ]
                     },
                     {
                         "name": "ftp",
