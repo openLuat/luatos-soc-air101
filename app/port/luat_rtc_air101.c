@@ -7,8 +7,7 @@
 #define LUAT_LOG_TAG "rtc"
 #include "luat_log.h"
 
-int rtc_timezone;
-
+int rtc_timezone = 0;
 
 static int luat_rtc_handler(lua_State *L, void* ptr) {
     lua_getglobal(L, "sys_pub");
@@ -77,10 +76,8 @@ time_t time(time_t* _tm)
 {
   struct tm tt = {0};
   tls_get_rtc(&tt);
-//   printf(">> %d-%d-%d %d:%d:%d\n", tt.tm_year + 1900, tt.tm_mon + 1, tt.tm_mday, tt.tm_hour, tt.tm_min, tt.tm_sec);
   time_t t = mktime(&tt);
-  if (rtc_timezone)
-    t += rtc_timezone * (3600 / 4);
+//   printf("time %d\n", t);
   if (_tm != NULL)
     memcpy(_tm, &t, sizeof(time_t));
   return t;
