@@ -282,8 +282,12 @@ const char* luat_os_bsp(void)
 }
 
 #include "wm_watchdog.h"
+#include "luat_mcu.h"
 void luat_os_reboot(int code)
 {
+  if (luat_mcu_get_clk() < 80) {
+    luat_mcu_set_clk(80);
+  }
   tls_sys_set_reboot_reason(REBOOT_REASON_ACTIVE);
   tls_sys_reset();
 }
