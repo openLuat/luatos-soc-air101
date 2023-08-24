@@ -99,9 +99,12 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_PACK
   {"pack",    luaopen_pack},              // pack.pack/pack.unpack
 #endif
-  // {"mqttcore",luaopen_mqttcore},          // MQTT 协议封装
-  // {"libcoap", luaopen_libcoap},           // 处理COAP消息
-
+#ifdef LUAT_USE_MQTTCORE
+  {"mqttcore",luaopen_mqttcore},          // MQTT 协议封装
+#endif
+#ifdef LUAT_USE_LIBCOAP
+  {"libcoap", luaopen_libcoap},           // 处理COAP消息
+#endif
 #ifdef LUAT_USE_LIBGNSS
   {"libgnss", luaopen_libgnss},           // 处理GNSS定位数据
 #endif

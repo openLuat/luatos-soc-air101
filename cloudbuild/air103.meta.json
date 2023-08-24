@@ -309,6 +309,19 @@
                         "rsize": 7436,
                         "fsize": 278788,
                         "dft": false
+                    },                    {
+                        "name": "mqttcore",
+                        "content": "MQTT协议解析库,不含链接,也不依赖mqtt库",
+                        "rsize": 5200,
+                        "fsize": 357620,
+                        "dft": false
+                    },
+                    {
+                        "name": "libcoap",
+                        "content": "COAP协议解析库,仅含协议解析和合成",
+                        "rsize": 2200,
+                        "fsize": 357620,
+                        "dft": false
                     },
                     {
                         "name": "shell",

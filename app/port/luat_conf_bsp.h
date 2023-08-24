@@ -122,14 +122,16 @@
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
 // 从v0006开始默认关闭之, 需要用到就打开吧
 #define LUAT_USE_FATFS
-// #define LUAT_USE_FATFS_CHINESE
+// #define LUAT_USE_FATFS_CHINESE 1
 
 //----------------------------
 // 高通字体, 需配合芯片使用
 // #define LUAT_USE_GTFONT 1
-// #define LUAT_USE_GTFONT_UTF8
+// #define LUAT_USE_GTFONT_UTF8 1
 
-// #define LUAT_USE_YMODEM
+// #define LUAT_USE_YMODEM 1
+// #define LUAT_USE_MQTTCORE 1
+// #define LUAT_USE_LIBCOAP 1
 
 //----------------------------
 // 高级功能, 推荐使用REPL, 因为SHELL已废弃
