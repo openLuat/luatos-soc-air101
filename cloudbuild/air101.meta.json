@@ -266,7 +266,8 @@
                         "rsize": 7436,
                         "fsize": 278788,
                         "dft": false
-                    },                    {
+                    },
+                    {
                         "name": "mqttcore",
                         "content": "MQTT协议解析库,不含链接,也不依赖mqtt库",
                         "rsize": 5200,
