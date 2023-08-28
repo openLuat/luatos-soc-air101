@@ -662,6 +662,11 @@ static void nimble_vhci_task(void *parg)
 // ble_hci_vuart_acl_buf 和 ble_hci_vuart_evt_lo_buf 需要将近20k内存
 // 单从sys的heap分区已经逼近极限, 这里从lua的内存进行分配
 // 从而实现wifi与蓝牙的分时使用. 初始化蓝牙就不要初始化wifi, 销毁蓝牙之后再初始化wifi
+
+#include "luat_conf_bsp.h"
+#include "luat_malloc.h"
+
+#ifdef LUAT_USE_WLAN
 void* luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
 static void* v_alloc(size_t len) {
     return luat_heap_alloc(NULL, NULL, 0, len);
@@ -669,6 +674,10 @@ static void* v_alloc(size_t len) {
 static void* v_free(void* ptr) {
     return luat_heap_alloc(NULL, ptr, 0, 0);
 }
+#else
+#define v_alloc tls_mem_alloc
+#define v_free tls_mem_free
+#endif
 
 int
 ble_hci_vuart_init(uint8_t uart_idx)
