@@ -664,7 +664,6 @@ static void nimble_vhci_task(void *parg)
 // 从而实现wifi与蓝牙的分时使用. 初始化蓝牙就不要初始化wifi, 销毁蓝牙之后再初始化wifi
 
 #include "luat_conf_bsp.h"
-#include "luat_malloc.h"
 
 #ifdef LUAT_USE_WLAN
 void* luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
