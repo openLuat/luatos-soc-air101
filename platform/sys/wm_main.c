@@ -213,7 +213,7 @@ int main(void)
 
     /*configure wake up source begin*/
 	csi_vic_set_wakeup_irq(SDIO_IRQn);
-    #ifdef LUAT_USE_WLAN
+    #if (defined(LUAT_USE_WLAN) || defined(LUAT_USE_NIMBLE))
     csi_vic_set_wakeup_irq(MAC_IRQn);
     csi_vic_set_wakeup_irq(SEC_IRQn);
     #endif
@@ -226,21 +226,23 @@ int main(void)
     csi_vic_set_wakeup_irq(I2C_IRQn);
     csi_vic_set_wakeup_irq(ADC_IRQn);
     csi_vic_set_wakeup_irq(SPI_LS_IRQn);
-    #ifdef LUAT_USE_WLAN
 	csi_vic_set_wakeup_irq(SPI_HS_IRQn);
-    #endif
     csi_vic_set_wakeup_irq(GPIOA_IRQn);
     csi_vic_set_wakeup_irq(GPIOB_IRQn);
     csi_vic_set_wakeup_irq(UART0_IRQn);
     csi_vic_set_wakeup_irq(UART1_IRQn);
     csi_vic_set_wakeup_irq(UART24_IRQn);
-    // csi_vic_set_wakeup_irq(BLE_IRQn);
-    // csi_vic_set_wakeup_irq(BT_IRQn);
+    #if (defined(LUAT_USE_NIMBLE))
+    csi_vic_set_wakeup_irq(BLE_IRQn);
+    csi_vic_set_wakeup_irq(BT_IRQn);
+    #endif
     csi_vic_set_wakeup_irq(PWM_IRQn);
     csi_vic_set_wakeup_irq(I2S_IRQn);
 	csi_vic_set_wakeup_irq(SIDO_HOST_IRQn);
     csi_vic_set_wakeup_irq(SYS_TICK_IRQn);
-    // csi_vic_set_wakeup_irq(RSA_IRQn);
+    #if (defined(LUAT_USE_WLAN) || defined(LUAT_USE_RSA))
+    csi_vic_set_wakeup_irq(RSA_IRQn);
+    #endif
     csi_vic_set_wakeup_irq(CRYPTION_IRQn);
     csi_vic_set_wakeup_irq(PMU_IRQn);
     csi_vic_set_wakeup_irq(TIMER_IRQn);
