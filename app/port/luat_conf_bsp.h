@@ -259,5 +259,6 @@
 #define LUAT_USE_PIN 1
 
 #define LUAT_GPIO_PIN_MAX (48)
+#define LUAT_CONF_SPI_HALF_DUPLEX_ONLY 1
 
 #endif
