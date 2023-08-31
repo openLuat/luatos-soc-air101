@@ -140,6 +140,25 @@
 #define LUAT_USE_REPL
 #define LUAT_USE_PROTOBUF 1
 
+//---------------------
+// UI
+// LCD  是彩屏, 若使用LVGL就必须启用LCD
+#define LUAT_USE_LCD
+#define LUAT_USE_TJPGD
+// EINK 是墨水屏
+#define LUAT_USE_EINK
+
+//---------------------
+// U8G2
+// 单色屏, 支持i2c/spi
+// #define LUAT_USE_DISP
+#define LUAT_USE_U8G2
+
+/**************FONT*****************/
+#define LUAT_USE_FONTS
+/**********U8G2&LCD&EINK FONT*************/
+#define USE_U8G2_OPPOSANSM_ENGLISH 1
+
 
 //---------------------
 // LVGL
