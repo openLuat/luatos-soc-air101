@@ -4,13 +4,18 @@
 
 #define LUAT_BSP_VERSION "V1020"
 
+//------------------------------------------------------
+// 以下custom --> 到  <-- custom 之间的内容,是供用户配置的
+// 同时也是云编译可配置的部分. 提交代码时切勿删除会修改标识
+//custom -->
+//------------------------------------------------------
+
+
 // Air101 与 Air103 的Flash大小有差异,需要区分
 #define AIR101
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
-
-
 
 // FLASH_FS_REGION_SIZE包含2部分: 脚本区和文件系统区
 // 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
@@ -20,16 +25,6 @@
 // 256k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 304, 因为 256+48=304 
 #define LUAT_FS_SIZE                48      //文件系统大小
 #define LUAT_SCRIPT_SIZE            64      //脚本大小
-#define FLASH_FS_REGION_SIZE        (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE)
-
-// 内存优化: 减少内存消耗, 会稍微减低性能
-// #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
-
-//----------------------------------
-// 使用VFS(虚拟文件系统)和内置库文件, 必须启用
-#define LUAT_USE_FS_VFS 1
-#define LUAT_USE_VFS_INLINE_LIB 1
-//----------------------------------
 
 //----------------------------
 // 外设,按需启用, 最起码启用uart和wdt库
@@ -203,11 +198,7 @@
 //---------------------
 // LVGL
 // 主推的UI库, 功能强大但API繁琐
-#define LUAT_USE_LVGL
-#define LV_DISP_DEF_REFR_PERIOD 30
-#define LUAT_LV_DEBUG 0
-
-#define LV_MEM_CUSTOM 1
+#define LUAT_USE_LVGL      1
 
 #define LUAT_USE_LVGL_INDEV 1 // 输入设备
 
@@ -244,6 +235,27 @@
 #define LUAT_USE_LVGL_TABVIEW   //页签 依赖页面PAGE 图片按钮IMGBTN
 #define LUAT_USE_LVGL_TILEVIEW   //平铺视图 依赖页面PAGE
 #define LUAT_USE_LVGL_WIN   //窗口 依赖容器CONT 按钮BTN 标签LABEL 图片IMG 页面PAGE
+
+//-------------------------------------------------------------------------------
+//<-- custom
+//------------------------------------------------------------------------------
+
+
+#define LV_DISP_DEF_REFR_PERIOD 30
+#define LUAT_LV_DEBUG 0
+
+#define LV_MEM_CUSTOM 1
+
+#define FLASH_FS_REGION_SIZE        (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE)
+
+// 内存优化: 减少内存消耗, 会稍微减低性能
+// #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
+
+//----------------------------------
+// 使用VFS(虚拟文件系统)和内置库文件, 必须启用
+#define LUAT_USE_FS_VFS 1
+#define LUAT_USE_VFS_INLINE_LIB 1
+//----------------------------------
 
 #define LV_HOR_RES_MAX          (160)
 #define LV_VER_RES_MAX          (80)
