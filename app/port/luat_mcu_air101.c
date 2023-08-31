@@ -98,8 +98,9 @@ int luat_mcu_us_period(void) {
 }
 
 uint64_t luat_mcu_tick64_ms(void) {
-    return luat_mcu_tick64();
+    return luat_mcu_tick64() / 1000;
 }
+
 void luat_mcu_set_clk_source(uint8_t source_main, uint8_t source_32k, uint32_t delay) {
     LLOGE("not support setXTAL");
 }
