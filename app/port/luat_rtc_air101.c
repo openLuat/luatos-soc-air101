@@ -7,7 +7,7 @@
 #define LUAT_LOG_TAG "rtc"
 #include "luat_log.h"
 
-int rtc_timezone = 0;
+int rtc_timezone = 32;
 
 static int luat_rtc_handler(lua_State *L, void* ptr) {
     lua_getglobal(L, "sys_pub");
