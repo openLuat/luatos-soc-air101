@@ -23,16 +23,15 @@ static void luat_gpio_irq_callback(void *ptr)
     int pin = (int)ptr;
     if (pin < 0 || pin > WM_IO_PB_31)
         return;
-    if (gpio_isr_cb[pin].irq_cb){
-        gpio_isr_cb[pin].irq_cb(pin,gpio_isr_cb[pin].irq_args);
-    }
-    else{
-        int ret = tls_get_gpio_irq_status(pin);
-        if(ret)
-        {
-            tls_clr_gpio_irq_status(pin);
+    int ret = tls_get_gpio_irq_status(pin);
+    if (ret) {
+        if (gpio_isr_cb[pin].irq_cb){
+            gpio_isr_cb[pin].irq_cb(pin, gpio_isr_cb[pin].irq_args);
+        }
+        else {
             luat_gpio_irq_default(pin, (void*)tls_gpio_read(pin));
         }
+        tls_clr_gpio_irq_status(pin);
     }
 }
 
