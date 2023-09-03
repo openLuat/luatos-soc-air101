@@ -66,8 +66,8 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         lua_pushstring(L, "SC_RESULT");
         tls_wifi_get_oneshot_ssidpwd(ssid, pwd);
         LLOGD("oneshot %s %s", ssid, pwd);
-        lua_pushstring(L, ssid);
-        lua_pushstring(L, pwd);
+        lua_pushstring(L, (const char*)ssid);
+        lua_pushstring(L, (const char*)pwd);
         lua_call(L, 3, 0);
         break;
     default:
@@ -250,8 +250,8 @@ int luat_wlan_get_mac(int id, char* mac) {
     return 0;
 }
 
-int luat_wlan_set_mac(int id, char* mac) {
-    tls_set_mac_addr(mac);
+int luat_wlan_set_mac(int id, const char* mac) {
+    tls_set_mac_addr((u8*)mac);
     return 0;
 }
 
@@ -363,3 +363,9 @@ int luat_wlan_set_hostname(int id, char* hostname) {
     memcpy(luat_sta_hostname, hostname, strlen(hostname) + 1);
     return 0;
 }
+
+int luat_wlan_ap_stop(void) {
+    tls_wifi_softap_destroy();
+    return 0;
+}
+
