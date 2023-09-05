@@ -48,21 +48,19 @@
 
 // #define LUAT_USE_ICONV 1
 
-// wlan库相关
+// wlan库相关, 仅AIR601
 // #define LUAT_USE_WLAN
-// #define LUAT_USE_LWIP
-// #define LUAT_USE_NETWORK
-// #define LUAT_USE_DNS
-// #define LUAT_USE_SNTP
-// #define LUAT_USE_HTTPSRV
-// #define LUAT_USE_FTP
 
 // 外置网络支持
-// #define LUAT_USE_W5500_XXX
-// #define LUAT_USE_DHCP
+// #define LUAT_USE_W5500
 
 // 开启TLS
 // #define LUAT_USE_TLS
+
+// 其他网络功能
+// #define LUAT_USE_SNTP
+// #define LUAT_USE_HTTPSRV
+// #define LUAT_USE_FTP
 
 
 #define LUAT_USE_IOTAUTH 1
@@ -239,6 +237,26 @@
 //-------------------------------------------------------------------------------
 //<-- custom
 //------------------------------------------------------------------------------
+
+#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500)
+#ifndef LUAT_USE_NETWORK
+#define LUAT_USE_NETWORK
+#define LUAT_USE_DNS
+#endif
+#ifndef LUAT_USE_DNS
+#define LUAT_USE_DNS 1
+#endif
+#endif
+#ifdef LUAT_USE_WLAN
+#ifndef LUAT_USE_LWIP
+#define LUAT_USE_LWIP
+#endif
+#endif
+#ifdef LUAT_USE_W5500
+#ifndef LUAT_USE_DHCP
+#define LUAT_USE_DHCP
+#endif
+#endif
 
 
 #define LV_DISP_DEF_REFR_PERIOD 30

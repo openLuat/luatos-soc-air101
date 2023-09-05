@@ -206,6 +206,35 @@
                 "dft": false
             },
             {
+                "icon": "zmdi-input-composite",
+                "name": "@NETWORKS",
+                "content": "网络外设",
+                "rsize": 0,
+                "children": [
+                    {
+                        "name": "w5500",
+                        "content": "驱动w5500以太网",
+                        "rsize": 23240,
+                        "fsize": 464592,
+                        "dft": false
+                    },
+                    {
+                        "name": "sntp",
+                        "content": "网络对时",
+                        "rsize": 23240,
+                        "fsize": 464592,
+                        "dft": false
+                    },
+                    {
+                        "name": "ftp",
+                        "content": "FTP客户端",
+                        "rsize": 23240,
+                        "fsize": 464592,
+                        "dft": false
+                    }
+                ]
+            },
+            {
                 "icon": "zmdi-card-sd",
                 "name": "@LIB",
                 "content": "工具库",
