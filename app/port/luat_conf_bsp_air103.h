@@ -58,7 +58,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V1020"
+#define LUAT_BSP_VERSION "V1021"
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 #define AIR103
