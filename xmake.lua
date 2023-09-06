@@ -9,6 +9,7 @@ local VM_64BIT = nil
 local luatos = "../LuatOS/"
 local TARGET_NAME
 local AIR10X_FLASH_FS_REGION_SIZE
+local LUAT_SCRIPT_SIZE
 
 toolchain("csky")
     set_kind("cross")
@@ -336,6 +337,10 @@ target("network")
     add_includedirs(luatos.."components/ethernet/w5500",{public = true})
     add_files(luatos.."components/ethernet/w5500/*.c")
 
+    -- usernet
+    add_includedirs(luatos.."components/network/usernet",{public = true})
+    add_files(luatos.."components/network/usernet/*.c")
+
     -- wlan
     add_includedirs(luatos.."components/wlan")
     add_files(luatos.."components/wlan/**.c")
@@ -403,7 +408,7 @@ target("air10x")
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local LUAT_FS_SIZE = tonumber(conf_data:match("#define LUAT_FS_SIZE%s+(%d+)"))
-        local LUAT_SCRIPT_SIZE = tonumber(conf_data:match("#define LUAT_SCRIPT_SIZE%s+(%d+)"))
+        LUAT_SCRIPT_SIZE = tonumber(conf_data:match("#define LUAT_SCRIPT_SIZE%s+(%d+)"))
 
         AIR10X_FLASH_FS_REGION_SIZE = LUAT_FS_SIZE + LUAT_SCRIPT_SIZE
         -- print(AIR10X_FLASH_FS_REGION_SIZE,LUAT_FS_SIZE , LUAT_SCRIPT_SIZE)
@@ -678,10 +683,11 @@ target("air10x")
             if path7z then
                 if AIR10X_FLASH_FS_REGION_SIZE or VM_64BIT then
                     print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
+                    print("LUAT_SCRIPT_SIZE", LUAT_SCRIPT_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
                     import("core.base.json")
                     local data = json.decode(info_data)
-                    data.rom.fs.script.size = tonumber(AIR10X_FLASH_FS_REGION_SIZE)
+                    data.rom.fs.script.size = tonumber(LUAT_SCRIPT_SIZE)
                     if TARGET_NAME == "AIR101" then
                         offset = string.format("%X",0x81FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
                         data.download.script_addr = offset
