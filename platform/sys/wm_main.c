@@ -319,7 +319,7 @@ extern const u8 default_mac[];
 void task_start (void *data)
 {
 	u8 enable = 0;
-    u8 mac_addr[6] = {0x00, 0x25, 0x08, 0x09, 0x01, 0x0F};
+    u8 mac_addr[6];
     char unique_id [20] = {0};
 
 #if TLS_CONFIG_CRYSTAL_24M
@@ -376,18 +376,17 @@ void task_start (void *data)
         mac_ok = 0;
     }
     else {
-        mac_ok = 0;
+        mac_ok = 1;
         for (size_t i = 0; i < 6; i++)
         {
-            if (mac_addr[i]) {
-                mac_ok = 1;
+            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
+                mac_ok = 0;
                 break;
             }
         }
         
     }
 	if (!mac_ok) { // 看来是默认MAC, 那就改一下吧
-        printf("wifi mac addr NOT ok, auto fix\n");
 		if (unique_id[1] == 0x10){
 			memcpy(mac_addr, unique_id + 12, 6);
 		}
@@ -395,6 +394,14 @@ void task_start (void *data)
 			memcpy(mac_addr, unique_id + 4, 6);
 		}
         mac_addr[0] = 0x0C;
+        for (size_t i = 0; i < 6; i++)
+        {
+            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
+                mac_addr[i] = 0x01;
+            }
+        }
+        printf("auto fix wifi mac addr -> %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+        
         tls_set_mac_addr(mac_addr);
         tls_get_mac_addr(mac_addr);
 	}
