@@ -65,7 +65,7 @@
     #if (WM_BT_INCLUDED == CFG_ON || WM_MESH_INCLUDED == CFG_ON)
     #define WM_BLE_MAX_CONNECTION       1
     #else
-    #define WM_BLE_MAX_CONNECTION       7
+    #define WM_BLE_MAX_CONNECTION       1
     #endif
 #else
     #define WM_BLE_MAX_CONNECTION       1 
