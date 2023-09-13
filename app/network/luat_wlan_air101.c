@@ -33,6 +33,7 @@ static int wlan_state;
 char luat_sta_hostname[32];
 
 static int l_wlan_cb(lua_State*L, void* ptr) {
+    (void)ptr;
     u8 ssid[33]= {0};
     u8 pwd[65] = {0};
     char sta_ip[16] = {0};
@@ -129,6 +130,7 @@ static void netif_event_cb(u8 status) {
 
 
 int luat_wlan_init(luat_wlan_config_t *conf) {
+    (void)conf;
     if (wlan_init == 0) {
         u8 wireless_protocol = 0;
         tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
@@ -163,6 +165,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
 
 int luat_wlan_mode(luat_wlan_config_t *conf) {
     // 不需要设置, 反正都能用
+    (void)conf;
     return 0;
 }
 
@@ -171,7 +174,7 @@ int luat_wlan_ready(void) {
 }
 
 int luat_wlan_connect(luat_wlan_conninfo_t* info) {
-	tls_wifi_connect(info->ssid, strlen(info->ssid), info->password, strlen(info->password));
+	tls_wifi_connect((u8*)info->ssid, strlen(info->ssid), (u8*)info->password, strlen(info->password));
     u8 opt = WIFI_AUTO_CNT_FLAG_SET;
     u8 mode = WIFI_AUTO_CNT_ON;
     tls_wifi_auto_connect_flag(opt, &mode);
@@ -186,13 +189,15 @@ int luat_wlan_disconnect(void) {
     return 0;
 }
 
-
 static void scan_event_cb(void *ptmr, void *parg) {
+    (void)ptmr;
+    (void)parg;
     rtos_msg_t msg = {0};
     msg.handler = l_wlan_cb;
     msg.arg1 = SCAN_DONE;
     luat_msgbus_put(&msg, 0);
 }
+
 int luat_wlan_scan(void) {
     int ret = tls_wifi_scan();
     LLOGD("tls_wifi_scan %d", ret);
@@ -202,7 +207,7 @@ int luat_wlan_scan(void) {
     return ret;
 }
 
-int luat_wlan_scan_get_result(luat_wlan_scan_result_t *results, int ap_limit) {
+int luat_wlan_scan_get_result(luat_wlan_scan_result_t *results, size_t ap_limit) {
     size_t buffsize = ap_limit * 48 + 8;
     u8* buff = luat_heap_malloc(buffsize);
     if (buff == NULL)
@@ -236,6 +241,7 @@ static void oneshot_result_callback(enum tls_wifi_oneshot_result_type type) {
 }
 
 int luat_wlan_smartconfig_start(int tp) {
+    (void)tp;
     tls_wifi_oneshot_result_cb_register(oneshot_result_callback);
     return tls_wifi_set_oneshot_flag(1);
 }
@@ -246,16 +252,20 @@ int luat_wlan_smartconfig_stop(void) {
 
 // 数据类
 int luat_wlan_get_mac(int id, char* mac) {
-    tls_get_mac_addr(mac);
+    (void)id;
+    tls_get_mac_addr((u8*)mac);
     return 0;
 }
 
-int luat_wlan_set_mac(int id, const char* mac) {
-    tls_set_mac_addr((u8*)mac);
+int luat_wlan_set_mac(int id, const char* mac_addr) {
+    (void)id;
+    // LLOGD("set mac %02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+    tls_set_mac_addr((u8*)mac_addr);
     return 0;
 }
 
 int luat_wlan_get_ip(int type, char* data) {
+    (void)type;
     struct netif *et0 = tls_get_netif();
     if (et0 == NULL || et0->ip_addr.addr == 0)
         return -1;
@@ -302,10 +312,10 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
         .ip_addr = {192, 168, 4, 1},
         .netmask = {255, 255, 255, 0}
     };
-    if (apinfo2->gateway > 0) {
+    if (apinfo2->gateway[0]) {
         memcpy(ipinfo.ip_addr, apinfo2->gateway, 4);
     }
-    if (apinfo2->netmask > 0) {
+    if (apinfo2->netmask[0]) {
         memcpy(ipinfo.netmask, apinfo2->netmask, 4);
     }
     memcpy(apinfo.ssid, apinfo2->ssid, strlen(apinfo2->ssid) + 1);
@@ -331,7 +341,7 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     // ----------------------------
     u8 mac[6] = {0};
     tls_get_mac_addr(mac);
-    sprintf_(ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    sprintf_((char*)ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
 
     u8 wireless_protocol = 0;
@@ -348,7 +358,9 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     return ret;
 }
 
+extern u8 *wpa_supplicant_get_mac(void);
 const char* luat_wlan_get_hostname(int id) {
+    (void)id;
     if (luat_sta_hostname[0] == 0) {
         u8* mac_addr = wpa_supplicant_get_mac();
         sprintf_(luat_sta_hostname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
@@ -356,7 +368,8 @@ const char* luat_wlan_get_hostname(int id) {
     return (const char*)luat_sta_hostname;
 }
 
-int luat_wlan_set_hostname(int id, char* hostname) {
+int luat_wlan_set_hostname(int id, const char* hostname) {
+    (void)id;
     if (hostname == NULL || hostname[0] == 0) {
         return 0;
     }
