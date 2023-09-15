@@ -1575,6 +1575,10 @@ void tls_oneshot_task_handle(void *arg)
            tls_netif_remove_status_event(wm_oneshot_netif_status_event);
            if (1 == glast_ucOneshotPsFlag)
 		   {
+				if (gpfResult) {
+					// printf("CALL gpfResult\n");
+					gpfResult(WM_WIFI_ONESHOT_TYPE_SSIDPWD);
+				}
 #if TLS_CONFIG_AIRKISS_MODE_ONESHOT
 				if (is_airkiss)
 				{
@@ -1590,13 +1594,6 @@ void tls_oneshot_task_handle(void *arg)
 #endif
 				}
            }
-			if (gpfResult) {
-				// printf("CALL gpfResult\n");
-				gpfResult(WM_WIFI_ONESHOT_TYPE_SSIDPWD);
-			}
-			else {
-				// printf("gpfResult is NULL\n");
-			}
            break;
 
 #if TLS_CONFIG_AP_MODE_ONESHOT
