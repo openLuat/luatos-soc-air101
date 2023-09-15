@@ -611,6 +611,11 @@ static void oneshot_esp_finish(void)
 		tls_wifi_set_oneshot_flag(0);
 		tls_wifi_connect(esp_param.ssid, esp_param.ssid_len, esp_param.pwd, esp_param.pwd_len);
     }
+								
+    memcpy(gucssidData, esp_param.ssid, esp_param.ssid_len);
+    memcpy(gucpwdData, esp_param.pwd, esp_param.pwd_len);
+	gucssidData[esp_param.ssid_len] = 0;
+    gucpwdData[esp_param.pwd_len] = 0;
 }
 
 int tls_wifi_esp_oneshot_special(u8 *data, u16 data_len)
@@ -1412,9 +1417,7 @@ void tls_oneshot_task_handle(void *arg)
 			g_oneshot_dur_time = tls_os_get_time();
 #endif
             wifi_change_chanel(airwifichan[chanCnt], airchantype[chanCnt]);
-			printf("tls_oneshot_callback_start 1\n");
 			tls_oneshot_callback_start();
-			printf("tls_oneshot_callback_start 2\n");
 
             tls_wifi_data_recv_cb_register((tls_wifi_data_recv_callback)tls_wifi_dataframe_recv);
 			tls_wl_plcp_cb_register((tls_wifi_data_recv_callback)tls_wifi_dataframe_recv);
@@ -1587,7 +1590,13 @@ void tls_oneshot_task_handle(void *arg)
 #endif
 				}
            }
-
+			if (gpfResult) {
+				// printf("CALL gpfResult\n");
+				gpfResult(WM_WIFI_ONESHOT_TYPE_SSIDPWD);
+			}
+			else {
+				// printf("gpfResult is NULL\n");
+			}
            break;
 
 #if TLS_CONFIG_AP_MODE_ONESHOT

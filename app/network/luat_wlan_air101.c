@@ -240,8 +240,12 @@ void luat_sc_callback(enum tls_wifi_oneshot_result_type type) {
     }
 }
 
+extern u8 gucssidData[];
+extern u8 gucpwdData[];
 int luat_wlan_smartconfig_start(int tp) {
     (void)tp;
+    gucssidData[0] = 0;
+    gucpwdData[0] = 0;
     tls_wifi_oneshot_result_cb_register(luat_sc_callback);
     return tls_wifi_set_oneshot_flag(1);
 }

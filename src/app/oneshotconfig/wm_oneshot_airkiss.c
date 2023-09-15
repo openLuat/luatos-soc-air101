@@ -11,9 +11,9 @@
 
 #if TLS_CONFIG_AIRKISS_MODE_ONESHOT
 
-#define AIRKISS_BSSID_CONNECT_ENABLE      1/* �ù�����Ҫʹ�ô�log�Ŀ� */
+#define AIRKISS_BSSID_CONNECT_ENABLE      1/* 该功能需要使用带log的库 */
 
-/* ���������� */
+/* 局域网发现 */
 #define TLS_CONFIG_AIRKISS_LAN            0
 
 /* airkiss debug switcher */
@@ -24,10 +24,10 @@
 #define ONESHOT_AIRKISS_AES_KEY           "winnermicro_wifi"
 #endif
 
-/* udp�㲥����Ŀ */
+/* udp广播包数目 */
 #define ONESHOT_AIRKISS_REPLY_CNT_MAX     50
 
-/* udp�㲥�˿� */
+/* udp广播端口 */
 #define ONESHOT_AIRKISS_REMOTE_PORT      10000
 
 #define ONESHOT_AIRKISS_SSID_LEN_MAX      32
@@ -72,7 +72,7 @@ void oneshot_airkiss_send_reply(void)
     {
         return ;
     }
-    /* 13.�����ɹ�֮����10000�˿ڹ㲥����udp���ģ�ͨ��һ�������Ѿ����óɹ� */
+    /* 13.加网成功之后，向10000端口广播发送udp报文，通告一键配置已经配置成功 */
     socket_num = socket(AF_INET, SOCK_DGRAM, 0);
     AIRKISS_PRINT("create skt %d: send udp broadcast to airkiss.\r\n", socket_num);
 
@@ -87,7 +87,7 @@ void oneshot_airkiss_send_reply(void)
         {
             break;
         }
-        /* ���ͽ��Ϊ����get_result����randomֵ��һ���ֽ�udp���ݰ� */
+        /* 发送结果为包含get_result所得random值的一个字节udp数据包 */
         sendto(socket_num, &random4reply, sizeof(random4reply), 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
         tls_os_time_delay(50);
     }
@@ -101,7 +101,6 @@ void oneshot_airkiss_send_reply(void)
 
 extern u8 gucssidData[];
 extern u8 gucpwdData[];
-void luat_sc_callback(enum tls_wifi_oneshot_result_type type);
 static void oneshot_airkiss_finish_new(u8 *ssid, u8 ssid_len, u8 *pwd, u8 pwd_len,  u8 *bssid, u8 randomnum)
 {
     int ret =  - 1;
@@ -116,12 +115,15 @@ static void oneshot_airkiss_finish_new(u8 *ssid, u8 ssid_len, u8 *pwd, u8 pwd_le
 
     if (WM_SUCCESS != ret)
     {
+        gucssidData[0] = 0;
+        gucpwdData[0] = 0;
         AIRKISS_PRINT("failed to connect net, airkiss join net failed.\r\n");
     }
     else {
         memcpy(gucssidData, ssid, ssid_len);
         memcpy(gucpwdData, pwd, pwd_len);
-        luat_sc_callback(WM_WIFI_ONESHOT_TYPE_SSIDPWD);
+        gucssidData[ssid_len] = 0;
+        gucpwdData[pwd_len] = 0;
     }
     return ;
 }
@@ -293,7 +295,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
     switch (airkiss_step_mark)
     {
         case 0:
-            /*ͬ��*/
+            /*同步*/
             //if (isfromds == 0)
             {
                 if (frm_len <= 85)
@@ -387,7 +389,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
             break;
 
         case 1:
-            /*��ȡ�����ݳ��Ⱥ�SSID CRCֵ*/
+            /*获取总数据长度和SSID CRC值*/
             if ((frm_len >= (stairkissdata->airkiss_base_len)) && (frm_len <= (0x3F + stairkissdata->airkiss_base_len)))
             {
                 if (ieee80211_has_retry(hdr->frame_control) && (stairkissdata->seqnum[isfromds] == hdr->seq_ctrl))
@@ -482,7 +484,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
             }
             break;
         case 2:
-            // if (airkiss_step_mark == 2)	    /*��ȡPWD����,PWD CRC*/
+            // if (airkiss_step_mark == 2)	    /*获取PWD长度,PWD CRC*/
             {
                 if ((frm_len >= (0x40 + stairkissdata->airkiss_base_len)) && (frm_len <= (0x7F + stairkissdata->airkiss_base_len)))
                 {
@@ -606,7 +608,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
                                 index = stairkissdata->akdata[isfromds][1];
                                 if ((index >= stairkissdata->airkiss_total_index) || (stairkissdata->airkiss_all_data_bit[isfromds]&(1UL << index)))
                                 {
-                                    stairkissdata->akdatacnt[isfromds] = 0; /*�����ѽ��ջ�����ų�������ŵģ���������*/
+                                    stairkissdata->akdatacnt[isfromds] = 0; /*对于已接收或者序号超过总序号的，重新来收*/
                                     break;
                                 }
                             }

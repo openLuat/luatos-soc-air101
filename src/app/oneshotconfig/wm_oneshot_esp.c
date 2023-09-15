@@ -39,7 +39,8 @@ u8 esp_temp_lock = 0;
 struct esp_data_t esp_data[120];
 struct esp_param_t esp_param;
 
-
+extern u8 gucssidData[];
+extern u8 gucpwdData[];
 
 void esp_crc8_table_init(void)
 {
@@ -132,7 +133,7 @@ int tls_esp_recv(u8 *buf, u16 data_len)
 
 	multicast = ieee80211_get_DA(hdr);
 
-	if(hdr->duration_id & 0x02)		//normal mode stbc������
+	if(hdr->duration_id & 0x02)		//normal mode stbc不处理
 	{
 		return ESP_ONESHOT_CONTINUE;
 	}
@@ -222,10 +223,10 @@ int tls_esp_recv(u8 *buf, u16 data_len)
 				for(i=1; i<=3; i++)
 				{
 					if(guide_len > esp_head[tods][i])
-						guide_len = esp_head[tods][i];								//ȡ��ͬ��ͷ����Сֵ					
+						guide_len = esp_head[tods][i];								//取出同步头中最小值					
 				}
-				esp_state = 1;														//ͬ�����, ����ԴMAC���ŵ�
-				esp_data_datum = guide_len - ESP_GUIDE_DATUM + ESP_DATA_OFFSET;		//��ȡ����׼����
+				esp_state = 1;														//同步完成, 锁定源MAC和信道
+				esp_data_datum = guide_len - ESP_GUIDE_DATUM + ESP_DATA_OFFSET;		//获取到基准长度
 				if(esp_printf)
 					esp_printf("esp lock:%d\n", esp_data_datum);	
 				return ESP_ONESHOT_CHAN_LOCKED;
@@ -302,7 +303,7 @@ int tls_esp_recv(u8 *buf, u16 data_len)
 			}
 			if(esp_data[0].used)
 			{
-				if(esp_data_cnt >= esp_data[0].data + 6)		//�������У�飬CRCУ���
+				if(esp_data_cnt >= esp_data[0].data + 6)		//计算异或校验，CRC校验等
 				{
 					if(esp_printf)
 						esp_printf("here1\n");
@@ -312,7 +313,7 @@ int tls_esp_recv(u8 *buf, u16 data_len)
 					{
 						totalXor ^= esp_data[i].data;
 					}
-					if(totalXor != 0)							//���У�����
+					if(totalXor != 0)							//异或校验错误
 					{
 						if(esp_printf)
 							esp_printf("totalXor err\n");
@@ -416,7 +417,7 @@ int tls_esp_recv(u8 *buf, u16 data_len)
 									totalXor ^= esp_param.ssid[i];
 								}
 								
-								if(totalXor != 0)							//���У�����
+								if(totalXor != 0)							//异或校验错误
 								{
 									if(esp_printf)
 										esp_printf("totalXor err\n");
@@ -463,25 +464,3 @@ void tls_esp_init(u8 *scanBss)
 	if(esp_printf)
 		esp_printf("tls_esp_init\n");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
