@@ -11,9 +11,9 @@
 
 #if TLS_CONFIG_AIRKISS_MODE_ONESHOT
 
-#define AIRKISS_BSSID_CONNECT_ENABLE      1/* ¸Ã¹¦ÄÜÐèÒªÊ¹ÓÃ´ølogµÄ¿â */
+#define AIRKISS_BSSID_CONNECT_ENABLE      1/* ï¿½Ã¹ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÊ¹ï¿½Ã´ï¿½logï¿½Ä¿ï¿½ */
 
-/* ¾ÖÓòÍø·¢ÏÖ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #define TLS_CONFIG_AIRKISS_LAN            0
 
 /* airkiss debug switcher */
@@ -24,10 +24,10 @@
 #define ONESHOT_AIRKISS_AES_KEY           "winnermicro_wifi"
 #endif
 
-/* udp¹ã²¥°üÊýÄ¿ */
+/* udpï¿½ã²¥ï¿½ï¿½ï¿½ï¿½Ä¿ */
 #define ONESHOT_AIRKISS_REPLY_CNT_MAX     50
 
-/* udp¹ã²¥¶Ë¿Ú */
+/* udpï¿½ã²¥ï¿½Ë¿ï¿½ */
 #define ONESHOT_AIRKISS_REMOTE_PORT      10000
 
 #define ONESHOT_AIRKISS_SSID_LEN_MAX      32
@@ -72,7 +72,7 @@ void oneshot_airkiss_send_reply(void)
     {
         return ;
     }
-    /* 13.¼ÓÍø³É¹¦Ö®ºó£¬Ïò10000¶Ë¿Ú¹ã²¥·¢ËÍudp±¨ÎÄ£¬Í¨¸æÒ»¼üÅäÖÃÒÑ¾­ÅäÖÃ³É¹¦ */
+    /* 13.ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½Ö®ï¿½ï¿½ï¿½ï¿½10000ï¿½Ë¿Ú¹ã²¥ï¿½ï¿½ï¿½ï¿½udpï¿½ï¿½ï¿½Ä£ï¿½Í¨ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ã³É¹ï¿½ */
     socket_num = socket(AF_INET, SOCK_DGRAM, 0);
     AIRKISS_PRINT("create skt %d: send udp broadcast to airkiss.\r\n", socket_num);
 
@@ -87,7 +87,7 @@ void oneshot_airkiss_send_reply(void)
         {
             break;
         }
-        /* ·¢ËÍ½á¹ûÎª°üº¬get_resultËùµÃrandomÖµµÄÒ»¸ö×Ö½ÚudpÊý¾Ý°ü */
+        /* ï¿½ï¿½ï¿½Í½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½get_resultï¿½ï¿½ï¿½ï¿½randomÖµï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½ï¿½udpï¿½ï¿½ï¿½Ý°ï¿½ */
         sendto(socket_num, &random4reply, sizeof(random4reply), 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
         tls_os_time_delay(50);
     }
@@ -99,6 +99,9 @@ void oneshot_airkiss_send_reply(void)
 
 //-------------------------------------------------------------------------
 
+extern u8 gucssidData[];
+extern u8 gucpwdData[];
+void luat_sc_callback(enum tls_wifi_oneshot_result_type type);
 static void oneshot_airkiss_finish_new(u8 *ssid, u8 ssid_len, u8 *pwd, u8 pwd_len,  u8 *bssid, u8 randomnum)
 {
     int ret =  - 1;
@@ -115,7 +118,11 @@ static void oneshot_airkiss_finish_new(u8 *ssid, u8 ssid_len, u8 *pwd, u8 pwd_le
     {
         AIRKISS_PRINT("failed to connect net, airkiss join net failed.\r\n");
     }
-
+    else {
+        memcpy(gucssidData, ssid, ssid_len);
+        memcpy(gucpwdData, pwd, pwd_len);
+        luat_sc_callback(WM_WIFI_ONESHOT_TYPE_SSIDPWD);
+    }
     return ;
 }
 
@@ -286,7 +293,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
     switch (airkiss_step_mark)
     {
         case 0:
-            /*Í¬²½*/
+            /*Í¬ï¿½ï¿½*/
             //if (isfromds == 0)
             {
                 if (frm_len <= 85)
@@ -380,7 +387,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
             break;
 
         case 1:
-            /*»ñÈ¡×ÜÊý¾Ý³¤¶ÈºÍSSID CRCÖµ*/
+            /*ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½Èºï¿½SSID CRCÖµ*/
             if ((frm_len >= (stairkissdata->airkiss_base_len)) && (frm_len <= (0x3F + stairkissdata->airkiss_base_len)))
             {
                 if (ieee80211_has_retry(hdr->frame_control) && (stairkissdata->seqnum[isfromds] == hdr->seq_ctrl))
@@ -475,7 +482,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
             }
             break;
         case 2:
-            // if (airkiss_step_mark == 2)	    /*»ñÈ¡PWD³¤¶È,PWD CRC*/
+            // if (airkiss_step_mark == 2)	    /*ï¿½ï¿½È¡PWDï¿½ï¿½ï¿½ï¿½,PWD CRC*/
             {
                 if ((frm_len >= (0x40 + stairkissdata->airkiss_base_len)) && (frm_len <= (0x7F + stairkissdata->airkiss_base_len)))
                 {
@@ -599,7 +606,7 @@ void tls_airkiss_recv_new(u8 *pdata, u8 *data, u16 data_len)
                                 index = stairkissdata->akdata[isfromds][1];
                                 if ((index >= stairkissdata->airkiss_total_index) || (stairkissdata->airkiss_all_data_bit[isfromds]&(1UL << index)))
                                 {
-                                    stairkissdata->akdatacnt[isfromds] = 0; /*¶ÔÓÚÒÑ½ÓÊÕ»òÕßÐòºÅ³¬¹ý×ÜÐòºÅµÄ£¬ÖØÐÂÀ´ÊÕ*/
+                                    stairkissdata->akdatacnt[isfromds] = 0; /*ï¿½ï¿½ï¿½ï¿½ï¿½Ñ½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÅµÄ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
                                     break;
                                 }
                             }

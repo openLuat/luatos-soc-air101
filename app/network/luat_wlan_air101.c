@@ -232,7 +232,7 @@ int luat_wlan_scan_get_result(luat_wlan_scan_result_t *results, size_t ap_limit)
     return ap_limit;
 }
 
-static void oneshot_result_callback(enum tls_wifi_oneshot_result_type type) {
+void luat_sc_callback(enum tls_wifi_oneshot_result_type type) {
     if (type == WM_WIFI_ONESHOT_TYPE_SSIDPWD) {
         LLOGD("oneshot Got!!");
         rtos_msg_t msg = {.handler = l_wlan_cb, .arg1=ONESHOT_RESULT};
@@ -242,7 +242,7 @@ static void oneshot_result_callback(enum tls_wifi_oneshot_result_type type) {
 
 int luat_wlan_smartconfig_start(int tp) {
     (void)tp;
-    tls_wifi_oneshot_result_cb_register(oneshot_result_callback);
+    tls_wifi_oneshot_result_cb_register(luat_sc_callback);
     return tls_wifi_set_oneshot_flag(1);
 }
 
