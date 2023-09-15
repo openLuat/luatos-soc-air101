@@ -31,7 +31,9 @@
 #include "wm_oneshot_lsd.h"
 #include "wm_efuse.h"
 #include "wm_bt_config.h"
-
+#if TLS_CONFIG_ESP
+#include "wm_oneshot_esp.h"
+#endif
 #ifndef ETH_ALEN
 #define ETH_ALEN 6
 #endif
@@ -111,7 +113,9 @@ static tls_os_sem_t	*gWifiRecvSem = NULL;
 #define ONESHOT_SPECIAL_DELAY_TIME  (8 * HZ)
 static u32 g_oneshot_dur_time = 0;
 #endif
-
+#if TLS_CONFIG_ESP
+u8 esp_reply = FALSE;
+#endif
 #endif
 
 #if TLS_CONFIG_AP_MODE_ONESHOT
@@ -535,6 +539,100 @@ int tls_wifi_lsd_oneshot_special(u8 *data, u16 data_len)
 	return 0;
 }
 #endif
+#if TLS_CONFIG_ESP
+void oneshot_esp_send_reply(void)
+{
+    u8 idx;
+    int socket_num = 0;
+    struct sockaddr_in addr;
+	u8 buf[15];
+	u8 mac_addr[8];
+	struct tls_ethif *ethif;
+	u32 toaddr;
+
+    if (esp_reply)
+    {
+        esp_reply = FALSE;
+    }
+    else
+    {
+        return ;
+    }
+
+    socket_num = socket(AF_INET, SOCK_DGRAM, 0);
+
+	memcpy((u8 *)&toaddr, esp_param.ip, 4);
+    memset(&addr, 0, sizeof(struct sockaddr_in));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(ESP_REPLY_PORT);
+	memcpy((u8 *)&addr.sin_addr.s_addr, &esp_param.ip[0], 4);
+
+	memset(mac_addr,0,sizeof(mac_addr));
+	tls_get_mac_addr(mac_addr);
+
+	ethif = tls_netif_get_ethif();
+
+	buf[0] = esp_param.total_len;
+	memcpy(&buf[1], mac_addr, 6);
+	memcpy(&buf[7], (u8 *)&ethif->ip_addr.addr, 4);
+
+    for (idx = 0; idx < ESP_REPLY_MAX_CNT; idx++)
+    {
+        if (tls_wifi_get_oneshot_flag())
+        {
+            break;
+        }
+        sendto(socket_num, buf, 11, 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
+        tls_os_time_delay(10);
+    }
+
+    closesocket(socket_num);
+
+    return ;
+}
+
+static void oneshot_esp_finish(void)
+{
+	printf("esp connect, ssid:%s, pwd:%s, time:%d\n", esp_param.ssid, esp_param.pwd, (tls_os_get_time()-oneshottime)*1000/HZ);
+
+ 	esp_reply = TRUE;
+
+    tls_netif_add_status_event(wm_oneshot_netif_status_event);
+    
+    if (tls_oneshot_if_use_bssid(esp_param.ssid, &esp_param.ssid_len, esp_param.bssid))
+    {    	
+		ONESHOT_DBG("connect_by_ssid_bssid\n");
+		tls_wifi_set_oneshot_flag(0);
+		tls_wifi_connect_by_ssid_bssid(esp_param.ssid, esp_param.ssid_len, esp_param.bssid, esp_param.pwd, esp_param.pwd_len);
+    }
+    else
+    {
+		ONESHOT_DBG("connect_by_ssid\n");
+		tls_wifi_set_oneshot_flag(0);
+		tls_wifi_connect(esp_param.ssid, esp_param.ssid_len, esp_param.pwd, esp_param.pwd_len);
+    }
+}
+
+int tls_wifi_esp_oneshot_special(u8 *data, u16 data_len)
+{
+	int ret;
+	
+	ret = tls_esp_recv(data, data_len);	
+	if(ret == ESP_ONESHOT_CHAN_TEMP_LOCKED)
+	{	
+		tls_oneshot_switch_channel_tim_temp_stop();
+	}
+	else if(ret == ESP_ONESHOT_CHAN_LOCKED)
+	{
+		tls_oneshot_switch_channel_tim_stop((struct ieee80211_hdr *)data);
+	}
+	else if(ret == ESP_ONESHOT_COMPLETE)
+	{
+		oneshot_esp_finish();
+	}
+	return 0;
+}
+#endif
 
 /*END CONFIG_UDP_ONE_SHOT*/
 #endif
@@ -716,6 +814,16 @@ void tls_oneshot_callback_start(void)
 #endif
 	tls_lsd_init(oneshot_bss);
 #endif
+#if TLS_CONFIG_ESP
+#if TLS_CONFIG_ONESHOT_DELAY_SPECIAL
+		tls_wl_plcp_stop();
+#endif
+#if ESP_ONESHOT_DEBUG
+	esp_printf = printf;
+#endif
+	tls_esp_init(oneshot_bss);
+	esp_reply = FALSE;
+#endif
 }
 
 
@@ -739,6 +847,9 @@ u8 tls_wifi_dataframe_recv(struct ieee80211_hdr *hdr, u32 data_len)
 
 #if TLS_CONFIG_UDP_LSD_SPECIAL
 	tls_wifi_lsd_oneshot_special((u8 *)hdr, data_len);
+#endif
+#if TLS_CONFIG_ESP
+	tls_wifi_esp_oneshot_special((u8 *)hdr, data_len);
 #endif
 
 #if TLS_CONFIG_UDP_ONE_SHOT    
@@ -1301,8 +1412,9 @@ void tls_oneshot_task_handle(void *arg)
 			g_oneshot_dur_time = tls_os_get_time();
 #endif
             wifi_change_chanel(airwifichan[chanCnt], airchantype[chanCnt]);
-			
+			printf("tls_oneshot_callback_start 1\n");
 			tls_oneshot_callback_start();
+			printf("tls_oneshot_callback_start 2\n");
 
             tls_wifi_data_recv_cb_register((tls_wifi_data_recv_callback)tls_wifi_dataframe_recv);
 			tls_wl_plcp_cb_register((tls_wifi_data_recv_callback)tls_wifi_dataframe_recv);
@@ -1366,6 +1478,9 @@ void tls_oneshot_task_handle(void *arg)
 
 #if TLS_CONFIG_UDP_LSD_SPECIAL
             tls_lsd_init(oneshot_bss);
+#endif
+#if TLS_CONFIG_ESP
+			tls_esp_init(oneshot_bss);
 #endif
 
 		    if (gWifiSwitchChanTim)
@@ -1463,8 +1578,13 @@ void tls_oneshot_task_handle(void *arg)
 					oneshot_airkiss_send_reply();
 				}else
 #endif
-				{		
+				{	
+#if TLS_CONFIG_UDP_LSD_SPECIAL
 					wm_oneshot_send_mac();
+#endif
+#if TLS_CONFIG_ESP
+					oneshot_esp_send_reply();
+#endif
 				}
            }
 

@@ -38,7 +38,10 @@ extern int tls_filter_module_srcmac(u8 *mac);
 /** WinnerMicro ONSHOT */
 #define TLS_CONFIG_UDP_LSD_SPECIAL	 	(ONESHOT_OFF&& TLS_CONFIG_UDP_ONE_SHOT)
 /** Delay start plcp receive*/
-#define TLS_CONFIG_ONESHOT_DELAY_SPECIAL ONESHOT_ON
+#define TLS_CONFIG_ONESHOT_DELAY_SPECIAL ONESHOT_OFF
+
+/** ESP TOUCH */
+#define TLS_CONFIG_ESP                   (ONESHOT_ON&& TLS_CONFIG_UDP_ONE_SHOT)
 
 /** AP ONESHOT */
 #define TLS_CONFIG_AP_MODE_ONESHOT      (ONESHOT_OFF && TLS_CONFIG_AP)
