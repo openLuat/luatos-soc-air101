@@ -1,6 +1,6 @@
 # Air101/Air103/Air601 固件源码库
 
-Air101和Air103是基于平头哥XT804内核设计的soc
+Air101/Air103/Air601是基于平头哥XT804内核设计的soc
 
 使用相同内核的`W800/W801/W806`同样可以使用本仓库代码。
 
@@ -11,7 +11,7 @@ Air101和Air103是基于平头哥XT804内核设计的soc
 ## 编译说明
 见wiki编译教程[Air101 / Air103 - LuatOS 文档](https://wiki.luatos.com/develop/compile/Air101.html)
 
-关于Air601编译, luat_conf_bsp.h 中设置为AIR103,然后启用LUAT_USE_WLAN,编译出来就是AIR601固件.
+关于Air601编译, luat_conf_bsp.h 中设置为AIR601,编译出来就是AIR601固件.
 
 ## Air101/Air103 相关资料
 
@@ -22,7 +22,7 @@ Air101和Air103是基于平头哥XT804内核设计的soc
 
 ## 如需帮助
 
-LuatOS/Air101/Air103问题请加QQ群: 1061642968 或提交issue
+LuatOS/Air101/Air103/Air601问题请加QQ群: 1061642968 或提交issue
 
 W806/W801问题请加QQ群：739265828
 
