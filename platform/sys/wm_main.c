@@ -315,12 +315,10 @@ void tls_pmu_chipsleep_callback(int sleeptime)
  * Output
  * Return
  ****************************************************************************/
-extern const u8 default_mac[];
 void task_start (void *data)
 {
 	u8 enable = 0;
     u8 mac_addr[6];
-    char unique_id [20] = {0};
 
 #if TLS_CONFIG_CRYSTAL_24M
     tls_wl_hw_using_24m_crystal();
@@ -343,70 +341,16 @@ void task_start (void *data)
     tls_fls_init();
     tls_fls_sys_param_postion_init();
 
+    /*PARAM GAIN,MAC default*/
 #if defined(LUAT_USE_NIMBLE) || defined(LUAT_USE_WLAN)
     tls_ft_param_init();
     tls_param_load_factory_default();
     tls_param_init(); /*add param to init sysparam_lock sem*/
-#endif
-    tls_fls_read_unique_id(unique_id);
-
-#ifdef LUAT_USE_NIMBLE
-	// 读蓝牙mac, 如果是默认值,就根据unique_id读取
-	uint8_t bt_mac[6];
-	// 缺省mac C0:25:08:09:01:10
-	uint8_t bt_default_mac[] = {0xC0,0x25,0x08,0x09,0x01,0x10};
-	tls_get_bt_mac_addr(bt_mac);
-	if (!memcmp(bt_mac, bt_default_mac, 6)) { // 看来是默认MAC, 那就改一下吧
-		if (unique_id[1] == 0x10){
-			memcpy(bt_mac, unique_id + 10, 6);
-		}
-		else {
-			memcpy(bt_mac, unique_id + 2, 6);
-		}
-		tls_set_bt_mac_addr(bt_mac);
-	}
-	//LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
+    extern void sys_mac_init();
+    sys_mac_init();
 #endif
 
-    /*PARAM GAIN,MAC default*/
 #ifdef LUAT_USE_WLAN
-	tls_get_mac_addr(mac_addr);
-    int mac_ok = 1;
-    if (!memcmp(mac_addr, default_mac, 6)) {
-        mac_ok = 0;
-    }
-    else {
-        mac_ok = 1;
-        for (size_t i = 0; i < 6; i++)
-        {
-            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
-                mac_ok = 0;
-                break;
-            }
-        }
-        
-    }
-	if (!mac_ok) { // 看来是默认MAC, 那就改一下吧
-		if (unique_id[1] == 0x10){
-			memcpy(mac_addr, unique_id + 12, 6);
-		}
-		else {
-			memcpy(mac_addr, unique_id + 4, 6);
-		}
-        mac_addr[0] = 0x0C;
-        for (size_t i = 0; i < 6; i++)
-        {
-            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
-                mac_addr[i] = 0x01;
-            }
-        }
-        printf("auto fix wifi mac addr -> %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-        
-        tls_set_mac_addr(mac_addr);
-        tls_get_mac_addr(mac_addr);
-	}
-    // printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-
     tls_get_tx_gain(&tx_gain_group[0]);
     TLS_DBGPRT_INFO("tx gain ");
     TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
@@ -415,7 +359,7 @@ void task_start (void *data)
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }
 
-    // tls_get_mac_addr(&mac_addr[0]);
+    tls_get_mac_addr(mac_addr);
     TLS_DBGPRT_INFO("mac addr ");
     TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
     if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
