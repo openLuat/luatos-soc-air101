@@ -231,6 +231,36 @@
                         "rsize": 23240,
                         "fsize": 464592,
                         "dft": false
+                    },
+                    {
+                        "name": "tls",
+                        "content": "网络层TLS/SSL支持",
+                        "rsize": 65240,
+                        "fsize": 464592,
+                        "dft": false,
+                        "children": [
+                            {
+                                "name": "MBEDTLS_DEBUG_C",
+                                "content": "开启mbedtls调试信息,需要30k空间",
+                                "rsize": 30000,
+                                "fsize": 275108,
+                                "dft": false
+                            },
+                            {
+                                "name": "MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED",
+                                "content": "开启ECDHE_RSA系列套件,比较安全,建立SSL连接耗时需要2秒",
+                                "rsize": 3000,
+                                "fsize": 275108,
+                                "dft": false
+                            }
+                        ]
+                    },
+                    {
+                        "name": "wlan",
+                        "content": "[试用]wlan库,wifi支持,注意天线必须加上ESD防护",
+                        "rsize": 123240,
+                        "fsize": 464592,
+                        "dft": false
                     }
                 ]
             },
