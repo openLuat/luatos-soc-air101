@@ -50,7 +50,7 @@ void lv_split_jpeg_init(void);
 
 int luat_fs_init(void) {
     //luat_timer_mdelay(1000);
-#ifdef AIR103
+#if (defined(AIR103) || defined(AIR601))
     luadb_addr =  0x0E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
 #else
     luadb_addr =  0x1E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
@@ -74,7 +74,7 @@ int luat_fs_init(void) {
     }
     // else {
         //LLOGI("Using LuaDB as script zone format %p", ptr);
-#ifdef AIR103
+#if (defined(AIR103) || defined(AIR601))
         lfs_addr = 0x0FC000 - (LUAT_FS_SIZE*1024);
         lfs_size_kb = LUAT_FS_SIZE;
 #else

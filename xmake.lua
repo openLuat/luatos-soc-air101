@@ -421,10 +421,11 @@ target("air10x")
         local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local TARGET_CONF = custom_data:find("\r#define AIR101") or custom_data:find("\n#define AIR101")
         if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
+        if custom_data:find("\r#define AIR601") or custom_data:find("\n#define AIR601") then
+            TARGET_NAME = "AIR601"
+        end
         local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
         
-        local WLAN_CONF = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN")
-        if WLAN_CONF then TARGET_NAME = "AIR601" end
         local fs_size = AIR10X_FLASH_FS_REGION_SIZE or 112
         if FDB_CONF or fs_size > 112 then
             local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")

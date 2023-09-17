@@ -12,6 +12,7 @@
 
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
+// 可选值, AIR101 AIR103 AIR601 分别对应3种模块
 #define AIR101
 
 // 启用64位虚拟机
@@ -237,6 +238,12 @@
 //-------------------------------------------------------------------------------
 //<-- custom
 //------------------------------------------------------------------------------
+
+#ifdef AIR601
+#ifndef LUAT_USE_WLAN
+#define LUAT_USE_WLAN 1
+#endif
+#endif
 
 #if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500)
 #ifndef LUAT_USE_NETWORK
