@@ -52,6 +52,8 @@
 #define ONESHOT_INF(s, ...)
 #endif
 
+#include "lwip/inet.h"
+
 u32 oneshottime = 0;
 
 volatile u8 guconeshotflag = 0;
@@ -576,6 +578,8 @@ void oneshot_esp_send_reply(void)
 	memcpy(&buf[1], mac_addr, 6);
 	memcpy(&buf[7], (u8 *)&ethif->ip_addr.addr, 4);
 
+	uint32_t ip_addr = addr.sin_addr.s_addr;
+
     for (idx = 0; idx < ESP_REPLY_MAX_CNT; idx++)
     {
         if (tls_wifi_get_oneshot_flag())
@@ -583,7 +587,15 @@ void oneshot_esp_send_reply(void)
             break;
         }
         sendto(socket_num, buf, 11, 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
-        tls_os_time_delay(10);
+		if (ip_addr != INADDR_BROADCAST) {
+            sendto(socket_num, buf, 11, 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
+            addr.sin_addr.s_addr = INADDR_BROADCAST;
+            sendto(socket_num, buf, 11, 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
+            addr.sin_addr.s_addr = ip_addr;
+        } else {
+            sendto(socket_num, buf, 11, 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
+        }
+        tls_os_time_delay(50);
     }
 
     closesocket(socket_num);

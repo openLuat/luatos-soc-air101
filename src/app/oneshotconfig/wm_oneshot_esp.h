@@ -18,7 +18,7 @@
 #define ESP_ONESHOT_DEBUG 		0
 
 #define ESP_REPLY_PORT			18266
-#define ESP_REPLY_MAX_CNT		20
+#define ESP_REPLY_MAX_CNT		50
 
 
 typedef enum
