@@ -89,7 +89,7 @@ void oneshot_airkiss_send_reply(void)
         }
         /* 发送结果为包含get_result所得random值的一个字节udp数据包 */
         sendto(socket_num, &random4reply, sizeof(random4reply), 0, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
-        tls_os_time_delay(10);
+        tls_os_time_delay(50);
     }
 
     closesocket(socket_num);
