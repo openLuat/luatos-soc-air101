@@ -5,6 +5,15 @@
 #include "luat_audio_air101.h"
 #include "es8311.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
+#define LUAT_LOG_TAG "audio"
+#include "luat_log.h"
+
+int luat_i2s_resume(uint8_t id);
+int luat_i2s_stop(uint8_t id);
+
 extern volatile uint8_t run_status;
 
 audio_codec_conf_t audio_hardware = {
@@ -33,7 +42,7 @@ int luat_audio_play_get_last_error(uint8_t multimedia_id){
 
 int luat_audio_start_raw(uint8_t multimedia_id, uint8_t audio_format, uint8_t num_channels, uint32_t sample_rate, uint8_t bits_per_sample, uint8_t is_signed){
     if(sample_rate == 8000 && bits_per_sample == 8){
-        wm_printf("not support 8K 8Bit record!\n");
+        LLOGW("not support 8K 8Bit record!\n");
         return -1;
     }
 	

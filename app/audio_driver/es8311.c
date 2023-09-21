@@ -3,6 +3,7 @@
 #include "luat_gpio.h"
 #include "luat_i2c.h"
 #include "luat_audio_air101.h"
+#include "luat_timer.h"
 
 #include "es8311.h"
 

@@ -6,6 +6,9 @@
 #include "wm_osal.h"
 #include "wm_watchdog.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #ifdef __LUATOS__
 #include "string.h"
 #include "luat_fs.h"
