@@ -62,6 +62,7 @@
 // #define LUAT_USE_SNTP
 // #define LUAT_USE_HTTPSRV
 // #define LUAT_USE_FTP
+#define LUAT_USE_ERRDUMP 1
 
 
 #define LUAT_USE_IOTAUTH 1

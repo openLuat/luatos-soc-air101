@@ -375,13 +375,13 @@ target("network")
     add_includedirs(luatos.."components/network/libemqtt",{public = true})
     add_files(luatos.."components/network/libemqtt/*.c")
 
-    -- mqtt
+    -- ymodem
     add_includedirs(luatos.."components/ymodem",{public = true})
     add_files(luatos.."components/ymodem/*.c")
 
     -- errdump
-    -- add_includedirs(luatos.."components/network/errdump",{public = true})
-    -- add_files(luatos.."components/network/errdump/*.c")
+    add_includedirs(luatos.."components/network/errdump",{public = true})
+    add_files(luatos.."components/network/errdump/*.c")
 target_end()
 
 target("nes")
@@ -626,7 +626,7 @@ target("air10x")
     add_files(luatos.."components/mempool/profiler/**.c")
     add_includedirs(luatos.."components/mempool/profiler/include")
 
-    -- profiler
+    -- repl
     add_files(luatos.."components/repl/**.c")
     add_includedirs(luatos.."components/repl/")
     

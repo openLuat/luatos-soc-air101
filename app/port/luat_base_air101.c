@@ -229,6 +229,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_WLAN
   {"wlan", luaopen_wlan},
 #endif
+#ifdef LUAT_USE_ERRDUMP
+  {"errDump", luaopen_errdump},
+#endif
 #ifdef LUAT_USE_PROFILER
   {"profiler", luaopen_profiler},
 #endif
