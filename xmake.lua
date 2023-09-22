@@ -475,6 +475,9 @@ target("air10x")
     remove_files(luatos.."luat/vfs/luat_fs_posix.c")
     add_files(luatos.."luat/freertos/*.c")
     add_files(luatos.."components/rtos/freertos/*.c")
+    
+    add_files(luatos.."components/printf/*.c")
+    add_includedirs(luatos.."components/printf")
 
     add_files(luatos.."components/lcd/*.c")
     add_files(luatos.."components/sfd/*.c")
