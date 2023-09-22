@@ -107,6 +107,13 @@
                         "rsize": 3000,
                         "fsize": 275108,
                         "dft": false
+                    },
+                    {
+                        "name": "errdump",
+                        "content": "错误上报",
+                        "rsize": 4240,
+                        "fsize": 464592,
+                        "dft": false
                     }
                 ]
             },

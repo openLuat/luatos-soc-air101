@@ -304,6 +304,13 @@
                         "rsize": 123240,
                         "fsize": 464592,
                         "dft": false
+                    },
+                    {
+                        "name": "errdump",
+                        "content": "错误上报,需要开启wlan或者w5500才能编译通过",
+                        "rsize": 4240,
+                        "fsize": 464592,
+                        "dft": false
                     }
                 ]
             },
