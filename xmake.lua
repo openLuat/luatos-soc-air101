@@ -108,6 +108,7 @@ add_includedirs("platform/inc",{public = true})
 add_includedirs("include/arch/xt804/csi_dsp")
 add_includedirs("platform/sys")
 add_includedirs("src/app/mbedtls/ports")
+add_includedirs(luatos.."components/printf",{public = true})
 
 -- add_ldflags(" -Wl,--wrap=malloc ",{force = true})
 -- add_ldflags(" -Wl,--wrap=free ",{force = true})
@@ -477,7 +478,6 @@ target("air10x")
     add_files(luatos.."components/rtos/freertos/*.c")
     
     add_files(luatos.."components/printf/*.c")
-    add_includedirs(luatos.."components/printf")
 
     add_files(luatos.."components/lcd/*.c")
     add_files(luatos.."components/sfd/*.c")
