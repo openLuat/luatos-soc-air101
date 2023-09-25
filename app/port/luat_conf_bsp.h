@@ -110,7 +110,9 @@
 // 硬件加速的版本只支持AES128,若使用AES256就报错了
 #define LUAT_USE_CRYPTO_AES_MBEDTLS  1
 
-#define LUAT_USE_MEDIA  1
+// 音频相关
+// #define LUAT_USE_I2S 1
+// #define LUAT_USE_MEDIA  1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
@@ -301,6 +303,12 @@
 
 #ifdef LUAT_USE_SHELL
 #undef LUAT_USE_REPL
+#endif
+
+#ifdef LUAT_USE_MEDIA
+#ifndef LUAT_USE_I2S
+#define LUAT_USE_I2S 1
+#endif
 #endif
 
 #endif

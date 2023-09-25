@@ -47,7 +47,7 @@ static void I2s_dma_tx_irq(void *p){
 	if(ret_len >= 4 ){
 		I2s_tx_send();
 	}else{
-		run_status &= ~CODEC_RUNING;  
+		run_status &= ~CODEC_RUNING;
 	}
 }
 
@@ -123,8 +123,9 @@ int luat_i2s_send(uint8_t id, char* buff, size_t len) {
 		run_status |= CODEC_RUNING;
 	    ret = I2s_tx_send();
 		if(ret == -1){
-		    printf("fifo empty for send\n");
-			run_status &= ~CODEC_RUNING; 
+		    LLOGE("fifo empty for send\n");
+			run_status &= ~CODEC_RUNING;
+			return 0;
 		}
 	}
     return len;
@@ -155,4 +156,10 @@ int luat_i2s_close(uint8_t id) {
 		OS_DeInitBuffer(&dma_tx_buf);
 	}
     return 0;
+}
+
+int luat_i2s_tx_stat(uint8_t id, size_t *buffsize, size_t* remain) {
+	*buffsize = AUDIO_BUF_SIZE;
+	*remain = dma_tx_buf.Pos;
+	return 0;
 }

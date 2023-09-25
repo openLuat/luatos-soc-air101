@@ -244,13 +244,17 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FASTLZ
   {"fastlz", luaopen_fastlz},
 #endif
-#ifdef LUAT_USE_MEDIA
+#ifdef LUAT_USE_I2S
   {"i2s", luaopen_i2s},
+#endif
+#ifdef LUAT_USE_MEDIA
   {"audio", luaopen_multimedia_audio},
-#ifndef LUAT_USE_TTS_ONLY
   {"codec", luaopen_multimedia_codec},
 #endif
+#ifdef LUAT_USE_USERNET
+  {"usernet", luaopen_usernet},
 #endif
+
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };
