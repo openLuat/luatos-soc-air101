@@ -276,7 +276,7 @@ void luat_openlibs(lua_State *L) {
 
 const char* luat_os_bsp(void)
 {
-#ifdef LUAT_USE_WLAN
+#ifdef AIR601
     return "AIR601";
 #else
 #ifdef AIR103
