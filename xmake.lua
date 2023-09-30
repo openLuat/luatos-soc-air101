@@ -710,10 +710,17 @@ target("air10x")
                     print("AIR10X_FLASH_FS_REGION_SIZE", "default", 112)
                     os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
                 end
+                print("===== " .. (VM_64BIT and "VM 64bit" or "VM 32bit") .. " =====")
+                if VM_64BIT then
+                    os.cp("./soc_tools/script_64bit.img", "./soc_tools/script.img")
+                else
+                    os.cp("./soc_tools/script_32bit.img", "./soc_tools/script.img")
+                end
 
-                os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
+                os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./soc_tools/script.img ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
                 os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
+                os.rm("./soc_tools/script.img")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
             else
                 print("7z not find")
