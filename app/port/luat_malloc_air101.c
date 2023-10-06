@@ -18,33 +18,35 @@ void* __wrap_calloc(size_t itemCount, size_t itemSize);
 void* __wrap_zalloc(size_t size);
 void* __wrap_realloc(void*ptr, size_t len);
 
+// 内存分2个区域, P1 和 P2
+// 其中P1是160k, 同时也是sys的主要区域, 栈内存也必须分配在这里
+// P2默认是WIFI和外设的内存, 不启用WIFI时全部归lua使用, 启用WIFI时部分使用
 #ifdef LUAT_USE_WLAN
 // 与tls_wifi_mem_cfg正相关, 假设tx是7, rx是3
 // (7+3)*2*1638+4096 = 36k , 然后lua可用 128 - 36 = 92
 // (6+4)*2*1638+4096 = 36k , 然后lua可用 128 - 36 = 92
 // (7+7)*2*1638+4096 = 49k , 然后lua可用 128 - 49 = 79
-#define LUAT_HEAP_MIN_SIZE (92*1024)
-#undef LUAT_HEAP_SIZE
-#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
+#define LUAT_HEAP_P2_SIZE (92*1024)
 #else
-#define LUAT_HEAP_MIN_SIZE (128*1024)
+#define LUAT_HEAP_P2_SIZE (128*1024)
 #endif
 
-#ifndef LUAT_HEAP_SIZE
-#ifdef LUAT_USE_NIMBLE
-#define LUAT_HEAP_SIZE (128)*1024
+#if defined(LUAT_USE_NIMBLE) || defined(LUAT_USE_TLS)
+#ifdef LUAT_USE_WLAN
+#define LUAT_HEAP_P1_SIZE 0
 #else
-#define LUAT_HEAP_SIZE (128+48)*1024
+#define LUAT_HEAP_P1_SIZE 24*1024
+#endif
+#else
+#ifdef LUAT_USE_WLAN
+#define LUAT_HEAP_P1_SIZE 24* 1024
+#else
+#define LUAT_HEAP_P1_SIZE 48*1024
 #endif
 #endif
 
-#if (LUAT_HEAP_SIZE < LUAT_HEAP_MIN_SIZE)
-#undef LUAT_HEAP_SIZE
-#define LUAT_HEAP_SIZE LUAT_HEAP_MIN_SIZE
-#endif
-
-#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
-__attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE) / 8];
+#if (LUAT_HEAP_P1_SIZE > 0)
+__attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_P1_SIZE) / 8];
 #endif
 
 #ifdef LUAT_USE_TLSF
@@ -63,10 +65,13 @@ extern luat_profiler_mem_t profiler_memregs[];
 
 void luat_heap_init(void) {
 	// 毕竟sram还是快很多的, 优先sram吧
+    //LLOGD("VM MEM P1 %08X P2 %08X", LUAT_HEAP_P1_SIZE, LUAT_HEAP_P2_SIZE);
+#if (LUAT_HEAP_P1_SIZE > 0)
 #ifndef LUAT_USE_TLSF
-	bpool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE - 64);
+	bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
 #else
-	luavm_tlsf = tlsf_create_with_pool((void*)(0x20048000 - LUAT_HEAP_MIN_SIZE), LUAT_HEAP_MIN_SIZE - 64);
+	luavm_tlsf = tlsf_create_with_pool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
+#endif
 #endif
 
 #ifdef LUAT_USE_PSRAM
@@ -90,15 +95,12 @@ void luat_heap_init(void) {
 		return;
 	}
 #else
-	// 暂时还是放在这里吧, 考虑改到0x20028000之前
-	#if (LUAT_HEAP_SIZE > LUAT_HEAP_MIN_SIZE)
 #ifndef LUAT_USE_TLSF
-	bpool((void*)heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
+	bpool((void*)(0x20048000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
 #else
-	luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, heap_ext, LUAT_HEAP_SIZE - LUAT_HEAP_MIN_SIZE);
+	luavm_tlsf_ext = tlsf_add_pool(0x20048000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
 #endif
 	#endif
-#endif
 }
 
 //------------------------------------------------
