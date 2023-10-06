@@ -50,7 +50,10 @@ static void uart0Init (int bandrate)
 //	tls_reg_write32(HR_UART0_INT_MASK, 0x00);             		/* Disable INT */
 
 }
-#if 0
+
+#include "luat_conf_bsp.h"
+
+#ifndef LUAT_CONF_LOG_UART1
 static void uart1_io_init(void)
 {
     uint32_t temp;
@@ -95,13 +98,13 @@ static void uart1Init (int bandrate)
 void board_init(void)
 {
 
-#if USE_UART0_PRINT
+#ifndef LUAT_CONF_LOG_UART1
     /* use uart0 as log output io */
     uart0Init(921600);
 #else
     uart1_io_init();
     /* use uart1 as log output io */
-	uart1Init(115200);
+	uart1Init(921600);
 	set_printf_port(1);	
 #endif
 }

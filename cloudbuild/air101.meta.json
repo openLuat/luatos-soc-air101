@@ -556,6 +556,13 @@
                         "rsize": 192000,
                         "fsize": 1024,
                         "dft": false
+                    },
+                    {
+                        "name" : "LUAT_CONF_LOG_UART1",
+                        "content": "日志走UART1, 不走UART0",
+                        "rsize": 1024,
+                        "fsize": 1024,
+                        "dft": false
                     }
                 ]
             },

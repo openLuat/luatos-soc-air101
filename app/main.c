@@ -223,7 +223,10 @@ void bpool(void *buffer, long len) {}
 
 extern const u8 default_mac[];
 void sys_mac_init() {
-    u8 mac_addr[6];
+#ifdef LUAT_CONF_LOG_UART1
+	luat_log_set_uart_port(1);
+#endif
+    u8 mac_addr[6] = {0};
     char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
 
