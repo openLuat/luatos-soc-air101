@@ -275,6 +275,29 @@
                         "rsize": 2220,
                         "fsize": 273572,
                         "dft": false
+                    },
+                    {
+                        "name": "@media",
+                        "content": "音频播放",
+                        "rsize": 1220,
+                        "fsize": 273572,
+                        "dft": false,
+                        "children": [
+                            {
+                                "name": "media",
+                                "content": "基础功能,含pcm和mp3播放",
+                                "rsize": 40220,
+                                "fsize": 273572,
+                                "dft": false
+                            },
+                            {
+                                "name": "LUAT_SUPPORT_AMR",
+                                "content": "支持amr格式播放",
+                                "rsize": 30220,
+                                "fsize": 273572,
+                                "dft": false
+                            }
+                        ]
                     }
                 ],
                 "fsize": 271352,
