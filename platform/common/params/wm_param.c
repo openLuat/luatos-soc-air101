@@ -327,14 +327,14 @@ static int param_to_flash(int id, int modify_count, int partition_num)
 #endif
 	flash_param.magic = TLS_PARAM_MAGIC;
 	flash_param.length = sizeof(flash_param);
-
-	if (modify_count < 0){
-		flash_param.modify_count ++;
-		TLS_DBGPRT_INFO("update the \"modify count(%d)\".\n", flash_param.modify_count);
-	} else {
-		flash_param.modify_count  = modify_count;
-		TLS_DBGPRT_INFO("initialize the \"modify count(%d)\".\n", flash_param.modify_count);
-	}
+	flash_param.modify_count = 1; // 固定为1
+	// if (modify_count < 0){
+	// 	flash_param.modify_count ++;
+	// 	TLS_DBGPRT_INFO("update the \"modify count(%d)\".\n", flash_param.modify_count);
+	// } else {
+	// 	flash_param.modify_count  = modify_count;
+	// 	TLS_DBGPRT_INFO("initialize the \"modify count(%d)\".\n", flash_param.modify_count);
+	// }
 
 	if (partition_num < 0) {
 		flash_param.partition_num = (flash_param.partition_num + 1) & 0x01;
@@ -345,6 +345,12 @@ static int param_to_flash(int id, int modify_count, int partition_num)
 	}
 	flash_param.resv_1 = flash_param.resv_2 = 0;
 	flash_param.crc32 = get_crc32((u8 *)&flash_param, sizeof(flash_param) - 4);
+
+	if (param_flash_verify((flash_param.partition_num == 0) ? TLS_FLASH_PARAM1_ADDR : TLS_FLASH_PARAM2_ADDR,
+		(u8 *)&flash_param, sizeof(flash_param)) == 1) {
+		TLS_DBGPRT_INFO("parameter patition(%d) in spi flash is matchd.\n", flash_param.partition_num);
+		return 0;
+	}
 
 	TLS_DBGPRT_INFO("update the parameters to parameter patition(%d) in spi flash.\n", flash_param.partition_num);
 
