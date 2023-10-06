@@ -79,6 +79,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
 
 static void netif_event_cb(u8 status) {
     rtos_msg_t msg = {0};
+    struct tls_param_ip ip_param;
     LLOGD("netif_event %d", status);
     msg.handler = l_wlan_cb;
 	switch (status)
@@ -96,6 +97,12 @@ static void netif_event_cb(u8 status) {
     case NETIF_WIFI_JOIN_SUCCESS :
         wlan_state = 1;
         LLOGI("join success");
+        tls_param_get(TLS_PARAM_ID_IP, (void *)&ip_param, false);
+        if (!ip_param.dhcp_enable) {
+            LLOGI("dhcp is disable, so 'join success' as 'IP_READY'");
+            msg.arg1 = status;
+            luat_msgbus_put(&msg, 0);
+        }
         break;
     case NETIF_IP_NET_UP :
         LLOGI("IP READY");
@@ -158,6 +165,14 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         #endif
         net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         #endif
+
+        // 确保DHCP是默认开启
+        struct tls_param_ip ip_param;
+        tls_param_get(TLS_PARAM_ID_IP, (void *)&ip_param, false);
+        if (!ip_param.dhcp_enable) {
+            ip_param.dhcp_enable = 1;
+            tls_param_set(TLS_PARAM_ID_IP, (void *)&ip_param, false);
+        }
     }
     tls_wifi_set_psflag(FALSE, FALSE);
 	return 0;
@@ -166,6 +181,12 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
 int luat_wlan_mode(luat_wlan_config_t *conf) {
     // 不需要设置, 反正都能用
     (void)conf;
+    if (conf->mode == LUAT_WLAN_MODE_STA) {
+        tls_wifi_softap_destroy();
+    }
+    // else if (conf->mode == LUAT_WLAN_MODE_AP) {
+    //     tls_wifi_disconnect();
+    // }
     return 0;
 }
 
@@ -386,3 +407,53 @@ int luat_wlan_ap_stop(void) {
     return 0;
 }
 
+int luat_wlan_set_station_ip(luat_wlan_station_info_t *info) {
+    struct tls_ethif *ethif;
+    struct tls_param_ip param_ip;
+    if (info == NULL) {
+        return -1;
+    }
+    ethif=tls_netif_get_ethif();
+	if (ethif == NULL)
+	{
+        LLOGE("call wlan.init() first!!");
+		return -1;
+	}
+
+    if (info->dhcp_enable) {
+        LLOGD("dhcp enable");
+    }
+    else {
+        LLOGD("dhcp disable");
+        LLOGD("Sta IP %d.%d.%d.%d MASK %d.%d.%d.%d GW %d.%d.%d.%d", 
+                info->ipv4_addr[0],   info->ipv4_addr[1],   info->ipv4_addr[2],   info->ipv4_addr[3],
+                info->ipv4_netmask[0],info->ipv4_netmask[1],info->ipv4_netmask[2],info->ipv4_netmask[3],
+                info->ipv4_gateway[0],info->ipv4_gateway[1],info->ipv4_gateway[2],info->ipv4_gateway[3]
+        );
+    }
+
+	if (WM_WIFI_JOINED == tls_wifi_get_state())
+	{
+	    if (info->dhcp_enable) {
+	        /* enable dhcp */
+	        tls_dhcp_start();
+	    } else {
+	        tls_dhcp_stop();
+
+			MEMCPY((char *)ip_2_ip4(&ethif->ip_addr) , info->ipv4_addr, 4);
+            // MEMCPY((char *)ip_2_ip4(&ethif->dns1), &params->dns1, 4);
+	        MEMCPY((char *)ip_2_ip4(&ethif->netmask), info->ipv4_netmask, 4);
+	        MEMCPY((char *)ip_2_ip4(&ethif->gw), info->ipv4_gateway, 4);
+	        tls_netif_set_addr(&ethif->ip_addr, &ethif->netmask, &ethif->gw);
+	    }
+	}
+
+    /* update flash params */
+    param_ip.dhcp_enable = info->dhcp_enable;
+    MEMCPY((char *)param_ip.gateway, info->ipv4_gateway, 4);
+    MEMCPY((char *)param_ip.ip, info->ipv4_addr, 4);
+    MEMCPY((char *)param_ip.netmask, info->ipv4_netmask, 4);
+    tls_param_set(TLS_PARAM_ID_IP, (void *)&param_ip, false);
+
+    return 0;
+}
