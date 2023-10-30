@@ -245,7 +245,7 @@
 
 #ifdef AIR601
 #ifndef LUAT_USE_WLAN
-#define LUAT_USE_WLAN 1
+ #define LUAT_USE_WLAN 1
 #endif
 #endif
 

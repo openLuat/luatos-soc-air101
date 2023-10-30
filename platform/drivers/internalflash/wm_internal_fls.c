@@ -559,8 +559,8 @@ int tls_flash_unlock(void)
     {
         return TLS_FLS_STATUS_EPERM;
     }
-    // return flashunlock();
-    return ret;
+    return flashunlock();
+    // return ret;
 }
 
 /**

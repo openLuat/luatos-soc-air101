@@ -426,11 +426,14 @@ target("air10x")
             TARGET_NAME = "AIR601"
         end
         local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
-        
+        local USE_WLAN = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN") 
+        if TARGET_NAME == "AIR601" then
+            USE_WLAN = true
+        end
         local fs_size = AIR10X_FLASH_FS_REGION_SIZE or 112
         if FDB_CONF or fs_size > 112 then
             local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
-            local I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x08010800 , LENGTH = 0x(%x+)")
+            local _origin , I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x(%x+) , LENGTH = 0x(%x+)")
             local sram_size = tonumber('0X'..I_SRAM_LENGTH)
             if FDB_CONF then
                 sram_size = sram_size - 64*1024
@@ -445,6 +448,19 @@ target("air10x")
         else
             os.cp("./ld/"..TARGET_NAME..".ld", "./ld/air101_103.ld")
         end
+
+        
+        local ld_data = io.readfile("./ld/air101_103.ld")
+        local ORIGIN, I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x(%x+) , LENGTH = 0x(%x+)")
+        if USE_WLAN then
+            -- print("更新I_SRAM段的大小")
+            local I_SRAM_LENGTH_N = string.format("%X", (tonumber(I_SRAM_LENGTH, 16) - 12 * 1024))
+            local ld_data_n = ld_data:gsub(ORIGIN, "08013800")
+            ld_data_n = ld_data_n:gsub(I_SRAM_LENGTH, I_SRAM_LENGTH_N)
+            io.writefile("./ld/air101_103.ld", ld_data_n)
+            I_SRAM_LENGTH = I_SRAM_LENGTH_N
+        end
+        print("APP区总大小", I_SRAM_LENGTH, tonumber(I_SRAM_LENGTH, 16) // 1024, "kb")
 
         target:set("filename", TARGET_NAME..".elf")
         target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libdsp.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/air101_103.ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
@@ -647,13 +663,19 @@ target("air10x")
         -- io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
         io.writefile("$(buildir)/out/"..TARGET_NAME..".size", os.iorun(sdk_dir .. "bin/csky-elfabiv2-size $(buildir)/out/"..TARGET_NAME..".elf"))
         io.cat("$(buildir)/out/"..TARGET_NAME..".size")
-        -- if TARGET_NAME == "AIR101" then
-        --     os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8020000 -ra 8020400 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
-        --     os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh 8020000 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
-        -- elseif TARGET_NAME == "AIR103" then
+        local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
+        local USE_WLAN = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN")
+        if conf_data:find("\r#define AIR601") or conf_data:find("\n#define AIR601")  then
+            USE_WLAN = true
+        end
+        if USE_WLAN then
+            print("启用了WLAN, 更新运行区域参数")
+            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8013400 -ra 8013800 -ua 8012000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
+            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8012000 -nh 8013400 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
+        else
             os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8010400 -ra 8010800 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
             os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh 8010400 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
-        -- end
+        end
         os.cp("./tools/xt804/"..TARGET_NAME.."_secboot.img", "$(buildir)/out/"..TARGET_NAME..".fls")
         local img = io.readfile("$(buildir)/out/"..TARGET_NAME..".img", {encoding = "binary"})
         local fls = io.open("$(buildir)/out/"..TARGET_NAME..".fls", "a+")
@@ -686,8 +708,8 @@ target("air10x")
             end
             if path7z then
                 if AIR10X_FLASH_FS_REGION_SIZE or VM_64BIT then
-                    print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
-                    print("LUAT_SCRIPT_SIZE", LUAT_SCRIPT_SIZE)
+                    -- print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
+                    -- print("LUAT_SCRIPT_SIZE", LUAT_SCRIPT_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
                     import("core.base.json")
                     local data = json.decode(info_data)
@@ -729,7 +751,7 @@ target("air10x")
             end
             
         -- end
-        os.rm("./ld/air101_103.ld")
+        --os.rm("./ld/air101_103.ld")
         -- os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/AIR101.img -fc 1 -it 1 -ih 80D0000 -ra 80D0400 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/AIR101")
         -- os.mv("$(buildir)/out/AIR101_gz.img", "$(buildir)/out/AIR101_ota.img")
     end)

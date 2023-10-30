@@ -229,6 +229,7 @@ void sys_mac_init() {
     u8 mac_addr[6] = {0};
     char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
+	int ret = 0;
 
 #ifdef LUAT_USE_NIMBLE
 	// 读蓝牙mac, 如果是默认值,就根据unique_id读取
@@ -249,10 +250,11 @@ void sys_mac_init() {
 #endif
 
 #ifdef LUAT_USE_WLAN
-	tls_get_mac_addr(mac_addr);
+	ret = tls_get_mac_addr(mac_addr);
+	LLOGD("tls_get_mac_addr ret %d %02X%02X%02X%02X%02X%02X", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     int mac_ok = 1;
     if (!memcmp(mac_addr, default_mac, 6)) {
-        mac_ok = 0;
+        mac_ok = 0; // 0C0B47011078
     }
     else {
         mac_ok = 1;
