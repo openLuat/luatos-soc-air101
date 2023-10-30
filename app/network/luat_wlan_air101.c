@@ -284,9 +284,16 @@ int luat_wlan_get_mac(int id, char* mac) {
 
 int luat_wlan_set_mac(int id, const char* mac_addr) {
     (void)id;
+    u8 mac[8] = {0};
+    if (tls_get_mac_addr(mac) == 0 && memcmp(mac_addr, mac, 6) == 0) {
+        // 完全相同, 不需要设置
+        return 0;
+    }
     // LLOGD("set mac %02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-    tls_set_mac_addr((u8*)mac_addr);
-    return 0;
+    int ret = tls_set_mac_addr((u8*)mac_addr);
+    if (ret)
+        LLOGD("tls_set_mac_addr %d", ret);
+    return ret;
 }
 
 int luat_wlan_get_ip(int type, char* data) {
