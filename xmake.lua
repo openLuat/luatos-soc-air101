@@ -400,6 +400,25 @@ target("nes")
     add_files(luatos.."components/nes/**.c")
 target_end()
 
+target("luatfonts")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_files(luatos.."components/luatfonts/**.c")
+    add_includedirs(luatos.."components/luatfonts")
+
+    add_includedirs("app/port",{public = true})
+    add_includedirs("include",{public = true})
+    add_includedirs(luatos.."lua/include",{public = true})
+    add_includedirs(luatos.."luat/include",{public = true})
+    add_includedirs(luatos.."components/u8g2",{public = true})
+    add_includedirs(luatos.."components/gtfont")
+    add_includedirs(luatos.."components/qrcode",{public = true})
+
+    set_targetdir("$(buildir)/lib")
+target_end()
+
 target("air10x")
     -- set kind
     set_kind("binary")
@@ -475,6 +494,7 @@ target("air10x")
     -- add_deps("opus131")
     add_deps("nes")
     add_deps("audio")
+    add_deps("luatfonts")
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
@@ -541,8 +561,6 @@ target("air10x")
     add_includedirs(luatos.."components/gtfont")
     add_files(luatos.."components/gtfont/*.c")
 
-    add_files(luatos.."components/luatfonts/*.c")
-    add_includedirs(luatos.."components/luatfonts")
     add_includedirs(luatos.."components/lvgl/src/lv_font",{public = true})
 
     add_files(luatos.."components/zlib/*.c")
