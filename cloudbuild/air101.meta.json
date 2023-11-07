@@ -568,7 +568,7 @@
             },
             {
                 "icon": "zmdi-puzzle-piece",
-                "name": "@EXT",
+                "name": "@EXT5",
                 "content": "可视化库/UI库",
                 "rsize": 0,
                 "children": [

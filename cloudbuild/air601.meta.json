@@ -870,7 +870,7 @@
             },
             {
                 "icon": "zmdi-puzzle-piece",
-                "name": "@EXT",
+                "name": "@EXT5",
                 "content": "字体/字库配置",
                 "rsize": 0,
                 "children": [
