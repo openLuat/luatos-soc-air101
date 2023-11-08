@@ -429,6 +429,13 @@
                         "dft": false
                     },
                     {
+                        "name": "ercoap",
+                        "content": "新版COAP协议库",
+                        "rsize": 2200,
+                        "fsize": 357620,
+                        "dft": false
+                    },
+                    {
                         "name": "shell",
                         "content": "控制台,搭配dbg功能才可以在LuatIDE使用",
                         "rsize": 6848,

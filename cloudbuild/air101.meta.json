@@ -371,6 +371,13 @@
                         "dft": false
                     },
                     {
+                        "name": "ercoap",
+                        "content": "新版COAP协议库",
+                        "rsize": 2200,
+                        "fsize": 357620,
+                        "dft": false
+                    },
+                    {
                         "name": "shell",
                         "content": "控制台,与repl会冲突!!",
                         "rsize": 6848,

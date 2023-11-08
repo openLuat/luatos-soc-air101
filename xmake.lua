@@ -382,6 +382,11 @@ target("network")
     -- errdump
     add_includedirs(luatos.."components/network/errdump",{public = true})
     add_files(luatos.."components/network/errdump/*.c")
+
+    -- ercoap
+    add_includedirs(luatos.."components/network/ercoap/include",{public = true})
+    add_files(luatos.."components/network/ercoap/src/*.c")
+    add_files(luatos.."components/network/ercoap/binding/*.c")
 target_end()
 
 target("nes")

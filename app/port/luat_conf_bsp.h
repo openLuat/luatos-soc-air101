@@ -57,6 +57,8 @@
 
 // 开启TLS
 // #define LUAT_USE_TLS
+// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+// #define LUAT_USE_CRYPTO_AES_MBEDTLS 1
 
 // 其他网络功能
 // #define LUAT_USE_SNTP
@@ -129,6 +131,7 @@
 // #define LUAT_USE_YMODEM 1
 // #define LUAT_USE_MQTTCORE 1
 // #define LUAT_USE_LIBCOAP 1
+// #define LUAT_USE_ERCOAP 1
 
 //----------------------------
 // 高级功能, 推荐使用REPL, 因为SHELL已废弃

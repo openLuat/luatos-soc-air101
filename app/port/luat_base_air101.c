@@ -105,6 +105,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_LIBCOAP
   {"libcoap", luaopen_libcoap},           // 处理COAP消息
 #endif
+#ifdef LUAT_USE_ERCOAP
+  {"ercoap", luaopen_ercoap},           // 处理COAP消息
+#endif
 #ifdef LUAT_USE_LIBGNSS
   {"libgnss", luaopen_libgnss},           // 处理GNSS定位数据
 #endif
