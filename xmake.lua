@@ -133,8 +133,6 @@ target("app")
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/app/**")))
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
 
-    -- mbedtls
-    add_files(luatos.."components/mbedtls/library/*.c")
 
 target_end()
 
@@ -387,6 +385,7 @@ target("network")
     add_includedirs(luatos.."components/network/ercoap/include",{public = true})
     add_files(luatos.."components/network/ercoap/src/*.c")
     add_files(luatos.."components/network/ercoap/binding/*.c")
+
 target_end()
 
 target("nes")
@@ -403,6 +402,8 @@ target("nes")
     add_includedirs(luatos.."components/nes/inc")
     add_includedirs(luatos.."components/nes/port")
     add_files(luatos.."components/nes/**.c")
+    -- mbedtls
+    add_files(luatos.."components/mbedtls/library/*.c")
 target_end()
 
 target("luatfonts")
@@ -674,6 +675,15 @@ target("air10x")
     -- repl
     add_files(luatos.."components/repl/**.c")
     add_includedirs(luatos.."components/repl/")
+
+    -- sqlite3
+    add_includedirs(luatos.."components/sqlite3/include",{public = true})
+    add_files(luatos.."components/sqlite3/src/*.c")
+    add_files(luatos.."components/sqlite3/binding/*.c")
+
+    add_includedirs(luatos.."components/ws2812/include",{public = true})
+    add_files(luatos.."components/ws2812/src/*.c")
+    add_files(luatos.."components/ws2812/binding/*.c")
     
     -- local opus_dir = luatos .. "components/opus/"
     -- add_includedirs(opus_dir .. "opus-1.3.1/src", 
