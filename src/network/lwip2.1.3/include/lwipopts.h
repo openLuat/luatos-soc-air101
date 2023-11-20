@@ -135,7 +135,7 @@
 #define LWIP_TCPIP_TIMEOUT              1
 #define LWIP_NETIF_HOSTNAME             1
 #define LWIP_TCP_KEEPALIVE              1
-
+#define TCP_KEEPIDLE_DEFAULT            120000
 
 
 #define LWIP_NETCONN_SEM_PER_THREAD     1
