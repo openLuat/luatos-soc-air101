@@ -25,9 +25,9 @@ static unsigned char trng_pool[24];
 void rngGenRandom() {
     uint32_t ret;
     tls_crypto_random_init(tls_os_get_time(), CRYPTO_RNG_SWITCH_32);
+    vTaskDelay(1);
     for (size_t i = 0; i < sizeof(trng_pool) / sizeof(uint32_t); i++)
     {
-        vTaskDelay(1);
         tls_reg_read32(HR_CRYPTO_SEC_CFG);
         ret = tls_reg_read32(HR_CRYPTO_RNG_RESULT);
         memcpy(trng_pool + i * sizeof(uint32_t), &ret, sizeof(uint32_t));
