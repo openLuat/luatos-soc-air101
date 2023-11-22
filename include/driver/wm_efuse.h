@@ -16,6 +16,7 @@
 
 enum {
 	CMD_WIFI_MAC = 0x01,
+	CMD_WIFI_MACAP,
 	CMD_BT_MAC,		
 	CMD_TX_DC,
 	CMD_RX_DC,

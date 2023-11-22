@@ -38,6 +38,7 @@ typedef struct FT_PARAM
 	unsigned int		magic_no;
 	unsigned int 		checksum;
 	unsigned char		wifi_mac_addr[MAC_ADDR_LEN];
+	unsigned char		wifi_macap_addr[MAC_ADDR_LEN];
 	unsigned short      version_no;
 	unsigned char		bt_mac_addr[MAC_ADDR_LEN];
 	unsigned short      ext_param_len;
@@ -216,6 +217,17 @@ int tls_ft_param_get(unsigned int opnum, void *data, unsigned int rdlen)
 				memcpy(data, gftParam->wifi_mac_addr, rdlen);
 			}
 		break;
+		case CMD_WIFI_MACAP:	/*MAC*/
+			if ((gftParam->wifi_macap_addr[0]&0x1)
+				||(0 == (gftParam->wifi_macap_addr[0]|gftParam->wifi_macap_addr[1]|gftParam->wifi_macap_addr[2]|gftParam->wifi_macap_addr[3]|gftParam->wifi_macap_addr[4]|gftParam->wifi_macap_addr[5])))		
+			{
+				memcpy(data, default_mac, rdlen);
+			}
+			else
+			{
+				memcpy(data, gftParam->wifi_macap_addr, rdlen);
+			}
+		break;
 		case CMD_BT_MAC:	/*MAC*/
             {
                 u8 invalid_bt_mac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -283,15 +295,17 @@ int tls_ft_param_set(unsigned int opnum, void *data, unsigned int len)
 	unsigned int writelen = 0;
 	FT_PARAM_ST *pft = NULL;
 	int ret = 0;
-
+	tls_flash_unlock();
 	if (!data || !len)
 	{
+		printf("%s:%d return -1\n", __FILE__, __LINE__);
 		return -1;
 	}
 	
 	pft = tls_mem_alloc(sizeof(FT_PARAM_ST_VER1));
 	if (pft == NULL)
 	{
+		printf("%s:%d return -1\n", __FILE__, __LINE__);
 		return -1;
 	}
 	memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
@@ -310,6 +324,7 @@ int tls_ft_param_set(unsigned int opnum, void *data, unsigned int len)
 			{
 				memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 				tls_mem_free(pft);
+				printf("%s:%d return -1\n", __FILE__, __LINE__);
 				return -1;
 			}
 		}
@@ -378,6 +393,7 @@ int tls_ft_param_set(unsigned int opnum, void *data, unsigned int len)
 		
 		default:
 			tls_mem_free(pft);
+			printf("%s:%d return -1\n", __FILE__, __LINE__);
 			return -1;
 	}
 
@@ -395,26 +411,32 @@ int tls_ft_param_set(unsigned int opnum, void *data, unsigned int len)
 
 	tls_flash_unlock();
 	tls_fls_write(FT_PARAM_RUNTIME_ADDR, (unsigned char *)gftParam, writelen);
+	// printf("tls_fls_write %08X %p %d %d\n", FT_PARAM_RUNTIME_ADDR, gftParam, writelen, ret);
 	memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 	ret = _ft_param_init(FT_PARAM_RUNTIME_ADDR, pft);
+	// printf("_ft_param_init %d\n", ret);
 	if(!ret || memcmp(pft, gftParam, sizeof(FT_PARAM_ST_VER1)))
 	{
 		memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 		tls_mem_free(pft);
+		printf("%s:%d return -1\n", __FILE__, __LINE__);
 		return -1;
 	}
-	tls_fls_write(FT_MAGICNUM_ADDR, (unsigned char *)gftParam, writelen);
+	ret = tls_fls_write(FT_MAGICNUM_ADDR, (unsigned char *)gftParam, writelen);
+	// printf("tls_fls_write2 %08X %p %d %d\n", FT_MAGICNUM_ADDR, gftParam, writelen, ret);
 	memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 	ret = _ft_param_init(FT_MAGICNUM_ADDR, pft);
+	// printf("_ft_param_init2 %d\n", ret);
 	if(!ret || memcmp(pft, gftParam, sizeof(FT_PARAM_ST_VER1)))
 	{
 		memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 		tls_mem_free(pft);
+		printf("%s:%d return -1\n", __FILE__, __LINE__);
 		return -1;
 	}
 	memset(pft, 0xFF, sizeof(FT_PARAM_ST_VER1));
 	tls_mem_free(pft);
-	//tls_flash_lock();
+	tls_flash_lock();
 	return 0;
 }
 
