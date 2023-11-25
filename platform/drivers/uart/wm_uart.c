@@ -761,7 +761,7 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
     u32 fifos;
     u8 escapefifocnt = 0;	
     u32 rxlen = 0;
-    u8 ch;
+    u8 ch = 0;
     csi_kernel_intrpt_enter();
 
     intr_src = port->regs->UR_INTS;

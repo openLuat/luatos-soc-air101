@@ -95,7 +95,7 @@ DSTATUS sdhc_sdio_initialize (
 	luat_fatfs_sdio_t* userdata
 )
 {
-		int ret;
+	int ret;
 	luat_sdio_init(0);
 	ret= sdh_card_init(&fs_rca);
 	if(ret)
@@ -107,7 +107,6 @@ DSTATUS sdhc_sdio_initialize (
 	if(ret)
 		goto end;
 end:
-	return ret;
 	return 0;
 }
 
@@ -128,7 +127,7 @@ DRESULT sdhc_sdio_read (
 	UINT count			/* Sector count (1..128) */
 )
 {
-		int ret, i;
+	int ret = 0, i;
 	int buflen = BLOCK_SIZE*count;
     BYTE *rdbuff = buff;
 
@@ -165,7 +164,6 @@ DRESULT sdhc_sdio_read (
     }
 
 	return ret;
-	return 0;
 }
 
 DRESULT sdhc_sdio_write (
@@ -175,7 +173,7 @@ DRESULT sdhc_sdio_write (
 	UINT count			/* Sector count (1..128) */
 )
 {
-		int ret, i;
+	int ret = 0, i;
 	int buflen = BLOCK_SIZE*count;
     BYTE *wrbuff = buff;
     
@@ -211,7 +209,6 @@ DRESULT sdhc_sdio_write (
     }
 
 	return ret;
-	return 0;
 }
 
 DRESULT sdhc_sdio_ioctl (
