@@ -174,6 +174,18 @@ void UserMain(void){
 #endif
 
 
+#ifdef LUAT_USE_WLAN
+	u8 tmpmac[8] = {0};
+	tls_ft_param_get(CMD_WIFI_MACAP, tmpmac, 6);
+	extern u8 *hostapd_get_mac(void);
+	u8* macptr = hostapd_get_mac();
+	//LLOGD("default AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
+	memcpy(macptr, tmpmac, 6);
+	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
+	tls_ft_param_get(CMD_WIFI_MACAP, tmpmac, 6);
+	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
+#endif
+
 
 // 如要使用psram,启用以下代码,并重新编译sdk
 #ifdef LUAT_USE_PSRAM
@@ -227,6 +239,7 @@ void sys_mac_init() {
 	luat_log_set_uart_port(1);
 #endif
     u8 mac_addr[6] = {0};
+	u8 ap_mac[6] = {0};
     char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
 	int ret = 0;
@@ -250,11 +263,12 @@ void sys_mac_init() {
 #endif
 
 #ifdef LUAT_USE_WLAN
-	ret = tls_get_mac_addr(mac_addr);
+	ret = tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
+	tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
 	LLOGD("tls_get_mac_addr ret %d %02X%02X%02X%02X%02X%02X", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
     int mac_ok = 1;
     if (!memcmp(mac_addr, default_mac, 6)) {
-        mac_ok = 0; // 0C0B47011078
+        mac_ok = 0;
     }
     else {
         mac_ok = 1;
@@ -265,8 +279,14 @@ void sys_mac_init() {
                 break;
             }
         }
-        
     }
+	if (!mac_ok) {
+		tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
+		if (memcmp(ap_mac, default_mac, 6)) {
+       		mac_ok = 1;
+			tls_set_mac_addr(ap_mac);
+    	}
+	}
 	if (!mac_ok) { // 看来是默认MAC, 那就改一下吧
 		if (unique_id[1] == 0x10){
 			memcpy(mac_addr, unique_id + 12, 6);
@@ -285,6 +305,11 @@ void sys_mac_init() {
         
         tls_set_mac_addr(mac_addr);
 	}
+	if (!memcmp(ap_mac, default_mac, 6)) {
+		memcpy(ap_mac, mac_addr, 6);
+		tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
+	}
+
     // printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 #endif
 }

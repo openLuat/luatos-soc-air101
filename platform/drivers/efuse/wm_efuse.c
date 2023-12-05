@@ -347,8 +347,11 @@ int tls_ft_param_set(unsigned int opnum, void *data, unsigned int len)
 			memcpy((unsigned char *)&gftParamVer1.ft_ext1.adc_cal_param, data, len);
 		break;
 		
-		case CMD_WIFI_MAC:	/*MAC*/
+		case CMD_WIFI_MAC:	/*STA MAC*/
 			memcpy(gftParam->wifi_mac_addr, (unsigned char *)data, len);
+		break;
+		case CMD_WIFI_MACAP:	/*AP MAC*/
+			memcpy(gftParam->wifi_macap_addr, (unsigned char *)data, len);
 		break;
 
 		case CMD_BT_MAC:	/*BT MAC*/

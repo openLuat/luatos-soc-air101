@@ -277,22 +277,32 @@ int luat_wlan_smartconfig_stop(void) {
 
 // 数据类
 int luat_wlan_get_mac(int id, char* mac) {
-    (void)id;
-    tls_get_mac_addr((u8*)mac);
+    if (id == 0)
+        tls_get_mac_addr((u8*)mac);
+    else
+        tls_ft_param_get(CMD_WIFI_MACAP, mac, 6);
     return 0;
 }
 
 int luat_wlan_set_mac(int id, const char* mac_addr) {
-    (void)id;
     u8 mac[8] = {0};
-    if (tls_get_mac_addr(mac) == 0 && memcmp(mac_addr, mac, 6) == 0) {
+    int ret = 0;
+    if (id == 0) {
+        tls_get_mac_addr(mac);
+    }
+    else {
+        tls_ft_param_get(CMD_WIFI_MACAP, mac, 6);
+    }
+    if (memcmp(mac_addr, mac, 6) == 0) {
         // 完全相同, 不需要设置
         return 0;
     }
-    // LLOGD("set mac %02X%02X%02X%02X%02X%02X", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-    int ret = tls_set_mac_addr((u8*)mac_addr);
-    if (ret)
-        LLOGD("tls_set_mac_addr %d", ret);
+    if (id == 0) {
+        ret = tls_set_mac_addr(mac);
+    }
+    else {
+        ret = tls_ft_param_set(CMD_WIFI_MACAP, mac, 6);
+    }
     return ret;
 }
 
