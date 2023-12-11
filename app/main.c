@@ -182,8 +182,8 @@ void UserMain(void){
 	//LLOGD("default AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
 	memcpy(macptr, tmpmac, 6);
 	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
-	tls_ft_param_get(CMD_WIFI_MACAP, tmpmac, 6);
-	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
+	tls_ft_param_get(CMD_WIFI_MAC, tmpmac, 6);
+	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 #endif
 
 
@@ -284,7 +284,7 @@ void sys_mac_init() {
 		tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
 		if (memcmp(ap_mac, default_mac, 6)) {
        		mac_ok = 1;
-			tls_set_mac_addr(ap_mac);
+			tls_ft_param_set(CMD_WIFI_MAC, ap_mac, 6);
     	}
 	}
 	if (!mac_ok) { // 看来是默认MAC, 那就改一下吧
@@ -307,7 +307,7 @@ void sys_mac_init() {
 	}
 	if (!memcmp(ap_mac, default_mac, 6)) {
 		memcpy(ap_mac, mac_addr, 6);
-		tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
+		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
 	}
 
     // printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
