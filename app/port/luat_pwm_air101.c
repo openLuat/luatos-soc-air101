@@ -19,9 +19,10 @@ uint32_t pwmDmaCap0[10]={0};
 uint32_t pwmDmaCap4[10]={0};
 
 static luat_pwm_conf_t pwm_confs[5];
+static uint8_t dmaCh;
 
 int l_pwm_dma_capture(lua_State *L, void* ptr) {
-	int pwmH,pwmL,pulse;
+	int pwmH = 0,pwmL = 0,pulse = 0;
     // 给 sys.publish方法发送数据
     rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
     int channel = msg->arg1;
@@ -52,7 +53,8 @@ static void pwm_dma_callback(void * channel)
 {
 	u8 ch = (u8)(channel);
 	tls_pwm_stop(ch);
-	tls_dma_free(1);
+	tls_dma_free(dmaCh);
+	dmaCh = 0;
 	rtos_msg_t msg={0};
 	msg.handler = l_pwm_dma_capture;
 	msg.arg1 = ch;
@@ -206,10 +208,13 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 }
 
 int luat_pwm_capture(int channel,int freq) {
-	uint8_t dmaCh;
 	struct tls_dma_descriptor DmaDesc;
 	tls_sys_clk sysclk;
 	tls_sys_clk_get(&sysclk);
+	if (dmaCh) {
+		tls_dma_free(dmaCh);
+		dmaCh = 0;
+	}
     switch (channel){
 // #ifdef AIR101
 // 		case 0:
