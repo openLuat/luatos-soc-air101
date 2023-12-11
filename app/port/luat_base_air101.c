@@ -263,6 +263,12 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_WS2812
   {"ws2812", luaopen_ws2812},
 #endif
+#ifdef LUAT_USE_ONEWIRE
+  {"onewire", luaopen_onewire},
+#endif
+#ifdef LUAT_USE_ERCOAP
+  {"ercoap", luaopen_ercoap},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };
