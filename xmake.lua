@@ -59,6 +59,7 @@ add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std
 add_cflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 
+add_cxflags("-Werror=maybe-uninitialized")
 
 add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strlen -fno-builtin-calloc")
 
@@ -681,9 +682,20 @@ target("air10x")
     add_files(luatos.."components/sqlite3/src/*.c")
     add_files(luatos.."components/sqlite3/binding/*.c")
 
+    -- ercoap
+    add_includedirs(luatos.."components/network/ercoap/include",{public = true})
+    add_files(luatos.."components/network/ercoap/src/*.c")
+    add_files(luatos.."components/network/ercoap/binding/*.c")
+
+    -- ws2812
     add_includedirs(luatos.."components/ws2812/include",{public = true})
     add_files(luatos.."components/ws2812/src/*.c")
     add_files(luatos.."components/ws2812/binding/*.c")
+
+    -- onewire
+    add_includedirs(luatos.."components/onewire/include",{public = true})
+    add_files(luatos.."components/onewire/src/*.c")
+    add_files(luatos.."components/onewire/binding/*.c")
     
     -- local opus_dir = luatos .. "components/opus/"
     -- add_includedirs(opus_dir .. "opus-1.3.1/src", 
