@@ -624,7 +624,8 @@ target("air10x")
     add_files(luatos.."components/common/*.c")
 
     -- iotauth
-    add_files(luatos.."components/iotauth/luat_lib_iotauth.c")
+    add_includedirs(luatos.."components/iotauth", {public = true})
+    add_files(luatos.."components/iotauth/*.c")
 
 
     -- tlfs3
