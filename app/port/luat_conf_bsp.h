@@ -13,7 +13,7 @@
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 // 可选值, AIR101 AIR103 AIR601 分别对应3种模块
-#define AIR601
+#define AIR101
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
