@@ -269,6 +269,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_ERCOAP
   {"ercoap", luaopen_ercoap},
 #endif
+#ifdef LUAT_USE_XXTEA
+  {"xxtea", luaopen_xxtea},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };

@@ -13,7 +13,7 @@
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 // 可选值, AIR101 AIR103 AIR601 分别对应3种模块
-#define AIR101
+#define AIR601
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
@@ -56,8 +56,8 @@
 // #define LUAT_USE_W5500
 
 // 开启TLS
-// #define LUAT_USE_TLS
-// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+#define LUAT_USE_TLS
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 // #define LUAT_USE_CRYPTO_AES_MBEDTLS 1
 
 // 其他网络功能
@@ -100,6 +100,7 @@
 
 // RSA 加解密,加签验签
 #define LUAT_USE_RSA 1
+// #define LUAT_USE_XXTEA    1
 
 // 国密算法 SM2/SM3/SM4
 // #define LUAT_USE_GMSSL 1
@@ -123,7 +124,7 @@
 // sdio库对接的是fatfs
 // fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
 // 从v0006开始默认关闭之, 需要用到就打开吧
-#define LUAT_USE_FATFS
+// #define LUAT_USE_FATFS
 // #define LUAT_USE_FATFS_CHINESE 1
 
 //----------------------------
@@ -145,30 +146,30 @@
 // 多虚拟机支持,实验性,一般不启用
 // #define LUAT_USE_VMX 1
 // #define LUAT_USE_NES
-#define LUAT_USE_PROTOBUF 1
-#define LUAT_USE_REPL 1
+// #define LUAT_USE_PROTOBUF 1
+// #define LUAT_USE_REPL 1
 
 //---------------------
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
-#define LUAT_USE_LCD
-#define LUAT_USE_TJPGD
+// #define LUAT_USE_LCD
+// #define LUAT_USE_TJPGD
 // EINK 是墨水屏
-#define LUAT_USE_EINK
+// #define LUAT_USE_EINK
 
 //---------------------
 // U8G2
 // 单色屏, 支持i2c/spi
-#define LUAT_USE_DISP
-#define LUAT_USE_U8G2
+// #define LUAT_USE_DISP
+// #define LUAT_USE_U8G2
 
 /**************FONT*****************/
-#define LUAT_USE_FONTS
+// #define LUAT_USE_FONTS
 /**********U8G2&LCD&EINK FONT*************/
-#define USE_U8G2_OPPOSANSM_ENGLISH 1
+// #define USE_U8G2_OPPOSANSM_ENGLISH 1
 // #define USE_U8G2_OPPOSANSM8_CHINESE
-#define USE_U8G2_OPPOSANSM10_CHINESE
-#define USE_U8G2_OPPOSANSM12_CHINESE
+// #define USE_U8G2_OPPOSANSM10_CHINESE
+// #define USE_U8G2_OPPOSANSM12_CHINESE
 // #define USE_U8G2_OPPOSANSM16_CHINESE
 // #define USE_U8G2_OPPOSANSM24_CHINESE
 // #define USE_U8G2_OPPOSANSM32_CHINESE
@@ -207,7 +208,7 @@
 //---------------------
 // LVGL
 // 主推的UI库, 功能强大但API繁琐
-#define LUAT_USE_LVGL      1
+// #define LUAT_USE_LVGL      1
 
 #define LUAT_USE_LVGL_INDEV 1 // 输入设备
 

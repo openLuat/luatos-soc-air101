@@ -387,6 +387,11 @@ target("network")
     add_files(luatos.."components/network/ercoap/src/*.c")
     add_files(luatos.."components/network/ercoap/binding/*.c")
 
+    -- xxtea
+    add_includedirs(luatos.."components/xxtea/include",{public = true})
+    add_files(luatos.."components/xxtea/src/*.c")
+    add_files(luatos.."components/xxtea/binding/*.c")
+
 target_end()
 
 target("nes")
