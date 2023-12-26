@@ -68,7 +68,7 @@ set_objectdir("$(buildir)/.objs")
 
 set_policy("build.across_targets_in_parallel", false)
 
-
+add_includedirs(luatos.."components/multimedia/")
 add_includedirs("app/port",{public = true})
 
 add_includedirs("include",{public = true})

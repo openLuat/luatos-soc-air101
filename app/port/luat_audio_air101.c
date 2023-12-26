@@ -2,8 +2,8 @@
 #include "luat_audio.h"
 #include "luat_i2s.h"
 #include "wm_include.h"
-#include "luat_audio_air101.h"
-#include "es8311.h"
+#include "luat_audio_codec.h"
+// #include "es8311.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -16,7 +16,7 @@ int luat_i2s_stop(uint8_t id);
 
 extern volatile uint8_t run_status;
 
-audio_codec_conf_t audio_hardware = {
+luat_audio_codec_conf_t audio_hardware = {
     .pa_pin = -1
 };
 
@@ -55,9 +55,9 @@ int luat_audio_start_raw(uint8_t multimedia_id, uint8_t audio_format, uint8_t nu
     };
     luat_i2s_setup(&conf);
 
-	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_RATE,sample_rate);
-	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_MODE,CODEC_MODE_SLAVE);
-	audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_PA,CODEC_PA_ON);
+	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_RATE,sample_rate);
+	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
+	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_ON);
 
 }
 
@@ -79,10 +79,10 @@ int luat_audio_stop_raw(uint8_t multimedia_id){
 
 int luat_audio_pause_raw(uint8_t multimedia_id, uint8_t is_pause){
     if (is_pause){
-        audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_PA,CODEC_PA_OFF);
+        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_OFF);
         luat_i2s_stop(0);
     }else{
-        audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_PA,CODEC_PA_ON);
+        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_ON);
         luat_i2s_resume(0);
     }
 }
@@ -107,7 +107,7 @@ uint16_t luat_audio_vol(uint8_t multimedia_id, uint16_t vol){
 		return -1;
     }
 	audio_hardware.vol = vol;
-    audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_VOLUME,vol);
+    audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_VOLUME,vol);
 	return audio_hardware.vol;
 }
 
@@ -115,7 +115,7 @@ void luat_audio_set_bus_type(uint8_t bus_type){
     if (bus_type == 1){
         audio_hardware.codec_opts = &codec_opts_es8311;
         audio_hardware.codec_opts->init(&audio_hardware);
-        audio_hardware.codec_opts->control(&audio_hardware,CODEC_CTL_MODE,CODEC_MODE_SLAVE);
+        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
     }
 }
 
