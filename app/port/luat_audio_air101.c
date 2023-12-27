@@ -2,8 +2,7 @@
 #include "luat_audio.h"
 #include "luat_i2s.h"
 #include "wm_include.h"
-#include "luat_audio_codec.h"
-// #include "es8311.h"
+#include "luat_audio.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -16,8 +15,8 @@ int luat_i2s_stop(uint8_t id);
 
 extern volatile uint8_t run_status;
 
-luat_audio_codec_conf_t audio_hardware = {
-    .pa_pin = -1
+luat_audio_conf_t audio_hardware = {
+    .codec_conf.pa_pin = -1
 };
 
 int luat_audio_play_multi_files(uint8_t multimedia_id, uData_t *info, uint32_t files_num, uint8_t error_stop){
@@ -55,9 +54,9 @@ int luat_audio_start_raw(uint8_t multimedia_id, uint8_t audio_format, uint8_t nu
     };
     luat_i2s_setup(&conf);
 
-	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_RATE,sample_rate);
-	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
-	audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_ON);
+	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_RATE,sample_rate);
+	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
+	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_PA,audio_hardware.codec_conf.pa_on_level);
 
 }
 
@@ -79,25 +78,25 @@ int luat_audio_stop_raw(uint8_t multimedia_id){
 
 int luat_audio_pause_raw(uint8_t multimedia_id, uint8_t is_pause){
     if (is_pause){
-        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_OFF);
+        audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_PA,!audio_hardware.codec_conf.pa_on_level);
         luat_i2s_stop(0);
     }else{
-        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_PA,LUAT_CODEC_PA_ON);
+        audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_PA,audio_hardware.codec_conf.pa_on_level);
         luat_i2s_resume(0);
     }
 }
 
 void luat_audio_config_pa(uint8_t multimedia_id, uint32_t pin, int level, uint32_t dummy_time_len, uint32_t pa_delay_time){
 	if (pin <= WM_IO_PB_31){
-		audio_hardware.pa_pin = pin;
-		audio_hardware.pa_on_level = level;
+		audio_hardware.codec_conf.pa_pin = pin;
+		audio_hardware.codec_conf.pa_on_level = level;
         tls_gpio_cfg(pin, !level, WM_GPIO_ATTR_FLOATING);
         tls_gpio_write(pin, !level);
 	}else{
-		audio_hardware.pa_pin = -1;
+		audio_hardware.codec_conf.pa_pin = -1;
 	}
-    audio_hardware.dummy_time_len = dummy_time_len;
-	audio_hardware.pa_delay_time = pa_delay_time;
+    audio_hardware.codec_conf.dummy_time_len = dummy_time_len;
+	audio_hardware.codec_conf.pa_delay_time = pa_delay_time;
 }
 
 void luat_audio_config_dac(uint8_t multimedia_id, int pin, int level, uint32_t dac_off_delay_time){}
@@ -106,16 +105,16 @@ uint16_t luat_audio_vol(uint8_t multimedia_id, uint16_t vol){
     if(vol < 0 || vol > 100){
 		return -1;
     }
-	audio_hardware.vol = vol;
-    audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_VOLUME,vol);
-	return audio_hardware.vol;
+	audio_hardware.codec_conf.vol = vol;
+    audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_VOLUME,vol);
+	return audio_hardware.codec_conf.vol;
 }
 
 void luat_audio_set_bus_type(uint8_t bus_type){
     if (bus_type == 1){
-        audio_hardware.codec_opts = &codec_opts_es8311;
-        audio_hardware.codec_opts->init(&audio_hardware);
-        audio_hardware.codec_opts->control(&audio_hardware,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
+        audio_hardware.codec_conf.codec_opts = &codec_opts_es8311;
+        audio_hardware.codec_conf.codec_opts->init(&audio_hardware.codec_conf);
+        audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
     }
 }
 
