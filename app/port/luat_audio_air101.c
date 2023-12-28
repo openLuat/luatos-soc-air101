@@ -105,17 +105,23 @@ uint16_t luat_audio_vol(uint8_t multimedia_id, uint16_t vol){
     if(vol < 0 || vol > 100){
 		return -1;
     }
-	audio_hardware.codec_conf.vol = vol;
+	audio_hardware.vol = vol;
     audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_VOLUME,vol);
-	return audio_hardware.codec_conf.vol;
+	return audio_hardware.vol;
 }
 
 void luat_audio_set_bus_type(uint8_t bus_type){
     if (bus_type == 1){
-        audio_hardware.codec_conf.codec_opts = &codec_opts_es8311;
+        // audio_hardware.codec_conf.codec_opts = &codec_opts_es8311;
         audio_hardware.codec_conf.codec_opts->init(&audio_hardware.codec_conf);
         audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
     }
+}
+
+
+luat_audio_conf_t *luat_audio_get_config(uint8_t multimedia_id){
+    if (multimedia_id == 0) return &audio_hardware;
+    else return NULL;
 }
 
 
