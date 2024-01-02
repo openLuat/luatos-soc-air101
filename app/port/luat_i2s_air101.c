@@ -86,11 +86,12 @@ static int tls_i2s_io_init(void){
     return WM_SUCCESS;
 }
 
+luat_i2s_conf_t i2s_conf;
 int luat_i2s_setup(luat_i2s_conf_t *conf) {
     if (I2s_tx_dma_init()){
         return -1;
     }
-    
+    memcpy(&i2s_conf, conf, sizeof(luat_i2s_conf_t));
     tls_i2s_io_init();
     // 然后转本地i2s配置
     I2S_InitDef opts = { I2S_MODE_MASTER, I2S_CTRL_STEREO, I2S_RIGHT_CHANNEL, I2S_Standard, I2S_DataFormat_16, 8000, 5000000 };

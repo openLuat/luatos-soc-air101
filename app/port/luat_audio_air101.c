@@ -10,9 +10,6 @@
 #define LUAT_LOG_TAG "audio"
 #include "luat_log.h"
 
-int luat_i2s_resume(uint8_t id);
-int luat_i2s_stop(uint8_t id);
-
 extern volatile uint8_t run_status;
 
 luat_audio_conf_t audio_hardware = {
@@ -39,25 +36,20 @@ int luat_audio_play_get_last_error(uint8_t multimedia_id){
 
 }
 
+extern luat_i2s_conf_t i2s_conf;
+
 int luat_audio_start_raw(uint8_t multimedia_id, uint8_t audio_format, uint8_t num_channels, uint32_t sample_rate, uint8_t bits_per_sample, uint8_t is_signed){
     if(sample_rate == 8000 && bits_per_sample == 8){
         LLOGW("not support 8K 8Bit record!\n");
         return -1;
     }
-	
-    luat_i2s_conf_t conf = {
-        .channel_format = 0,
-        .communication_format = 0,
-        .bits_per_sample = bits_per_sample,
-        .sample_rate = sample_rate,
-        .mclk = 8000000
-    };
-    luat_i2s_setup(&conf);
-
+    i2s_conf.bits_per_sample = bits_per_sample,
+    i2s_conf.sample_rate = sample_rate,
+    luat_i2s_setup(&i2s_conf);
 	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_RATE,sample_rate);
 	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_MODE,LUAT_CODEC_MODE_SLAVE);
 	audio_hardware.codec_conf.codec_opts->control(&audio_hardware.codec_conf,LUAT_CODEC_CTL_PA,audio_hardware.codec_conf.pa_on_level);
-
+    return 0;
 }
 
 int luat_audio_write_raw(uint8_t multimedia_id, uint8_t *data, uint32_t len){
