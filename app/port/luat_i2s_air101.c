@@ -14,12 +14,13 @@
 
 #define PERIOD_PLAY   64
 static uint8_t i2s_tx_buffer[PERIOD_PLAY];
+static luat_i2s_conf_t i2s_conf = {0};   // 记录i2s配置信息
 
 static wm_dma_handler_type dma_tx;
 static Buffer_Struct dma_tx_buf;
 
 #define CODEC_RUNING      (1 << 0)
-volatile uint8_t run_status = 0;
+// volatile uint8_t run_status = 0;
 
 static int I2s_tx_send(){
 	uint16_t send_bytes;
@@ -47,7 +48,7 @@ static void I2s_dma_tx_irq(void *p){
 	if(ret_len >= 4 ){
 		I2s_tx_send();
 	}else{
-		run_status &= ~CODEC_RUNING;
+		i2s_conf.state = LUAT_I2S_STATE_STOP;
 	}
 }
 
@@ -86,7 +87,11 @@ static int tls_i2s_io_init(void){
     return WM_SUCCESS;
 }
 
-luat_i2s_conf_t i2s_conf;
+luat_i2s_conf_t *luat_i2s_get_config(uint8_t id){
+	if (id != 0) return NULL;
+	return &i2s_conf;
+}
+
 int luat_i2s_setup(luat_i2s_conf_t *conf) {
     if (I2s_tx_dma_init()){
         return -1;
@@ -96,22 +101,22 @@ int luat_i2s_setup(luat_i2s_conf_t *conf) {
     // 然后转本地i2s配置
     I2S_InitDef opts = { I2S_MODE_MASTER, I2S_CTRL_STEREO, I2S_RIGHT_CHANNEL, I2S_Standard, I2S_DataFormat_16, 8000, 5000000 };
 
-    uint8_t stereo = 1;
-
-    opts.I2S_Mode_MS = I2S_MODE_MASTER;
-    opts.I2S_Mode_SS = (stereo<<22);
-    opts.I2S_Mode_LR = conf->channel_format==0?I2S_LEFT_CHANNEL : I2S_RIGHT_CHANNEL;
-    opts.I2S_Trans_STD = (conf->communication_format*0x1000000);
-    opts.I2S_DataFormat = (conf->bits_per_sample/8 - 1)*0x10;
+    opts.I2S_Mode_MS = conf->mode;
+    opts.I2S_Mode_SS = conf->channel_format==LUAT_I2S_CHANNEL_STEREO?I2S_CTRL_STEREO:I2S_CTRL_MONO;
+    opts.I2S_Mode_LR = conf->channel_format==0?I2S_LEFT_CHANNEL:I2S_RIGHT_CHANNEL;
+    opts.I2S_Trans_STD = (conf->standard*0x1000000);
+    opts.I2S_DataFormat = (conf->data_bits/8 - 1)*0x10;
     opts.I2S_AudioFreq = conf->sample_rate;
-    opts.I2S_MclkFreq = conf->mclk;
+	// uint16_t fs = conf->data_bits * (conf->channel_format==LUAT_I2S_CHANNEL_STEREO?2:1) * conf->channel_bits/16;
+	// printf("------------fs:%d\n", fs);
+    opts.I2S_MclkFreq = 2*256*conf->sample_rate;
     wm_i2s_port_init(&opts);
     // wm_i2s_register_callback(NULL);
-    run_status = 0;
+    i2s_conf.state = LUAT_I2S_STATE_STOP;
     return 0;
 }
 
-int luat_i2s_send(uint8_t id, char* buff, size_t len) {
+int luat_i2s_send(uint8_t id, uint8_t* buff, size_t len) {
 	int ret;
     if (buff == NULL) {
         return -1;
@@ -120,21 +125,27 @@ int luat_i2s_send(uint8_t id, char* buff, size_t len) {
         return 0;
     }
 	OS_BufferWrite(&dma_tx_buf, buff, len);
-	if ((run_status & CODEC_RUNING) == 0) {
-		run_status |= CODEC_RUNING;
+	if (i2s_conf.state == LUAT_I2S_STATE_STOP) {
+		i2s_conf.state = LUAT_I2S_STATE_RUNING;
 	    ret = I2s_tx_send();
 		if(ret == -1){
 		    LLOGE("fifo empty for send\n");
-			run_status &= ~CODEC_RUNING;
+			i2s_conf.state = LUAT_I2S_STATE_STOP;
 			return 0;
 		}
 	}
     return len;
 }
 
-int luat_i2s_recv(uint8_t id, char* buff, size_t len) {
+int luat_i2s_recv(uint8_t id, uint8_t* buff, size_t len) {
     wm_i2s_rx_int((int16_t *)buff, len / 2);
     return len;
+}
+
+int luat_i2s_pause(uint8_t id) {
+    wm_i2s_tx_enable(0);
+	i2s_conf.state = LUAT_I2S_STATE_STOP;	
+    return 0;
 }
 
 int luat_i2s_resume(uint8_t id) {
@@ -142,14 +153,9 @@ int luat_i2s_resume(uint8_t id) {
     return 0;
 }
 
-int luat_i2s_stop(uint8_t id) {
-    wm_i2s_tx_enable(0);
-    run_status = 0;	
-    return 0;
-}
-
 int luat_i2s_close(uint8_t id) {
-    luat_i2s_stop(id);
+    wm_i2s_tx_enable(0);
+    i2s_conf.state = LUAT_I2S_STATE_STOP;	
 	if(dma_tx.channel){
 		tls_dma_free(dma_tx.channel);
 	}
