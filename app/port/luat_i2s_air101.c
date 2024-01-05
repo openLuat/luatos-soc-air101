@@ -116,6 +116,19 @@ int luat_i2s_setup(luat_i2s_conf_t *conf) {
     return 0;
 }
 
+int luat_i2s_modify(uint8_t id,uint8_t channel_format,uint8_t data_bits,uint32_t sample_rate){
+	if (id != 0) return -1;
+	i2s_conf.channel_format = channel_format;
+	i2s_conf.data_bits = data_bits;
+	i2s_conf.sample_rate = sample_rate;
+	wm_i2s_mono_select(channel_format==LUAT_I2S_CHANNEL_STEREO?I2S_CTRL_STEREO:I2S_CTRL_MONO);
+	wm_i2s_left_channel_sel(channel_format==0?I2S_LEFT_CHANNEL:I2S_RIGHT_CHANNEL);
+	wm_i2s_set_word_len((data_bits/8 - 1)*0x10);
+	wm_i2s_set_freq(sample_rate, 2*256*sample_rate);
+	return 0;
+}
+
+
 int luat_i2s_send(uint8_t id, uint8_t* buff, size_t len) {
 	int ret;
     if (buff == NULL) {

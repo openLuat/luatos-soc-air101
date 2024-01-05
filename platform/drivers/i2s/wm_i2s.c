@@ -33,7 +33,7 @@ static uint32_t wm_i2s_get_mode(void)
 #endif
 
 //i2s_stardard
-static void wm_i2s_set_format(uint32_t format)
+void wm_i2s_set_format(uint32_t format)
 {
 	uint32_t reg;
 	reg = tls_reg_read32(HR_I2S_CTRL);
@@ -42,12 +42,12 @@ static void wm_i2s_set_format(uint32_t format)
 	tls_reg_write32(HR_I2S_CTRL, reg);
 }
 
-static void wm_i2s_left_channel_sel(bool bl)
+void wm_i2s_left_channel_sel(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 23, bl);
 }
 
-static void wm_i2s_mono_select(bool bl)
+void wm_i2s_mono_select(bool bl)
 {
 	tls_bitband_write(HR_I2S_CTRL, 22, bl);
 }
@@ -120,7 +120,7 @@ static void wm_i2s_clk_inverse(bool bl)
 }
 #endif
 
-static void wm_i2s_set_word_len(uint8_t len)
+void wm_i2s_set_word_len(uint8_t len)
 {
 	uint32_t reg;
     
@@ -209,7 +209,7 @@ static void wm_i2s_rx_uderflow_int_mask(bool bl)
 }
 #endif
 
-static void wm_i2s_set_freq(uint32_t lr_freq, uint32_t mclk) 
+void wm_i2s_set_freq(uint32_t lr_freq, uint32_t mclk) 
 {
 	uint32_t div, mclk_div;
 	uint32_t temp;

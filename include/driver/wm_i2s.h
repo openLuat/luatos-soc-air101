@@ -289,6 +289,11 @@ int wm_i2s_tx_rx_dma(I2S_InitDef *opts, int16_t *data_tx, int16_t *data_rx, uint
 int wm_i2s_transmit_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len);
 int wm_i2s_receive_dma(wm_dma_handler_type *hdma, uint16_t *data, uint16_t len);
 
+void wm_i2s_mono_select(bool bl);
+void wm_i2s_left_channel_sel(bool bl);
+void wm_i2s_set_word_len(uint8_t len);
+void wm_i2s_set_freq(uint32_t lr_freq, uint32_t mclk);
+
 /**
  * @}
  */
