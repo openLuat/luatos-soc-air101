@@ -110,8 +110,8 @@ static void sys_net_up()
         tls_netif_set_addr( &ip_addr, &net_mask, &gateway);
         MEMCPY((char*)ip_2_ip4(&dns1), &ip_param.dns1, 4);
         MEMCPY((char*)ip_2_ip4(&dns2), &ip_param.dns2, 4);
-        tls_netif_dns_setserver(0, &dns1);
-        tls_netif_dns_setserver(1, &dns2);
+        //tls_netif_dns_setserver(0, &dns1);
+        //tls_netif_dns_setserver(1, &dns2);
 		
 		/*when DHCP is disabled, Use static IP without IP_NET_UP Reporting, 
 		  set wifi powersaving flag according to TLS_PARAM_ID_PSM here.*/
@@ -130,10 +130,10 @@ static void sys_net2_up()
 {
     ip_addr_t ip_addr, net_mask, gateway;
     struct tls_param_ip ip_param;
-    u8 dnsname[32];
+    // u8 dnsname[32];
 
-    dnsname[0] = '\0';
-    tls_param_get(TLS_PARAM_ID_DNSNAME, dnsname, 0);
+    // dnsname[0] = '\0';
+    // tls_param_get(TLS_PARAM_ID_DNSNAME, dnsname, 0);
     tls_param_get(TLS_PARAM_ID_SOFTAP_IP, &ip_param, FALSE);
 
     tls_netif2_set_up();
@@ -148,10 +148,10 @@ static void sys_net2_up()
         tls_dhcps_start();
     }
 
-    if ('\0' != dnsname[0])
-    {
-        tls_dnss_start(dnsname);
-    }
+    // if ('\0' != dnsname[0])
+    // {
+    //     tls_dnss_start(dnsname);
+    // }
 
     return ;
 }
@@ -160,7 +160,7 @@ static void sys_net2_up()
 
 static void sys_net2_down()
 {
-    tls_dnss_stop();
+    //tls_dnss_stop();
 
     tls_dhcps_stop();
 
@@ -229,7 +229,7 @@ static void tls_auto_reconnect_softap(void)
     memcpy(apinfo->keyinfo.key, key.psk, key.key_length);
 
     tls_param_get(TLS_PARAM_ID_SOFTAP_IP, &ip_param, TRUE);
-    /*ipÅäÖÃÐÅÏ¢:ipµØÖ·£¬ÑÚÂë£¬dnsÃû³Æ*/
+    /*ipï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢:ipï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬dnsï¿½ï¿½ï¿½ï¿½*/
     memcpy(ipinfo->ip_addr, ip_param.ip, 4);
     memcpy(ipinfo->netmask, ip_param.netmask, 4);
     tls_param_get(TLS_PARAM_ID_DNSNAME, ipinfo->dnsname, FALSE);

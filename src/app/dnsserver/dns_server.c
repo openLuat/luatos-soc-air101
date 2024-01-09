@@ -30,7 +30,7 @@
 
 #include "wm_wifi_oneshot.h"
 
-#if TLS_CONFIG_AP
+#if 0
 static DNS_SERVER DnsServer;
 
 static INT32S _DnsCompareName(INT8U * MyDns, INT8U * Query)

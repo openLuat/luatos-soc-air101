@@ -320,14 +320,14 @@ struct tls_ethif * tls_netif_get_ethif(void)
     }
 #endif
     
-    addr = (ip_addr_t *)dns_getserver(0);
-	dns1 = *addr;
+    // addr = (ip_addr_t *)dns_getserver(0);
+	// dns1 = *addr;
     //MEMCPY(&ethif->dns1.addr, (char *)&dns1.addr, 4);
-    ip_addr_copy(ethif->dns1, dns1);
-    addr = (ip_addr_t *)dns_getserver(1);
-	dns2 = *addr;
+    // ip_addr_copy(ethif->dns1, dns1);
+    // addr = (ip_addr_t *)dns_getserver(1);
+	// dns2 = *addr;
     //MEMCPY(&ethif->dns2.addr, (char *)&dns2.addr, 4);
-    ip_addr_copy(ethif->dns2, dns2);
+    // ip_addr_copy(ethif->dns2, dns2);
 	//ethif->status = nif->flags&NETIF_FLAG_UP;
 #if TLS_CONFIG_IPV6
 	for(i = 0; i < IPV6_ADDR_MAX_NUM; i++)
