@@ -301,8 +301,6 @@ target("audio")
     add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/enc/src")
     add_files(luatos.."components/multimedia/**.c")
 
-    add_includedirs("app/audio_driver",{public = true})
-    add_files("app/audio_driver/*.c")
 
     set_targetdir("$(buildir)/lib")
 target_end()
