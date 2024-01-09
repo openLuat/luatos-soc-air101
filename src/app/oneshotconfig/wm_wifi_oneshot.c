@@ -570,7 +570,7 @@ void oneshot_esp_send_reply(void)
 	memcpy((u8 *)&addr.sin_addr.s_addr, &esp_param.ip[0], 4);
 
 	memset(mac_addr,0,sizeof(mac_addr));
-	tls_get_mac_addr(mac_addr);
+	tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
 
 	ethif = tls_netif_get_ethif();
 
@@ -1375,7 +1375,7 @@ void wm_oneshot_send_mac(void)
 	sock_addr.sin_port = htons(65534);
 
 	memset(mac_addr,0,sizeof(mac_addr));
-	tls_get_mac_addr(mac_addr);
+	tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
 	tls_os_time_delay(50);
 	for(idx = 0;idx < 50;idx ++)
 	{

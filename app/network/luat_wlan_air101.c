@@ -80,7 +80,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
 static void netif_event_cb(u8 status) {
     rtos_msg_t msg = {0};
     struct tls_param_ip ip_param;
-    LLOGD("netif_event %d", status);
+    // LLOGD("netif_event %d", status);
     msg.handler = l_wlan_cb;
 	switch (status)
     {
