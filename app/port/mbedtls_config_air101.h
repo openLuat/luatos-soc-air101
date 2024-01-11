@@ -2034,7 +2034,7 @@
  * This module enables the AES-GCM and CAMELLIA-GCM ciphersuites, if other
  * requisites are enabled as well.
  */
-#define MBEDTLS_GCM_C
+// #define MBEDTLS_GCM_C
 
 /**
  * \def MBEDTLS_HAVEGE_C
@@ -2836,7 +2836,7 @@
 #undef MBEDTLS_GCM_C
 #undef MBEDTLS_ECP_C
 #undef MBEDTLS_ECDH_C
-#undef MBEDTLS_AES_ALT
+// #undef MBEDTLS_AES_ALT
 #endif
 
 #ifdef LUAT_USE_CRYPTO_AES_MBEDTLS
