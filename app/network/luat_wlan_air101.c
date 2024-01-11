@@ -298,10 +298,10 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
         return 0;
     }
     if (id == 0) {
-        ret = tls_set_mac_addr(mac);
+        ret = tls_set_mac_addr(mac_addr);
     }
     else {
-        ret = tls_ft_param_set(CMD_WIFI_MACAP, mac, 6);
+        ret = tls_ft_param_set(CMD_WIFI_MACAP, mac_addr, 6);
     }
     return ret;
 }
