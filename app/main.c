@@ -234,10 +234,30 @@ void bpool(void *buffer, long len) {}
 #endif
 
 extern const u8 default_mac[];
+
+
+
+static int is_mac_ok(u8 mac_addr[6]) {
+
+	// 如果是默认值, 那就是不合法
+	if (!memcmp(mac_addr, default_mac, 6)) {
+        return 0;
+    }
+	// 如果任意一位是0x00或者0xFF,那就是不合法
+    for (size_t i = 0; i < 6; i++)
+    {
+        if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
+            return 0;
+        }
+    }
+	return 1;
+}
+
 void sys_mac_init() {
 #ifdef LUAT_CONF_LOG_UART1
 	luat_log_set_uart_port(1);
 #endif
+	u8 tmp_mac[6] = {0};
     u8 mac_addr[6] = {0};
 	u8 ap_mac[6] = {0};
     char unique_id [20] = {0};
@@ -265,29 +285,21 @@ void sys_mac_init() {
 #ifdef LUAT_USE_WLAN
 	ret = tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
 	tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
-	LLOGD("tls_get_mac_addr ret %d %02X%02X%02X%02X%02X%02X", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-    int mac_ok = 1;
-    if (!memcmp(mac_addr, default_mac, 6)) {
-        mac_ok = 0;
-    }
-    else {
-        mac_ok = 1;
-        for (size_t i = 0; i < 6; i++)
-        {
-            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
-                mac_ok = 0;
-                break;
-            }
-        }
-    }
-	if (!mac_ok) {
-		tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
-		if (memcmp(ap_mac, default_mac, 6)) {
-       		mac_ok = 1;
-			tls_ft_param_set(CMD_WIFI_MAC, ap_mac, 6);
-    	}
+	//printf("CMD_WIFI_MAC ret %d %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+	int sta_mac_ok = is_mac_ok(mac_addr);
+	int ap_mac_ok = is_mac_ok(ap_mac);
+
+	// 其中一个合法呢?
+	if (sta_mac_ok && !ap_mac_ok) {
+		printf("sta地址合法, ap地址不合法\n");
+		memcpy(ap_mac, mac_addr, 6);
 	}
-	if (!mac_ok) { // 看来是默认MAC, 那就改一下吧
+	else if (!sta_mac_ok && ap_mac_ok) {
+		printf("sta地址不合法, ap地址合法\n");
+		memcpy(mac_addr, ap_mac, 6);
+	}
+	else if (!sta_mac_ok && !ap_mac_ok){ // 均不合法, 那就用uniqid
+		printf("sta地址不合法, ap地址不合法\n");
 		if (unique_id[1] == 0x10){
 			memcpy(mac_addr, unique_id + 12, 6);
 		}
@@ -295,21 +307,42 @@ void sys_mac_init() {
 			memcpy(mac_addr, unique_id + 4, 6);
 		}
         mac_addr[0] = 0x0C;
-        for (size_t i = 0; i < 6; i++)
+        for (size_t i = 1; i < 6; i++)
         {
             if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
                 mac_addr[i] = 0x01;
             }
         }
-        LLOGD("auto fix wifi mac addr -> %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-        
-        tls_set_mac_addr(mac_addr);
-	}
-	if (!memcmp(ap_mac, default_mac, 6)) {
 		memcpy(ap_mac, mac_addr, 6);
-		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
 	}
 
-    // printf("WIFI %02X:%02X:%02X:%02X:%02X:%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+	if (!memcmp(mac_addr, ap_mac, 6)) {
+		printf("sta与ap地址相同, 调整ap地址\n");
+		// 完全相同, 那就改一下ap的地址
+		if (ap_mac[5] == 0x01 || ap_mac[5] == 0xFE) {
+			ap_mac[5] = 0x02;
+		}
+		else {
+			ap_mac[5] += 1;
+		}
+	}
+
+	// 全部mac都得到了, 然后重新读一下mac, 不相同的就重新写入
+	
+	// 先判断sta的mac
+	tls_ft_param_get(CMD_WIFI_MAC, tmp_mac, 6);
+	if (memcmp(tmp_mac, mac_addr, 6)) {
+		// 不一致, 写入
+		tls_ft_param_set(CMD_WIFI_MAC, mac_addr, 6);
+		printf("更新STA mac %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+	}
+
+	// 再判断ap的mac
+	tls_ft_param_get(CMD_WIFI_MACAP, tmp_mac, 6);
+	if (memcmp(tmp_mac, ap_mac, 6)) {
+		// 不一致, 写入
+		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
+		printf("更新AP mac %02X%02X%02X%02X%02X%02X\n", ret, ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
+	}
 #endif
 }
