@@ -221,7 +221,8 @@ static void scan_event_cb(void *ptmr, void *parg) {
 
 int luat_wlan_scan(void) {
     int ret = tls_wifi_scan();
-    LLOGD("tls_wifi_scan %d", ret);
+    if (ret)
+        LLOGD("tls_wifi_scan %d", ret);
     static tls_os_timer_t *scan_timer = NULL;
 	tls_os_timer_create(&scan_timer, scan_event_cb, NULL, 3000, 0, NULL);
 	tls_os_timer_start(scan_timer);
@@ -396,7 +397,8 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     }
 
     ret = tls_wifi_softap_create(&apinfo, &ipinfo);
-    LLOGD("tls_wifi_softap_create %d", ret);
+    if (ret)
+        LLOGD("tls_wifi_softap_create %d", ret);
     return ret;
 }
 
