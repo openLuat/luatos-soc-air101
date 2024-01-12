@@ -17,6 +17,8 @@
 #include "luat_msgbus.h"
 #include "luat_pm.h"
 #include "luat_rtc.h"
+#include "luat_pcap.h"
+#include "luat_uart.h"
 
 #include <string.h>
 #include "wm_irq.h"
@@ -33,8 +35,14 @@
 #define LUAT_LOG_TAG "main"
 #include "luat_log.h"
 
+#define LUAT_PCAP_UART_ID 2
+
 void luat_heap_init(void);
 
+
+static void pcap_uart_write(void *ptr, const void* buf, size_t len) {
+	luat_uart_write(LUAT_PCAP_UART_ID, buf, len);
+}
 
 static void luat_start(void *sdata){
 	luat_heap_init();
@@ -206,8 +214,22 @@ void UserMain(void){
 	psram_init(PSRAM_QPI);
 	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
 #endif
-	
+
 #ifdef __LUATOS__
+// PCAP抓包
+#ifdef LUAT_USE_PCAP
+	// 初始化pcap
+	luat_uart_t uart2 = {
+		.id = LUAT_PCAP_UART_ID,
+		.baud_rate = 115200,
+		.data_bits = 8,
+		.stop_bits = 1,
+		.parity = 0
+	};
+	luat_uart_setup(&uart2);
+	luat_pcap_init(pcap_uart_write, NULL);
+	luat_pcap_write_head();
+#endif
 #ifdef LUAT_USE_LVGL
 	lv_init();
 	static tls_os_timer_t *os_timer = NULL;

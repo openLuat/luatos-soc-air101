@@ -63,7 +63,7 @@
 #if TLS_CONFIG_AP_OPT_FWD
 #include "lwip/tcpip.h"
 #endif
-
+#include "stdio.h"
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
 #define IFNAME1 'n'
@@ -73,6 +73,9 @@
 
 /** Network link speed */
 #define NET_LINK_SPEED  100000000
+
+#include "luat_conf_bsp.h"
+#include "luat_pcap.h"
 
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
@@ -197,6 +200,17 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 		datalen += q->len;
 	}
 
+    #ifdef LUAT_USE_PCAP
+    u8 mac_source[6];
+    u8 mac_dest[6];
+    memcpy(mac_source, buf + 6, 6);
+    memcpy(mac_dest, buf, 6);
+    printf("OUT %02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x %u len %u\n", 
+        mac_source[0], mac_source[1], mac_source[2], mac_source[3], mac_source[4], mac_source[5],  
+        mac_dest[0], mac_dest[1], mac_dest[2], mac_dest[3], mac_dest[4], mac_dest[5],
+        buf[12], p->tot_len);
+    luat_pcap_write_macpkg(buf, datalen);
+    #endif
 #if TLS_CONFIG_AP
     if (netif != tls_get_netif())
 	    tls_wifi_buffer_release(true, buf);
@@ -226,7 +240,17 @@ static struct pbuf *low_level_input(struct netif *netif, u8 *buf, u32 buf_len)
     struct pbuf *p = NULL, *q = NULL;
     u16_t s_len;
     u8_t *bufptr;
-
+    #ifdef LUAT_USE_PCAP
+    u8 mac_source[6];
+    u8 mac_dest[6];
+    memcpy(mac_source, buf + 6, 6);
+    memcpy(mac_dest, buf, 6);
+    printf("IN %02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x %u len %u\n", 
+        mac_source[0], mac_source[1], mac_source[2], mac_source[3], mac_source[4], mac_source[5],  
+        mac_dest[0], mac_dest[1], mac_dest[2], mac_dest[3], mac_dest[4], mac_dest[5],
+        buf[12], buf_len);
+    luat_pcap_write_macpkg(buf, buf_len);
+    #endif
     /* Obtain the size of the packet and put it into the "len"
      * variable. */
 
