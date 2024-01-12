@@ -335,7 +335,7 @@ void task_start (void *data)
 
 #if (TLS_CONFIG_LS_SPI)
     tls_spi_init();
-    tls_spifls_init();
+    //tls_spifls_init();
 #endif
 
     tls_fls_init();
@@ -359,7 +359,7 @@ void task_start (void *data)
         TLS_DBGPRT_INFO("wl mem initial failured\n");
     }
 
-    tls_get_mac_addr(mac_addr);
+    tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
     TLS_DBGPRT_INFO("mac addr ");
     TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
     if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
