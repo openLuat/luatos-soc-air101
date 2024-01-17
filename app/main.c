@@ -185,11 +185,7 @@ void UserMain(void){
 #ifdef LUAT_USE_WLAN
 	u8 tmpmac[8] = {0};
 	tls_ft_param_get(CMD_WIFI_MACAP, tmpmac, 6);
-	extern u8 *hostapd_get_mac(void);
-	u8* macptr = hostapd_get_mac();
-	//LLOGD("default AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
-	memcpy(macptr, tmpmac, 6);
-	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", macptr[0], macptr[1], macptr[2], macptr[3], macptr[4], macptr[5]);
+	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 	tls_ft_param_get(CMD_WIFI_MAC, tmpmac, 6);
 	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 #endif
