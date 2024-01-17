@@ -695,6 +695,10 @@ target("air10x")
     add_files(luatos.."components/network/ercoap/src/*.c")
     add_files(luatos.."components/network/ercoap/binding/*.c")
 
+    -- ercoap
+    add_includedirs(luatos.."components/network/kcp/include",{public = true})
+    add_files(luatos.."components/network/kcp/src/*.c")
+
     -- ws2812
     add_includedirs(luatos.."components/ws2812/include",{public = true})
     add_files(luatos.."components/ws2812/src/*.c")
