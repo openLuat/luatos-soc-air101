@@ -11,9 +11,9 @@
 #include "wm_socket.h"
 
 
-const void * const null_pointer = (void *)0;
-OS_STK         lwip_task_stk[LWIP_TASK_MAX*LWIP_STK_SIZE];
-u8_t            lwip_task_priopity_stack[LWIP_TASK_MAX];
+static const void * const null_pointer = (void *)0;
+static OS_STK         lwip_task_stk[LWIP_TASK_MAX*LWIP_STK_SIZE];
+static u8_t            lwip_task_priopity_stack[LWIP_TASK_MAX];
 //OS_TCB          lwip_task_tcb[LWIP_TASK_MAX];
 #if LWIP_NETCONN_SEM_PER_THREAD
 #if TLS_OS_FREERTOS
