@@ -12,6 +12,7 @@
 #include "wm_regs.h"
 #include "wm_wifi.h"
 #include "wm_netif.h"
+#include "wm_debug.h"
 
 #define LUAT_LOG_TAG "wlan"
 #include "luat_log.h"
@@ -31,6 +32,12 @@ static int wlan_init;
 static int wlan_state;
 
 char luat_sta_hostname[32];
+
+extern const char WiFiVer[];
+extern u8 tx_gain_group[];
+extern void *tls_wl_init(u8 *tx_gain, u8 *mac_addr, u8 *hwver);
+extern int wpa_supplicant_init(u8 *mac_addr);
+extern void tls_pmu_chipsleep_callback(int sleeptime);
 
 static int l_wlan_cb(lua_State*L, void* ptr) {
     (void)ptr;
@@ -139,6 +146,35 @@ static void netif_event_cb(u8 status) {
 int luat_wlan_init(luat_wlan_config_t *conf) {
     (void)conf;
     if (wlan_init == 0) {
+        //------------------------------------
+        u8 enable = 0;
+        u8 mac_addr[6];
+        tls_get_tx_gain(&tx_gain_group[0]);
+        TLS_DBGPRT_INFO("tx gain ");
+        TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
+        if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 6, 4)) /*wifi tx&rx mem customized interface*/
+        {
+            TLS_DBGPRT_INFO("wl mem initial failured\n");
+        }
+    
+        tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
+        TLS_DBGPRT_INFO("mac addr ");
+        TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
+        if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
+        {
+            TLS_DBGPRT_INFO("wl driver initial failured\n");
+        }
+        if (wpa_supplicant_init(mac_addr))
+        {
+            TLS_DBGPRT_INFO("supplicant initial failured\n");
+        }
+    	/*wifi-temperature compensation,default:open*/
+        if (tls_wifi_get_tempcomp_flag() != 0)
+    	    tls_wifi_set_tempcomp_flag(0);
+        if (tls_wifi_get_psm_chipsleep_flag() != 0)
+    	    tls_wifi_set_psm_chipsleep_flag(0);
+    	tls_wifi_psm_chipsleep_cb_register((tls_wifi_psm_chipsleep_callback)tls_pmu_chipsleep_callback, NULL, NULL);
+    
         u8 wireless_protocol = 0;
         tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
         // LLOGD("wireless_protocol %d", wireless_protocol);
@@ -150,10 +186,19 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         //tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
+
+        #ifdef LUAT_USE_ZLINK_WLAN
+        extern void luat_zlink_wlan_init(void);
+        luat_zlink_wlan_init();
+        #else
+        tls_ethernet_init();
+        tls_sys_init();
         tls_netif_add_status_event(netif_event_cb);
         tls_wifi_scan_result_cb_register(NULL);
-        #ifdef LUAT_USE_NETWORK
+        #endif
 
+        //-----------------------------------
+        #ifdef LUAT_USE_NETWORK
         struct netif *et0 = tls_get_netif();
         net_lwip_set_netif(et0, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         #if TLS_CONFIG_AP
@@ -164,7 +209,6 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         }
         #endif
         net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
-        #endif
 
         // 确保DHCP是默认开启
         struct tls_param_ip ip_param;
@@ -173,12 +217,14 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
             ip_param.dhcp_enable = 1;
             tls_param_set(TLS_PARAM_ID_IP, (void *)&ip_param, false);
         }
+        #endif
     }
     tls_wifi_set_psflag(FALSE, FALSE);
 	return 0;
 }
 
 int luat_wlan_mode(luat_wlan_config_t *conf) {
+    #if TLS_CONFIG_AP
     // 不需要设置, 反正都能用
     (void)conf;
     if (conf->mode == LUAT_WLAN_MODE_STA) {
@@ -187,6 +233,7 @@ int luat_wlan_mode(luat_wlan_config_t *conf) {
     // else if (conf->mode == LUAT_WLAN_MODE_AP) {
     //     tls_wifi_disconnect();
     // }
+    #endif
     return 0;
 }
 
@@ -310,7 +357,7 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
 int luat_wlan_get_ip(int type, char* data) {
     (void)type;
     struct netif *et0 = tls_get_netif();
-    if (et0 == NULL || et0->ip_addr.addr == 0)
+    if (et0 == NULL || ip_addr_isany(&et0->ip_addr))
         return -1;
     ipaddr_ntoa_r(&et0->ip_addr, data, 16);
     return 0;
@@ -341,7 +388,7 @@ int luat_wlan_get_ap_rssi(void) {
 
 int luat_wlan_get_ap_gateway(char* buff) {
     struct netif *et0 = tls_get_netif();
-    if (et0 == NULL || et0->ip_addr.addr == 0)
+    if (et0 == NULL || ip_addr_isany(&et0->gw))
         return -1;
     ipaddr_ntoa_r(&et0->gw, buff, 16);
     return 0;
@@ -422,7 +469,9 @@ int luat_wlan_set_hostname(int id, const char* hostname) {
 }
 
 int luat_wlan_ap_stop(void) {
+    #if TLS_CONFIG_AP
     tls_wifi_softap_destroy();
+    #endif
     return 0;
 }
 

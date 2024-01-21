@@ -350,37 +350,7 @@ void task_start (void *data)
     sys_mac_init();
 #endif
 
-#ifdef LUAT_USE_WLAN
-    tls_get_tx_gain(&tx_gain_group[0]);
-    TLS_DBGPRT_INFO("tx gain ");
-    TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-    if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 6, 4)) /*wifi tx&rx mem customized interface*/
-    {
-        TLS_DBGPRT_INFO("wl mem initial failured\n");
-    }
 
-    tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
-    TLS_DBGPRT_INFO("mac addr ");
-    TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
-    if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
-    {
-        TLS_DBGPRT_INFO("wl driver initial failured\n");
-    }
-    if (wpa_supplicant_init(mac_addr))
-    {
-        TLS_DBGPRT_INFO("supplicant initial failured\n");
-    }
-	/*wifi-temperature compensation,default:open*/
-    if (tls_wifi_get_tempcomp_flag() != 0)
-	    tls_wifi_set_tempcomp_flag(0);
-    if (tls_wifi_get_psm_chipsleep_flag() != 0)
-	    tls_wifi_set_psm_chipsleep_flag(0);
-	tls_wifi_psm_chipsleep_cb_register((tls_wifi_psm_chipsleep_callback)tls_pmu_chipsleep_callback, NULL, NULL);
-    tls_ethernet_init();
-
-    tls_sys_init();
-
-#endif
     UserMain();
 
 #ifdef LUAT_USE_WLAN
