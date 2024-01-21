@@ -200,11 +200,11 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         //-----------------------------------
         #ifdef LUAT_USE_NETWORK
         struct netif *et0 = tls_get_netif();
-        net_lwip_set_netif(et0, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
+        net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0);
         #if TLS_CONFIG_AP
         extern struct netif *nif4apsta;
         if (nif4apsta) {
-            net_lwip_set_netif(nif4apsta, NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+            net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_AP, nif4apsta);
             net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
         }
         #endif
