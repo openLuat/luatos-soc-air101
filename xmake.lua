@@ -55,7 +55,7 @@ set_optimize("smallest")
 -- set language: c99
 set_languages("c99")
 add_defines("MBEDTLS_CONFIG_FILE=\"mbedtls_config_air101.h\"")
-add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wa,--gdwarf2 -fdata-sections -ffunction-sections")
+add_asflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -fdata-sections -ffunction-sections")
 add_cflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 
@@ -336,8 +336,8 @@ target("network")
     add_files(luatos.."components/ethernet/w5500/*.c")
 
     -- usernet
-    add_includedirs(luatos.."components/network/usernet",{public = true})
-    add_files(luatos.."components/network/usernet/*.c")
+    -- add_includedirs(luatos.."components/network/usernet",{public = true})
+    -- add_files(luatos.."components/network/usernet/*.c")
 
     -- wlan
     add_includedirs(luatos.."components/wlan")
@@ -393,6 +393,10 @@ target("network")
     -- pcap
     add_includedirs(luatos.."components/network/pcap/include",{public = true})
     add_files(luatos.."components/network/pcap/src/*.c")
+
+    -- zlink
+    add_includedirs(luatos.."components/network/zlink/include",{public = true})
+    add_files(luatos.."components/network/zlink/src/*.c")
 
 target_end()
 
