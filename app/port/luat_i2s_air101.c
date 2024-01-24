@@ -92,7 +92,7 @@ luat_i2s_conf_t *luat_i2s_get_config(uint8_t id){
 	return &i2s_conf;
 }
 
-int luat_i2s_setup(luat_i2s_conf_t *conf) {
+int luat_i2s_setup(const luat_i2s_conf_t *conf) {
     if (I2s_tx_dma_init()){
         return -1;
     }
