@@ -69,7 +69,10 @@ int luat_pwm_setup(luat_pwm_conf_t* conf) {
 	size_t precision = conf->precision;
 
 	tls_sys_clk sysclk;
-
+	if (period == 0) {
+		LLOGW("period can't be 0");
+		return -1;
+	}
 	if (precision != 100 && precision != 256) {
 		LLOGW("only 100 or 256 PWM precision supported");
 		return -1;
