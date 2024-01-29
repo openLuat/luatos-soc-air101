@@ -53,7 +53,7 @@ static void uart0Init (int bandrate)
 
 #include "luat_conf_bsp.h"
 
-#ifndef LUAT_CONF_LOG_UART1
+#ifdef LUAT_CONF_LOG_UART1
 static void uart1_io_init(void)
 {
     uint32_t temp;
