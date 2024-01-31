@@ -45,6 +45,7 @@ static void pcap_uart_write(void *ptr, const void* buf, size_t len) {
 }
 
 static void luat_start(void *sdata){
+	(void)sdata;
 	luat_heap_init();
 	luat_main();
 }
@@ -73,12 +74,8 @@ static void lvgl_timer_cb(void *ptmr, void *parg) {
 	}
 	// lvgl_called = 1;
 }
-// #define    LVGL_TASK_SIZE      512
-// static OS_STK __attribute__((aligned(4)))			LVGLTaskStk[LVGL_TASK_SIZE] = {0};
 #endif
 
-#define    TASK_START_STK_SIZE         (3*1024) // 实际*4, 即12k
-static OS_STK __attribute__((aligned(4))) 			TaskStartStk[TASK_START_STK_SIZE] = {0};
 
 #endif
 
@@ -232,11 +229,17 @@ void UserMain(void){
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
+	#if defined(LUAT_USE_NETWORK) || defined(LUAT_USE_NIMBLE)
+	size_t TS = 512 * 5;
+	#else
+	size_t TS = 512 * 4;
+	#endif
+	void* TaskStartStk = (char*)malloc(TS * sizeof(u32));
 	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,
 				(void *)TaskStartStk,          /* task's stack start address */
-				TASK_START_STK_SIZE * sizeof(u32), /* task's stack size, unit:byte */
+				TS * sizeof(u32), /* task's stack size, unit:byte */
 				21,
 				0);
 	// tls_os_task_create(NULL, "cstack", check_stack, NULL, NULL, 2048, 10, 0);
