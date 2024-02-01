@@ -20,10 +20,10 @@
 #include "lwip/netif.h"
 #include "luat_network_adapter.h"
 #include "luat_timer.h"
-#include "net_lwip.h"
+#include "net_lwip2.h"
 #include "lwip/tcp.h"
 
-void net_lwip_set_link_state(uint8_t adapter_index, uint8_t updown);
+void net_lwip2_set_link_state(uint8_t adapter_index, uint8_t updown);
 
 #define SCAN_DONE       (0x73)
 #define ONESHOT_RESULT  (0x74)
@@ -50,7 +50,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     {
     case NETIF_IP_NET_UP:
         #ifdef LUAT_USE_NETWORK
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
+        net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
         #endif
         luat_wlan_get_ip(0, sta_ip);
         LLOGD("sta ip %s", sta_ip);
@@ -61,7 +61,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         break;
     case NETIF_WIFI_DISCONNECTED:
         #ifdef LUAT_USE_NETWORK
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
+        net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
         #endif
         lua_pushstring(L, "IP_LOSE");
         lua_call(L, 1, 0); // 暂时只发个IP_LOSE
@@ -119,19 +119,19 @@ static void netif_event_cb(u8 status) {
     case NETIF_WIFI_SOFTAP_SUCCESS :
         LLOGI("softap create success");
         #ifdef LUAT_USE_NETWORK
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 1);
+        net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 1);
         #endif
         break;
     case NETIF_WIFI_SOFTAP_FAILED:
         LLOGI("softap create failed");
         #ifdef LUAT_USE_NETWORK
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
+        net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
         #endif
         break;
     case NETIF_WIFI_SOFTAP_CLOSED:
         LLOGI("softap create closed");
         #ifdef LUAT_USE_NETWORK
-        net_lwip_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
+        net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 0);
         #endif
         break;
     case NETIF_IP_NET2_UP :
@@ -147,7 +147,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
     (void)conf;
     if (wlan_init == 0) {
         //------------------------------------
-        u8 enable = 0;
+        //u8 enable = 0;
         u8 mac_addr[6];
         tls_get_tx_gain(&tx_gain_group[0]);
         TLS_DBGPRT_INFO("tx gain ");
@@ -200,15 +200,15 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         //-----------------------------------
         #ifdef LUAT_USE_NETWORK
         struct netif *et0 = tls_get_netif();
-        net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0);
+        net_lwip2_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0);
         #if TLS_CONFIG_AP
         extern struct netif *nif4apsta;
         if (nif4apsta) {
-            net_lwip_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_AP, nif4apsta);
-            net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+            net_lwip2_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_AP, nif4apsta);
+            net_lwip2_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
         }
         #endif
-        net_lwip_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
+        net_lwip2_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
 
         // 确保DHCP是默认开启
         struct tls_param_ip ip_param;
@@ -336,7 +336,7 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
     u8 mac[8] = {0};
     int ret = 0;
     if (id == 0) {
-        tls_get_mac_addr(mac);
+        tls_ft_param_get(CMD_WIFI_MAC, mac, 6);
     }
     else {
         tls_ft_param_get(CMD_WIFI_MACAP, mac, 6);
@@ -346,10 +346,10 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
         return 0;
     }
     if (id == 0) {
-        ret = tls_set_mac_addr(mac_addr);
+        ret = tls_ft_param_set(CMD_WIFI_MAC, (void*)mac_addr, 6);
     }
     else {
-        ret = tls_ft_param_set(CMD_WIFI_MACAP, mac_addr, 6);
+        ret = tls_ft_param_set(CMD_WIFI_MACAP, (void*)mac_addr, 6);
     }
     return ret;
 }
