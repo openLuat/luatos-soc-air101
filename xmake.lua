@@ -82,7 +82,7 @@ add_includedirs("include/wifi",{public = true})
 add_includedirs("include/arch/xt804",{public = true})
 add_includedirs("include/arch/xt804/csi_core",{public = true})
 add_includedirs("include/net",{public = true})
-add_includedirs("demo",{public = true})
+-- add_includedirs("demo",{public = true})
 add_includedirs("platform/inc",{public = true})
 add_includedirs(luatos.."components/mbedtls/include")
 
