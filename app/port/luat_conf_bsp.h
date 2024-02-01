@@ -13,7 +13,7 @@
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
 // 可选值, AIR101 AIR103 AIR601 分别对应3种模块
-#define AIR101
+#define AIR601
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
@@ -40,12 +40,12 @@
 #define LUAT_USE_MCU  1
 #define LUAT_USE_RTC 1
 // SDIO 仅支持TF/SD卡的挂载
-#define LUAT_USE_SDIO 1
+// #define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
-#define LUAT_USE_LCDSEG 1
+// #define LUAT_USE_LCDSEG 1
 // OTP
-#define LUAT_USE_OTP 1
-#define LUAT_USE_TOUCHKEY 1
+// #define LUAT_USE_OTP 1
+// #define LUAT_USE_TOUCHKEY 1
 
 // #define LUAT_USE_ICONV 1
 
@@ -56,8 +56,8 @@
 // #define LUAT_USE_W5500
 
 // 开启TLS
-#define LUAT_USE_TLS
-#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+// #define LUAT_USE_TLS
+// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 // #define LUAT_USE_CRYPTO_AES_MBEDTLS 1
 
 // 其他网络功能
@@ -67,7 +67,7 @@
 // #define LUAT_USE_ERRDUMP 1
 
 
-#define LUAT_USE_IOTAUTH 1
+// #define LUAT_USE_IOTAUTH 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
@@ -75,7 +75,7 @@
 #define LUAT_USE_CJSON  1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
-#define LUAT_USE_LIBGNSS  1
+// #define LUAT_USE_LIBGNSS  1
 #define LUAT_USE_FS  1
 #define LUAT_USE_SENSOR  1
 #define LUAT_USE_SFUD  1
@@ -83,23 +83,23 @@
 // 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
 // #define LUAT_USE_COREMARK 1
 // #define LUAT_USE_ZLIB 1 
-#define LUAT_USE_IR 1
+// #define LUAT_USE_IR 1
 // FDB 提供kv数据库, 与nvm库类似
 // #define LUAT_USE_FDB 1
 // fskv提供与fdb库兼容的API,旨在替换fdb库
 #define LUAT_USE_FSKV 1
 #define LUAT_USE_OTA 1
-#define LUAT_USE_I2CTOOLS 1
-#define LUAT_USE_LORA 1
-#define LUAT_USE_MLX90640 1
+// #define LUAT_USE_I2CTOOLS 1
+// #define LUAT_USE_LORA 1
+// #define LUAT_USE_MLX90640 1
 // #define LUAT_USE_MAX30102 1
 // zlib压缩,更快更小的实现
-#define LUAT_USE_MINIZ 1
+// #define LUAT_USE_MINIZ 1
 // FASTLZ的内存需求小,压缩比不如miniz
 // #define LUAT_USE_FASTLZ 1
 
 // RSA 加解密,加签验签
-#define LUAT_USE_RSA 1
+// #define LUAT_USE_RSA 1
 // #define LUAT_USE_XXTEA    1
 
 // 国密算法 SM2/SM3/SM4
@@ -114,7 +114,7 @@
 
 // 禁用AES的硬件加速版本, 改用mbedtls的软件版本
 // 硬件加速的版本只支持AES128,若使用AES256就报错了
-#define LUAT_USE_CRYPTO_AES_MBEDTLS  1
+// #define LUAT_USE_CRYPTO_AES_MBEDTLS  1
 
 // 音频相关
 // #define LUAT_USE_I2S 1
@@ -136,6 +136,7 @@
 // #define LUAT_USE_MQTTCORE 1
 // #define LUAT_USE_LIBCOAP 1
 // #define LUAT_USE_ERCOAP 1
+// #define LUAT_CONF_LOG_UART1 1
 
 //----------------------------
 // 高级功能, 推荐使用REPL, 因为SHELL已废弃
@@ -148,6 +149,14 @@
 // #define LUAT_USE_NES
 // #define LUAT_USE_PROTOBUF 1
 // #define LUAT_USE_REPL 1
+
+// 从UART2输出PCAP包, 用于网络通信抓包
+// #define LUAT_USE_PCAP 1
+
+// WLAN传输的MAC报文, 转到ZLINK,通过UART/SPI对外交互, 不使用内置的LWIP
+// #define LUAT_USE_ZLINK 1
+// #define LUAT_USE_ZLINK_UART 1
+// #define LUAT_USE_ZLINK_WLAN 1
 
 //---------------------
 // UI
@@ -369,6 +378,9 @@
 #endif
 #endif
 
+#ifdef LUAT_USE_ZLINK_WLAN
+#undef LUAT_USE_NETWORK
+#endif
 
 #define LV_DISP_DEF_REFR_PERIOD 30
 #define LUAT_LV_DEBUG 0
