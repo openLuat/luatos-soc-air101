@@ -229,17 +229,12 @@ void UserMain(void){
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
-	#if defined(LUAT_USE_NETWORK) || defined(LUAT_USE_NIMBLE)
-	size_t TS = 512 * 5;
-	#else
-	size_t TS = 512 * 4;
-	#endif
-	void* TaskStartStk = (char*)malloc(TS * sizeof(u32));
+	static char vm_task_stack[8*1024] = {0};
 	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,
-				(void *)TaskStartStk,          /* task's stack start address */
-				TS * sizeof(u32), /* task's stack size, unit:byte */
+				(void *)vm_task_stack,          /* task's stack start address */
+				8*1024, /* task's stack size, unit:byte */
 				21,
 				0);
 	// tls_os_task_create(NULL, "cstack", check_stack, NULL, NULL, 2048, 10, 0);
