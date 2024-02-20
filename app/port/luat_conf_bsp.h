@@ -54,6 +54,7 @@
 
 // 外置网络支持
 // #define LUAT_USE_W5500
+// #define LUAT_USE_ULWIP 1
 
 // 开启TLS
 #define LUAT_USE_TLS
@@ -349,7 +350,7 @@
 #endif
 #endif
 
-#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500)
+#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
 #ifndef LUAT_USE_NETWORK
 #define LUAT_USE_NETWORK
 #define LUAT_USE_DNS
@@ -358,7 +359,7 @@
 #define LUAT_USE_DNS 1
 #endif
 #endif
-#ifdef LUAT_USE_WLAN
+#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_ULWIP)
 #ifndef LUAT_USE_LWIP
 #define LUAT_USE_LWIP
 #endif

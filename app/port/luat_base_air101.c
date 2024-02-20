@@ -201,6 +201,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FTP
   {"ftp", luaopen_ftp},
 #endif
+#ifdef LUAT_USE_ULWIP
+  {"ulwip", luaopen_ulwip},
+#endif
 #endif
 #ifdef LUAT_USE_LORA
   {"lora", luaopen_lora},
