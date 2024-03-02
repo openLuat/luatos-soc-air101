@@ -22,8 +22,8 @@
 #include "luat_log.h"
 
 int luat_nimble_deinit() {
-    LLOGE("deinit not support yet");
-    return -1;
+    tls_nimble_stop();
+    return 0;
 }
 
 int luat_nimble_trace_level(int level) {
@@ -37,7 +37,7 @@ int luat_nimble_init_ibeacon(uint8_t uart_idx, char* name, int mode);
 int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
 
     int ret = 0;
-    tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x7F);
+    // tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x7F);
 
     ble_hs_cfg.sm_io_cap = MYNEWT_VAL(BLE_SM_IO_CAP),
     ble_hs_cfg.sm_oob_data_flag = MYNEWT_VAL(BLE_SM_OOB_DATA_FLAG),
@@ -54,7 +54,7 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
     }
     else if (mode == 1) {
         LLOGD("CALL luat_nimble_init_central");
-        ret = luat_nimble_init_central(uart_idx, name, mode);
+        // ret = luat_nimble_init_central(uart_idx, name, mode);
     }
     else if (mode == 2) {
         ret = luat_nimble_init_ibeacon(uart_idx, name, mode);

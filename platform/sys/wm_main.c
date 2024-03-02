@@ -200,7 +200,7 @@ int main(void)
     #endif
     tls_reg_write32(HR_CLK_BASE_ADDR, value);
 
-    #ifndef LUAT_USE_WLAN
+    #if !defined(LUAT_USE_WLAN) && !defined(LUAT_USE_NIMBLE)
 	/* Close bbp clk */
 	tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x0F);
     #endif
