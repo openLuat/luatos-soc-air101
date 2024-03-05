@@ -193,7 +193,7 @@ int main(void)
     /*Close those not initialized clk except touchsensor/trng, uart0,sdadc,gpio,rfcfg*/
     value = tls_reg_read32(HR_CLK_BASE_ADDR);
     value &= ~0x3fffff;
-    #ifdef LUAT_USE_WLAN
+    #if defined(LUAT_USE_WLAN) || defined(LUAT_USE_NIMBLE) || defined(LUAT_USE_RTC)
     value |= 0x201a02;
     #else
     value |= 0x1a02;
