@@ -434,13 +434,21 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     sprintf_((char*)ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
 
-    u8 wireless_protocol = 0;
-    tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, TRUE);
+    u8 value = 0;
+    tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void *) &value, TRUE);
     // LLOGD("wireless_protocol %d", wireless_protocol);
-    if (TLS_PARAM_IEEE80211_SOFTAP != wireless_protocol)
+    if (TLS_PARAM_IEEE80211_SOFTAP != value)
     {
-        wireless_protocol = TLS_PARAM_IEEE80211_SOFTAP;
-        tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
+        value = TLS_PARAM_IEEE80211_SOFTAP;
+        tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &value, FALSE);
+    }
+    if (apinfo2->hidden) {
+        value = 0;
+        tls_param_set(TLS_PARAM_ID_BRDSSID, (void *) &value, FALSE);
+    }
+    else {
+        value = 1;
+        tls_param_set(TLS_PARAM_ID_BRDSSID, (void *) &value, FALSE);
     }
 
     ret = tls_wifi_softap_create(&apinfo, &ipinfo);
