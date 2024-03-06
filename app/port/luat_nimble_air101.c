@@ -22,7 +22,20 @@
 #include "luat_log.h"
 
 int luat_nimble_deinit() {
+    int rc;
+    /*Stop hs system*/
+    rc = nimble_port_stop();
+    // assert(rc == 0);
+    /*Stop controller and free vuart resource */
+    rc = ble_hci_vuart_deinit();
+    // assert(rc == 0);
+    /*Free hs system resource*/
+    nimble_port_deinit();
+    /*Free task stack ptr and free hs task*/
     tls_nimble_stop();
+    /*Application levels resource cleanup*/
+    tls_ble_gap_deinit();
+    // tls_bt_util_deinit(); // 关这个会死机, 还不知道为啥
     return 0;
 }
 
@@ -54,7 +67,7 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
     }
     else if (mode == 1) {
         LLOGD("CALL luat_nimble_init_central");
-        // ret = luat_nimble_init_central(uart_idx, name, mode);
+        ret = luat_nimble_init_central(uart_idx, name, mode);
     }
     else if (mode == 2) {
         ret = luat_nimble_init_ibeacon(uart_idx, name, mode);
