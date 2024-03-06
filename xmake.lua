@@ -63,6 +63,8 @@ add_cxflags("-Werror=maybe-uninitialized")
 
 add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strlen -fno-builtin-calloc")
 
+-- add_cflags("-Werror=unused-value")
+
 set_dependir("$(buildir)/.deps")
 set_objectdir("$(buildir)/.objs")
 
@@ -165,6 +167,11 @@ target("blehost")
 
     add_files("src/bt/blehost/**.c")
     add_includedirs(os.dirs(path.join(os.scriptdir(),"src/bt/blehost/**")))
+    
+    add_includedirs("app/port",{public = true})
+    add_includedirs(luatos.."lua/include",{public = true})
+    add_includedirs(luatos.."luat/include",{public = true})
+
     add_includedirs("src/app/bleapp",{public = true})
     add_includedirs("src/os/rtos/include",{public = true})
     add_includedirs("include",{public = true})
@@ -418,6 +425,17 @@ target("nes")
     add_includedirs(luatos.."components/nes/inc")
     add_includedirs(luatos.."components/nes/port")
     add_files(luatos.."components/nes/**.c")
+target_end()
+
+target("mbedtls")
+    set_kind("static")
+    set_plat("cross")
+    set_optimize("fastest",{force = true})
+    set_targetdir("$(buildir)/lib")
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
     -- mbedtls
     add_files(luatos.."components/mbedtls/library/*.c")
 target_end()
@@ -523,6 +541,7 @@ target("air10x")
     add_deps("nes")
     add_deps("audio")
     add_deps("luatfonts")
+    add_deps("mbedtls")
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
