@@ -10,9 +10,10 @@
 #include "wm_config.h"
 #include "wm_socket.h"
 
+#include "luat_conf_bsp.h"
 
 static const void * const null_pointer = (void *)0;
-static OS_STK         lwip_task_stk[LWIP_TASK_MAX*LWIP_STK_SIZE];
+// static OS_STK         lwip_task_stk[LWIP_TASK_MAX*LWIP_STK_SIZE];
 static u8_t            lwip_task_priopity_stack[LWIP_TASK_MAX];
 //OS_TCB          lwip_task_tcb[LWIP_TASK_MAX];
 #if LWIP_NETCONN_SEM_PER_THREAD
@@ -384,6 +385,7 @@ void sys_mbox_set_invalid(sys_mbox_t *mbox)
  *
  * \return The id of the new thread.
  */
+extern void* luat_heap_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
 sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread, void *arg,
 		int stacksize, int prio)
 {
@@ -435,13 +437,21 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread, void *arg,
         stacksize = LWIP_STK_SIZE;
 
     int tsk_prio = ubPrio-LWIP_TASK_START_PRIO;
-    OS_STK * task_stk = &lwip_task_stk[tsk_prio*LWIP_STK_SIZE];
+    #ifdef LUAT_USE_TLS
+    size_t TS = 6*1024;
+    #else
+    size_t TS = 4*1024;
+    #endif
+    
+    // OS_STK * task_stk = luat_heap_alloc(NULL, NULL, TS, 0);
+    OS_STK * task_stk = tls_mem_alloc(TS);
+    // OS_STK * task_stk = &lwip_task_stk[tsk_prio*LWIP_STK_SIZE];
 
     tls_os_task_create(NULL, name ? name : "lwip",
                        thread,
                        (void *)arg,
                        (void *)task_stk,
-                       stacksize * sizeof(u32),
+                       TS,
                        ubPrio,
                        0);
     
