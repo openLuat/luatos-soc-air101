@@ -21,7 +21,11 @@
 #define LUAT_LOG_TAG "nimble"
 #include "luat_log.h"
 
+static uint8_t inited;
+
 int luat_nimble_deinit() {
+    if (inited == 0)
+        return 0;
     int rc;
     /*Stop hs system*/
     rc = nimble_port_stop();
@@ -36,6 +40,7 @@ int luat_nimble_deinit() {
     /*Application levels resource cleanup*/
     tls_ble_gap_deinit();
     // tls_bt_util_deinit(); // 关这个会死机, 还不知道为啥
+    inited = 0;
     return 0;
 }
 
@@ -48,7 +53,8 @@ int luat_nimble_init_central(uint8_t uart_idx, char* name, int mode);
 int luat_nimble_init_ibeacon(uint8_t uart_idx, char* name, int mode);
 
 int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
-
+    if (inited == 1)
+        return 0;
     int ret = 0;
     // tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x7F);
 
@@ -81,6 +87,7 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
 
         /* As the last thing, process events from default event queue. */
         tls_nimble_start();
+        inited = 1;
     }
     return 0;
 }
