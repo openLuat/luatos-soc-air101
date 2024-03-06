@@ -152,7 +152,10 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         tls_get_tx_gain(&tx_gain_group[0]);
         TLS_DBGPRT_INFO("tx gain ");
         TLS_DBGPRT_DUMP((char *)(&tx_gain_group[0]), 27);
-        if (tls_wifi_mem_cfg(WIFI_MEM_START_ADDR, 6, 4)) /*wifi tx&rx mem customized interface*/
+        // 计算wifi内存大小的公式 (TX+RX)*2*1638+4096
+        // 例如 TX=6, RX=4, (6+4)*2*1638+4096=36856, 向上取整, 36k
+        // 然后sram的最后位置是 0x20047FFF
+        if (tls_wifi_mem_cfg((0x20048000u - (36*1024)), 6, 4)) /*wifi tx&rx mem customized interface*/
         {
             TLS_DBGPRT_INFO("wl mem initial failured\n");
         }

@@ -96,9 +96,9 @@ void luat_heap_init(void) {
 	}
 #else
 #ifndef LUAT_USE_TLSF
-	bpool((void*)(0x20048000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
+	bpool((void*)(0x20028000), LUAT_HEAP_P2_SIZE);
 #else
-	luavm_tlsf_ext = tlsf_add_pool(0x20048000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
+	luavm_tlsf_ext = tlsf_add_pool(0x20028000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
 #endif
 	#endif
 }
