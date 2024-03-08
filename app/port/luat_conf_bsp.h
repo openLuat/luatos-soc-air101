@@ -414,3 +414,7 @@
 #endif
 
 #endif
+
+#ifdef LUAT_USE_SOFT_UART
+#undef LUAT_USE_SOFT_UART
+#endif
