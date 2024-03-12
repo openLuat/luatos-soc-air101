@@ -40,10 +40,11 @@
 
 void luat_heap_init(void);
 
-
+#if defined(LUAT_USE_PCAP)
 static void pcap_uart_write(void *ptr, const void* buf, size_t len) {
 	luat_uart_write(LUAT_PCAP_UART_ID, buf, len);
 }
+#endif
 
 static void luat_start(void *sdata){
 	(void)sdata;
@@ -209,6 +210,11 @@ void UserMain(void){
 	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
 #endif
 
+	#if defined(LUAT_USE_FOTA)
+	extern void luat_fota_boot_check(void);
+	luat_fota_boot_check();
+	#endif
+
 #ifdef __LUATOS__
 	luat_heap_init();
 // PCAP抓包
@@ -258,8 +264,6 @@ void bpool(void *buffer, long len) {}
 
 extern const u8 default_mac[];
 
-
-
 static int is_mac_ok(u8 mac_addr[6]) {
 
 	// 如果是默认值, 那就是不合法
@@ -307,6 +311,9 @@ void sys_mac_init() {
 
 #ifdef LUAT_USE_WLAN
 	ret = tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
+	if (ret) {
+		printf("tls_ft_param_get mac addr FALED %d !!!\n", ret);
+	}
 	tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
 	//printf("CMD_WIFI_MAC ret %d %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 	int sta_mac_ok = is_mac_ok(mac_addr);
@@ -357,7 +364,7 @@ void sys_mac_init() {
 	if (memcmp(tmp_mac, mac_addr, 6)) {
 		// 不一致, 写入
 		tls_ft_param_set(CMD_WIFI_MAC, mac_addr, 6);
-		printf("更新STA mac %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+		printf("更新STA mac %02X%02X%02X%02X%02X%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 	}
 
 	// 再判断ap的mac
@@ -365,7 +372,7 @@ void sys_mac_init() {
 	if (memcmp(tmp_mac, ap_mac, 6)) {
 		// 不一致, 写入
 		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
-		printf("更新AP mac %02X%02X%02X%02X%02X%02X\n", ret, ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
+		printf("更新AP mac %02X%02X%02X%02X%02X%02X\n", ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
 	}
 #endif
 }
