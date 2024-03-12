@@ -2,7 +2,7 @@
 #include "luat_malloc.h"
 #include "luat_msgbus.h"
 #include "luat_uart.h"
-#define LUAT_LOG_TAG "luat.uart.101"
+#define LUAT_LOG_TAG "uart"
 #include "luat_log.h"
 #include "luat_gpio.h"
 #include "luat_hwtimer.h"
