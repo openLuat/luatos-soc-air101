@@ -19,6 +19,7 @@
 #include "luat_rtc.h"
 #include "luat_pcap.h"
 #include "luat_uart.h"
+#include "luat_malloc.h"
 
 #include <string.h>
 #include "wm_irq.h"
@@ -46,7 +47,6 @@ static void pcap_uart_write(void *ptr, const void* buf, size_t len) {
 
 static void luat_start(void *sdata){
 	(void)sdata;
-	luat_heap_init();
 	luat_main();
 }
 
@@ -105,7 +105,7 @@ extern int luat_pm_get_poweron_reason(void);
 extern int power_bk_reg;
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 void UserMain(void){
-	char unique_id [20] = {0};
+	unsigned  char unique_id [20] = {0};
 
 	tls_uart_options_t opt = {0};
 	opt.baudrate = UART_BAUDRATE_B921600;
@@ -210,6 +210,7 @@ void UserMain(void){
 #endif
 
 #ifdef __LUATOS__
+	luat_heap_init();
 // PCAP抓包
 #ifdef LUAT_USE_PCAP
 	// 初始化pcap
@@ -230,7 +231,12 @@ void UserMain(void){
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
+	#if defined(LUAT_USE_WLAN) && defined(LUAT_USE_NIMBLE) && defined(LUAT_USE_TLS)
+	char *vm_task_stack = luat_heap_alloc(NULL, NULL, 0, 8192);
+	// LLOGD("VM heap start %p", vm_task_stack);
+	#else
 	static char vm_task_stack[8*1024] = {0};
+	#endif
 	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,
@@ -277,7 +283,7 @@ void sys_mac_init() {
 	u8 tmp_mac[6] = {0};
     u8 mac_addr[6] = {0};
 	u8 ap_mac[6] = {0};
-    char unique_id [20] = {0};
+    unsigned  char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
 	int ret = 0;
 
