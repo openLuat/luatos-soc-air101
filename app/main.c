@@ -80,6 +80,7 @@ static void lvgl_timer_cb(void *ptmr, void *parg) {
 #endif
 
 void check_stack(void* ptr) {
+	(void)ptr;
 	while (1) {
 		vTaskDelay(1000);
 		tls_os_disp_task_stat_info();
