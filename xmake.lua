@@ -60,6 +60,9 @@ add_cflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=
 add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std=gnu99 -c -mhard-float -Wall -fdata-sections -ffunction-sections")
 
 add_cxflags("-Werror=maybe-uninitialized")
+add_cxflags("-Werror=unused-value")
+add_cxflags("-Wno-unused-parameter")
+add_cxflags("-Werror=empty-body")
 
 add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strlen -fno-builtin-calloc")
 
@@ -189,7 +192,7 @@ target("lvgl")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
-
+    
     on_load(function (target)
         local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
         local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
@@ -520,7 +523,7 @@ target("air10x")
         if USE_WLAN then
             -- print("更新I_SRAM段的大小")
             local I_SRAM_LENGTH_N = string.format("%X", (tonumber(I_SRAM_LENGTH, 16) - 12 * 1024))
-            local ld_data_n = ld_data:gsub(ORIGIN, "08013800")
+            local ld_data_n = ld_data:gsub(ORIGIN, "08013400")
             ld_data_n = ld_data_n:gsub(I_SRAM_LENGTH, I_SRAM_LENGTH_N)
             io.writefile("./ld/air101_103.ld", ld_data_n)
             I_SRAM_LENGTH = I_SRAM_LENGTH_N
@@ -760,8 +763,8 @@ target("air10x")
         end
         if USE_WLAN then
             print("启用了WLAN, 更新运行区域参数")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8013400 -ra 8013800 -ua 8012000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8012000 -nh 8013400 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
+            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8013000 -ra 8013400 -ua 8012000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
+            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8012000 -nh 8013000 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
         else
             os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8010400 -ra 8010800 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
             os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh 8010400 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
