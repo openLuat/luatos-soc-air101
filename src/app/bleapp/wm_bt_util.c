@@ -206,6 +206,9 @@ int tls_bt_util_deinit(void)
 
 int tls_bt_util_init(void)
 {
+    // 因为tls_bt_util_deinit不会被调用, 所以这里需要判断一下, 防止重复初始化
+    if(!dl_list_empty(&async_evt_list.list))
+    { return 0; }
     dl_list_init(&async_evt_list.list);
     ble_npl_mutex_init(&async_evt_list.list_mutex);
     return 0;
