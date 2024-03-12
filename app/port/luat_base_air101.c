@@ -275,6 +275,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_XXTEA
   {"xxtea", luaopen_xxtea},
 #endif
+#ifdef LUAT_USE_FOTA
+  {"fota", luaopen_fota},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };
