@@ -204,8 +204,9 @@ void tls_io_cfg_set(enum tls_io_name name, u8 option)
         io_cfg_option6(name);
 	else if (WM_IO_OPTION7 == option)
 		io_cfg_option7(name);
-    else
+    else {
         TLS_DBGPRT_IO_ERR("invalid io option.\r\n");
+    }
 }
 
 /**
