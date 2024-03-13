@@ -104,6 +104,7 @@ static const const char* reason[] = {
 
 extern int luat_pm_get_poweron_reason(void);
 extern int power_bk_reg;
+void luat_fs_update_addr(void);
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 void UserMain(void){
 	unsigned  char unique_id [20] = {0};
@@ -117,6 +118,7 @@ void UserMain(void){
 	tls_uart_port_init(0, &opt, 0);
 
 	LLOGD("poweron: %s", reason[luat_pm_get_poweron_reason()]);
+	luat_fs_update_addr();
 	// printf("Bit 8 -- %d\n", CHECK_BIT(power_bk_reg, 8));
 	// printf("Bit 5 -- %d\n", CHECK_BIT(power_bk_reg, 5));
 	// printf("Bit 2 -- %d\n", CHECK_BIT(power_bk_reg, 2));

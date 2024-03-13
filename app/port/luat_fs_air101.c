@@ -48,7 +48,7 @@ void lv_split_jpeg_init(void);
 #define LUAT_FS_SIZE (48)
 #endif
 
-int luat_fs_init(void) {
+void luat_fs_update_addr(void) {
     //luat_timer_mdelay(1000);
 #if (defined(AIR103) || defined(AIR601))
     luadb_addr =  0x0E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
@@ -56,24 +56,7 @@ int luat_fs_init(void) {
     luadb_addr =  0x1E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
 #endif
     //LLOGD("luadb_addr 0x%08X", luadb_addr);
-    uint8_t *ptr = (uint8_t*)(luadb_addr + 0x8000000); //0x80E0000
     //LLOGD("luadb_addr ptr %p", ptr);
-
-    // 兼容老的LuaTools, 并提示更新
-    static const uint8_t luadb_magic[] = {0x01, 0x04, 0x5A, 0xA5};
-    uint8_t header[4];
-    memcpy(header, ptr, 4);
-    //LLOGD(">> %02X %02X %02X %02X", header[0], header[1], header[2], header[3]);
-    if (memcmp(header, luadb_magic, 4)) {
-        // 老的布局
-        LLOGW("Legacy non-LuaDB download, please upgrade your LuatIDE or LuatTools %p", ptr);
-        // lfs_addr = luadb_addr;
-        // kv_addr = lfs_addr - kv_size_kb*1024U;
-        // lfs_size_kb = FLASH_FS_REGION_SIZE;
-        // luadb_addr = 0;
-    }
-    // else {
-        //LLOGI("Using LuaDB as script zone format %p", ptr);
 #if (defined(AIR103) || defined(AIR601))
         lfs_addr = 0x0FC000 - (LUAT_FS_SIZE*1024);
         lfs_size_kb = LUAT_FS_SIZE;
@@ -87,7 +70,10 @@ int luat_fs_init(void) {
     //LLOGD("lfs addr4 %p", &lfs_addr);
     //LLOGD("lfs addr5 0x%08X", lfs_addr);
     //LLOGD("luadb_addr 0x%08X", luadb_addr);
+}
 
+int luat_fs_init(void) {
+    uint8_t *ptr = (uint8_t*)(luadb_addr + 0x8000000); //0x80E0000
     LFS_Init();
     luat_vfs_reg(&vfs_fs_lfs2);
 	luat_fs_conf_t conf = {
