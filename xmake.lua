@@ -585,6 +585,7 @@ target("air10x")
     add_includedirs(luatos.."components/lvgl/gen",{public = true})
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
+    add_includedirs(luatos.."components/miniz", {public = true})
 
     add_includedirs(luatos.."components/iconv")
     add_includedirs(luatos.."components/lfs")

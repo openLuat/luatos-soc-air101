@@ -40,6 +40,7 @@ static uint32_t fota_head_check;
 
 static int check_image_head(IMAGE_HEADER_PARAM_ST* imghead, const char* tag);
 static uint32_t img_checksum(const char* ptr, size_t len);
+static void check_ota_zone(void);
 
 int luat_fota_init(uint32_t start_address, uint32_t len, luat_spi_device_t* spi_device, const char *path, uint32_t pathlen) {
     fota_state = FOTA_ONGO;
@@ -222,4 +223,120 @@ void luat_fota_boot_check(void) {
     LLOGD("ota zone : 0x%08X %dkb", upgrade_img_addr, ota_zone_size/1024);
     // 当前运行区镜像的大小
     LLOGD("run image size: 0x%08X %dkb", runimg->img_len, runimg->img_len/1024);
+
+    // 检查OTA区域的数据, 如果存在更新包, 需要解析出脚本区, 然后清除数据
+    check_ota_zone();
 }
+
+#include "miniz.h"
+int my_tinfl_decompress_mem_to_callback(const void *pIn_buf, size_t *pIn_buf_size, tinfl_put_buf_func_ptr pPut_buf_func, void *pPut_buf_user, int flags)
+{
+    int result = 0;
+    tinfl_decompressor* decomp = luat_heap_malloc(sizeof(tinfl_decompressor));
+    if (!decomp) {
+        LLOGE("分配tinfl_decompressor失败");
+        return TINFL_STATUS_FAILED;
+    }
+    mz_uint8 *pDict = (mz_uint8 *)luat_heap_malloc(TINFL_LZ_DICT_SIZE);
+    size_t in_buf_ofs = 0, dict_ofs = 0;
+    if (!pDict) {
+        LLOGE("分配pDict失败");
+        luat_heap_free(decomp);
+        return TINFL_STATUS_FAILED;
+    }
+    memset(pDict,0,TINFL_LZ_DICT_SIZE);
+    tinfl_init(decomp);
+    for (;;)
+    {
+        size_t in_buf_size = *pIn_buf_size - in_buf_ofs, dst_buf_size = TINFL_LZ_DICT_SIZE - dict_ofs;
+        tinfl_status status = tinfl_decompress(decomp, (const mz_uint8 *)pIn_buf + in_buf_ofs, &in_buf_size, pDict, pDict + dict_ofs, &dst_buf_size,
+                                               (flags & ~(TINFL_FLAG_HAS_MORE_INPUT | TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF)));
+        in_buf_ofs += in_buf_size;
+        if ((dst_buf_size) && (!(*pPut_buf_func)(pDict + dict_ofs, (int)dst_buf_size, pPut_buf_user)))
+            break;
+        if (status != TINFL_STATUS_HAS_MORE_OUTPUT)
+        {
+            result = (status == TINFL_STATUS_DONE);
+            break;
+        }
+        dict_ofs = (dict_ofs + dst_buf_size) & (TINFL_LZ_DICT_SIZE - 1);
+    }
+    luat_heap_free(pDict);
+    luat_heap_free(decomp);
+    *pIn_buf_size = in_buf_ofs;
+    return result;
+}
+
+static IMAGE_HEADER_PARAM_ST tmphead;
+static uint32_t head_fill_count = 0;
+static uint32_t image_skip_remain = 0;
+
+static int ota_gzcb(const void *pBuf, int len, void *pUser) {
+    const char* tmp = pBuf;
+    LLOGD("得到解压数据 %p %d", tmp, len);
+next:
+    if (len == 0) {
+        return 1;
+    }
+    if (image_skip_remain > 0) {
+        if (len >= image_skip_remain) {
+            tmp += image_skip_remain;
+            len -= image_skip_remain;
+            image_skip_remain = 0;
+            head_fill_count = 0;
+        }
+        else {
+            image_skip_remain -= len;
+            return 1;
+        }
+    }
+    if (head_fill_count < sizeof(IMAGE_HEADER_PARAM_ST)) {
+        // 填充头部信息
+        if (head_fill_count + len >= sizeof(IMAGE_HEADER_PARAM_ST)) {
+            memcpy((char*)&tmphead + head_fill_count, tmp, sizeof(IMAGE_HEADER_PARAM_ST) - head_fill_count);
+            tmp += sizeof(IMAGE_HEADER_PARAM_ST) - head_fill_count;
+            len -= sizeof(IMAGE_HEADER_PARAM_ST) - head_fill_count;
+            head_fill_count = sizeof(IMAGE_HEADER_PARAM_ST);
+            image_skip_remain = tmphead.img_len;
+            LLOGD("找到一个IMG数据段 长度 %d", tmphead.img_len);
+            goto next;
+        }
+        else {
+            // 继续等数据
+            memcpy((char*)&tmphead + head_fill_count, tmp, len);
+            head_fill_count += len;
+            return 1;
+        }
+    }
+    return 1;
+}
+
+static void check_ota_zone(void) {
+    // 首先, 检查是不是OTA数据
+    IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
+    if (imghead->magic_no != MAGIC_NO) {
+        LLOGD("OTA区域没有数据, 因为magic no不对 %08X", imghead->magic_no);
+        return;
+    }
+    // 检查头部校验和
+    // 计算一下header的checksum
+    uint32_t cm = img_checksum((const char*)imghead, sizeof(IMAGE_HEADER_PARAM_ST) - 4);
+    if (cm != imghead->hd_checksum) {
+        LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->hd_checksum, cm);
+        return;
+    }
+    cm = img_checksum((const char*)upgrade_img_addr + sizeof(IMAGE_HEADER_PARAM_ST), imghead->img_len);
+    if (cm != imghead->org_checksum) {
+        LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->org_checksum, cm);
+        return;
+    }
+    // 当前肯定是压缩的, 需要引入miniz的API进行解压分析
+    LLOGD("发现OTA数据, 继续进行脚本区更新");
+    size_t inSize = imghead->img_len;
+    uint8_t *ptr = (uint8_t *)upgrade_img_addr + sizeof(IMAGE_HEADER_PARAM_ST) + 10; // 跳过GZ的前10个字节
+
+    int ret = my_tinfl_decompress_mem_to_callback(ptr, &inSize, ota_gzcb, NULL, 0);
+    // LLOGD("OTA数据的前8个字节 %02X%02X%02X%02X%02X%02X%02X%02X", ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7]);
+    LLOGD("OTA解压函数的返回值 %d", ret);
+}
+
