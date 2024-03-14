@@ -1,0 +1,49 @@
+{
+    "version" : 1,
+    "chip" : {
+        "type" : "air101",
+        "ram"  :  {
+            "total" : 288,
+            "sys" : 64,
+            "lua" : 176
+        }
+    },
+    "rom": {
+        "file" : "AIR690.fls",
+        "fs" : {
+            "script" : {
+                "offset" : "80E0000",
+                "size" : 112,
+                "type" : "luadb"
+            }
+        },
+        "version-core": "v0007",
+        "version-bsp" : "v0004",
+        "mark" : "default",
+        "build" : {
+            "build_at" : "",
+            "build_by" : "",
+            "build_host" : "",
+            "build_system" : ""
+        }
+    },
+    "script" : {
+		"file" : "script.img",
+        "lua" : "5.3",
+        "bitw" : 32,
+        "use-luac" : true,
+        "use-debug" : true
+    },
+    "user" : {
+        "project" : "",
+        "version" : "",
+        "log_br" : "921600"
+    },
+	"download" : {
+		"core_addr" : "0x00000000",
+		"app_addr" : "0x00000000",
+		"script_addr" : "0x80E0000",
+		"user_addr" : "0x00000000",
+        "force_br" : "2M"
+	}
+}

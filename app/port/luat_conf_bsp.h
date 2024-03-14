@@ -67,6 +67,7 @@
 // #define LUAT_USE_FTP
 // #define LUAT_USE_ERRDUMP 1
 
+#define LUAT_USE_FOTA 1
 
 #define LUAT_USE_IOTAUTH 1
 
@@ -344,7 +345,7 @@
 //<-- custom
 //------------------------------------------------------------------------------
 
-#ifdef AIR601
+#if defined(AIR601) || defined(AIR690)
 #ifndef LUAT_USE_WLAN
  #define LUAT_USE_WLAN 1
 #endif

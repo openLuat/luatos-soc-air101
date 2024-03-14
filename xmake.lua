@@ -4,12 +4,7 @@ set_xmakever("2.6.3")
 -- set_version("0.0.2", {build = "%Y%m%d%H%M"})
 add_rules("mode.debug", "mode.release")
 
-local AIR10X_VERSION
-local VM_64BIT = nil
 local luatos = "../LuatOS/"
-local TARGET_NAME
-local AIR10X_FLASH_FS_REGION_SIZE
-local LUAT_SCRIPT_SIZE
 
 toolchain("csky")
     set_kind("cross")
@@ -475,61 +470,21 @@ target("air10x")
     set_arch("c-sky")
     set_targetdir("$(buildir)/out")
     on_load(function (target)
-        local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        local LUAT_FS_SIZE = tonumber(conf_data:match("#define LUAT_FS_SIZE%s+(%d+)"))
-        LUAT_SCRIPT_SIZE = tonumber(conf_data:match("#define LUAT_SCRIPT_SIZE%s+(%d+)"))
 
-        AIR10X_FLASH_FS_REGION_SIZE = LUAT_FS_SIZE + LUAT_SCRIPT_SIZE
-        -- print(AIR10X_FLASH_FS_REGION_SIZE,LUAT_FS_SIZE , LUAT_SCRIPT_SIZE)
-        AIR10X_VERSION = conf_data:match("#define LUAT_BSP_VERSION \"(%w+)\"")
-        local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
-        if LVGL_CONF then target:add("deps", "lvgl") end
+
+        import "buildx"
+        local chip = buildx.chip()
+
+        if chip.use_lvgl then target:add("deps", "lvgl") end
         target:add("deps", "miniz")
         target:add("deps", "fastlz")
-        VM_64BIT = conf_data:find("\r#define LUAT_CONF_VM_64bit") or conf_data:find("\n#define LUAT_CONF_VM_64bit")
-        local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        local TARGET_CONF = custom_data:find("\r#define AIR101") or custom_data:find("\n#define AIR101")
-        if TARGET_CONF == nil then TARGET_NAME = "AIR103" else TARGET_NAME = "AIR101" end
-        if custom_data:find("\r#define AIR601") or custom_data:find("\n#define AIR601") then
-            TARGET_NAME = "AIR601"
-        end
-        local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
-        local USE_WLAN = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN") 
-        if TARGET_NAME == "AIR601" then
-            USE_WLAN = true
-        end
-        local fs_size = AIR10X_FLASH_FS_REGION_SIZE or 112
-        if FDB_CONF or fs_size > 112 then
-            local ld_data = io.readfile("./ld/"..TARGET_NAME..".ld")
-            local _origin , I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x(%x+) , LENGTH = 0x(%x+)")
-            local sram_size = tonumber('0X'..I_SRAM_LENGTH)
-            if FDB_CONF then
-                sram_size = sram_size - 64*1024
-            end
-            if fs_size > 112 then
-                sram_size = sram_size - (fs_size - 112) *1024
-            end
-            print("I_SRAM", sram_size // 1024)
-            local I_SRAM_LENGTH_N = string.format("%X", sram_size)
-            local ld_data_n = ld_data:gsub(I_SRAM_LENGTH,I_SRAM_LENGTH_N)
-            io.writefile("./ld/air101_103.ld", ld_data_n)
-        else
-            os.cp("./ld/"..TARGET_NAME..".ld", "./ld/air101_103.ld")
-        end
-
         
-        local ld_data = io.readfile("./ld/air101_103.ld")
-        local ORIGIN, I_SRAM_LENGTH = ld_data:match("I-SRAM : ORIGIN = 0x(%x+) , LENGTH = 0x(%x+)")
-        if USE_WLAN then
-            -- print("更新I_SRAM段的大小")
-            local I_SRAM_LENGTH_N = string.format("%X", (tonumber(I_SRAM_LENGTH, 16) - 12 * 1024))
-            local ld_data_n = ld_data:gsub(ORIGIN, "08013400")
-            ld_data_n = ld_data_n:gsub(I_SRAM_LENGTH, I_SRAM_LENGTH_N)
-            io.writefile("./ld/air101_103.ld", ld_data_n)
-            I_SRAM_LENGTH = I_SRAM_LENGTH_N
-        end
-        print("APP区总大小", I_SRAM_LENGTH, tonumber(I_SRAM_LENGTH, 16) // 1024, "kb")
+        local ld_data = io.readfile("./ld/xt804.ld")
+        local ld_data_n = ld_data:gsub("SRAM_O", string.format("0x%X", chip.flash_app_offset))
+        ld_data_n = ld_data_n:gsub("SRAM_L", string.format("0x%X", chip.flash_app_size))
+        io.writefile("./ld/air101_103.ld", ld_data_n)
 
+        TARGET_NAME = chip.target_name
         target:set("filename", TARGET_NAME..".elf")
         target:add("ldflags", flto .. "-Wl,--gc-sections -Wl,-zmax-page-size=1024 -Wl,--whole-archive ./lib/libwmarch.a ./lib/libgt.a ./lib/libwlan.a ./lib/libbtcontroller.a -Wl,--no-whole-archive -mcpu=ck804ef -nostartfiles -mhard-float -lm -Wl,-T./ld/air101_103.ld -Wl,-ckmap=./build/out/"..TARGET_NAME..".map ",{force = true})
     end)
@@ -750,6 +705,11 @@ target("air10x")
     -- add_files(opus_dir .. "bind/*.c")
 
 	after_build(function(target)
+        import "buildx"
+        local chip = buildx.chip()
+        local TARGET_NAME = chip.target_name
+        local AIR10X_VERSION = chip.bsp_version
+
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
         os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
         -- 默认不生成.asm和.list,调试的时候自行打开吧
@@ -757,19 +717,19 @@ target("air10x")
         -- io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
         io.writefile("$(buildir)/out/"..TARGET_NAME..".size", os.iorun(sdk_dir .. "bin/csky-elfabiv2-size $(buildir)/out/"..TARGET_NAME..".elf"))
         io.cat("$(buildir)/out/"..TARGET_NAME..".size")
-        local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        local USE_WLAN = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN")
-        if conf_data:find("\r#define AIR601") or conf_data:find("\n#define AIR601")  then
-            USE_WLAN = true
-        end
-        if USE_WLAN then
-            print("启用了WLAN, 更新运行区域参数")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8013000 -ra 8013400 -ua 8012000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8012000 -nh 8013000 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
-        else
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/"..TARGET_NAME..".bin -fc 0 -it 1 -ih 8010400 -ra 8010800 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/"..TARGET_NAME.."")
-            os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  ./tools/xt804/xt804_secboot.bin -fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh 8010400 -un 0 -o ./tools/xt804/"..TARGET_NAME.."_secboot")
-        end
+        
+        local wm_tool = "./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "")
+        local app_image = "-fc 0 -it 1 -ih %x -ra %x -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/%s"
+        app_image = string.format(app_image, chip.flash_app_offset - 1024, chip.flash_app_offset, chip.target_name)
+        local cmd = wm_tool.." -b $(buildir)/out/"..TARGET_NAME..".bin " .. app_image
+        print(cmd)
+        os.exec(cmd)
+        local sec_image = "-fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh %x -un 0 -o ./tools/xt804/%s_secboot"
+        sec_image = string.format(sec_image, chip.flash_app_offset - 1024, chip.target_name)
+        cmd = wm_tool .. " -b ./tools/xt804/xt804_secboot.bin " .. sec_image
+        print(cmd)
+        os.exec(cmd)
+
         os.cp("./tools/xt804/"..TARGET_NAME.."_secboot.img", "$(buildir)/out/"..TARGET_NAME..".fls")
         local img = io.readfile("$(buildir)/out/"..TARGET_NAME..".img", {encoding = "binary"})
         local fls = io.open("$(buildir)/out/"..TARGET_NAME..".fls", "a+")
@@ -801,33 +761,28 @@ target("air10x")
                 end
             end
             if path7z then
-                if AIR10X_FLASH_FS_REGION_SIZE or VM_64BIT then
-                    -- print("AIR10X_FLASH_FS_REGION_SIZE",AIR10X_FLASH_FS_REGION_SIZE)
-                    -- print("LUAT_SCRIPT_SIZE", LUAT_SCRIPT_SIZE)
                     local info_data = io.readfile("./soc_tools/"..TARGET_NAME..".json")
                     import("core.base.json")
                     local data = json.decode(info_data)
                     data.rom.fs.script.size = tonumber(LUAT_SCRIPT_SIZE)
-                    if TARGET_NAME == "AIR101" then
-                        offset = string.format("%X",0x81FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
+                    if chip.flash_size == 2*1024*1024 then
+                        offset = string.format("%X",0x81FC000-chip.flash_fs_size - chip.flash_script_size)
                         data.download.script_addr = offset
                         data.rom.fs.script.offset = offset
+                        data.rom.fs.script.size = chip.flash_script_size // 1024
+                        print("2M布局", "脚本区偏移量", offset)
                     else
-                        offset = string.format("%X",0x80FC000-AIR10X_FLASH_FS_REGION_SIZE*1024)
+                        offset = string.format("%X",0x80FC000-chip.flash_fs_size - chip.flash_script_size)
+                        print("1M布局", "脚本区偏移量", offset)
                         data.download.script_addr = offset
                         data.rom.fs.script.offset = offset
+                        data.rom.fs.script.size = chip.flash_script_size // 1024
                     end
-                    if VM_64BIT then
+                    if chip.use_64bit then
                         data.script.bitw = 64
                     end
                     io.writefile("./soc_tools/info.json", json.encode(data))
-                    print(json.encode(data))
-                else
-                    print("AIR10X_FLASH_FS_REGION_SIZE", "default", 112)
-                    os.cp("./soc_tools/"..TARGET_NAME..".json", "./soc_tools/info.json")
-                end
-                print("===== " .. (VM_64BIT and "VM 64bit" or "VM 32bit") .. " =====")
-                if VM_64BIT then
+                if chip.use_64bit then
                     os.cp("./soc_tools/script_64bit.img", "./soc_tools/script.img")
                 else
                     os.cp("./soc_tools/script_32bit.img", "./soc_tools/script.img")
@@ -843,11 +798,6 @@ target("air10x")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
                 return
             end
-            
-        -- end
-        --os.rm("./ld/air101_103.ld")
-        -- os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b $(buildir)/out/AIR101.img -fc 1 -it 1 -ih 80D0000 -ra 80D0400 -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/AIR101")
-        -- os.mv("$(buildir)/out/AIR101_gz.img", "$(buildir)/out/AIR101_ota.img")
     end)
 target_end()
 
