@@ -62,7 +62,7 @@ int luat_spi_bus_setup(luat_spi_device_t* spi_dev){
     else if (bus_id == 5) {
         tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);/*CK*/
         tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);/*CMD*/
-        tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
+        // tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
         tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
         return 0;
     }
@@ -110,10 +110,6 @@ int luat_spi_setup(luat_spi_t* spi) {
     else if (spi->id == 5) {
         if (spi->cs == 0 || spi->cs == WM_IO_PB_23)
 	        wm_spi_cs_config(WM_IO_PB_23);
-        tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);/*CK*/
-        tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);/*CMD*/
-        tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
-        tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
 
         sdio_spi_init(spi->bandrate);
         return 0;
@@ -215,6 +211,8 @@ int luat_spi_config_dma(int spi_id, uint32_t tx_channel, uint32_t rx_channel) {
 }
 
 int luat_spi_change_speed(int spi_id, uint32_t speed) {
+    if (spi_id == 5)
+        return 0;
     int ret = tls_spi_set_speed(speed);
     if (ret != 0) {
         LLOGW("spi set speed %d fail %d", speed, ret);
