@@ -120,11 +120,17 @@ int luat_fota_done(void) {
 
 int luat_fota_end(uint8_t is_ok) {
     if (fota_state == FOTA_DONE && is_ok) {
+        int ret = 0;
         IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
-        LLOGI("准备写入升级标志 addr %08X checksum %08X", TLS_FLASH_OTA_FLAG_ADDR, imghead->org_checksum);
-        int ret = tls_fls_write(TLS_FLASH_OTA_FLAG_ADDR, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
-        if (ret) {
-            LLOGE("写入升级标志位失败, ret %d", ret);
+        if (imghead->img_attr.b.img_type == 1) {
+            LLOGI("整包升级,写入升级标志 addr %08X checksum %08X", TLS_FLASH_OTA_FLAG_ADDR, imghead->org_checksum);
+            int ret = tls_fls_write(TLS_FLASH_OTA_FLAG_ADDR, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
+            if (ret) {
+                LLOGE("写入升级标志位失败, ret %d", ret);
+            }
+        }
+        else {
+            LLOGI("仅脚本升级, 重启后自动更新");
         }
         return ret;
     }
@@ -271,21 +277,33 @@ static IMAGE_HEADER_PARAM_ST tmphead;
 static uint32_t head_fill_count = 0;
 static uint32_t image_skip_remain = 0;
 
+extern uint32_t luadb_addr;
+
 static int ota_gzcb(const void *pBuf, int len, void *pUser) {
     const char* tmp = pBuf;
-    LLOGD("得到解压数据 %p %d", tmp, len);
+    //LLOGD("得到解压数据 %p %d", tmp, len);
 next:
     if (len == 0) {
         return 1;
     }
+    LLOGD("当前状态: %d %d %d %d", head_fill_count, image_skip_remain, tmphead.img_len, tmphead.img_attr.b.img_type);
     if (image_skip_remain > 0) {
+        if (tmphead.img_attr.b.img_type == 2) {
+            LLOGD("是脚本区数据, 开始写入脚本区");
+        }
         if (len >= image_skip_remain) {
+            if (tmphead.img_attr.b.img_type == 2) {
+                tls_fls_write(luadb_addr + (tmphead.img_len - image_skip_remain), (u8*)tmp, image_skip_remain);
+            }
             tmp += image_skip_remain;
             len -= image_skip_remain;
             image_skip_remain = 0;
             head_fill_count = 0;
         }
         else {
+            if (tmphead.img_attr.b.img_type == 2) {
+                tls_fls_write(luadb_addr + (tmphead.img_len - image_skip_remain), (u8*)tmp, len);
+            }
             image_skip_remain -= len;
             return 1;
         }
@@ -298,7 +316,7 @@ next:
             len -= sizeof(IMAGE_HEADER_PARAM_ST) - head_fill_count;
             head_fill_count = sizeof(IMAGE_HEADER_PARAM_ST);
             image_skip_remain = tmphead.img_len;
-            LLOGD("找到一个IMG数据段 长度 %d", tmphead.img_len);
+            LLOGD("找到一个IMG数据段 长度 %d 类型 %d", tmphead.img_len, tmphead.img_attr.b.img_type);
             goto next;
         }
         else {
@@ -314,21 +332,24 @@ next:
 static void check_ota_zone(void) {
     // 首先, 检查是不是OTA数据
     IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
+    if (imghead->magic_no == 0xFFFFFFFF) {
+        return; // 直接返回就行, 完全没有OTA数据, 减少日志输出
+    }
     if (imghead->magic_no != MAGIC_NO) {
         LLOGD("OTA区域没有数据, 因为magic no不对 %08X", imghead->magic_no);
-        return;
+        goto clean;
     }
     // 检查头部校验和
     // 计算一下header的checksum
     uint32_t cm = img_checksum((const char*)imghead, sizeof(IMAGE_HEADER_PARAM_ST) - 4);
     if (cm != imghead->hd_checksum) {
         LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->hd_checksum, cm);
-        return;
+        goto clean;
     }
     cm = img_checksum((const char*)upgrade_img_addr + sizeof(IMAGE_HEADER_PARAM_ST), imghead->img_len);
     if (cm != imghead->org_checksum) {
         LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->org_checksum, cm);
-        return;
+        goto clean;
     }
     // 当前肯定是压缩的, 需要引入miniz的API进行解压分析
     LLOGD("发现OTA数据, 继续进行脚本区更新");
@@ -338,5 +359,8 @@ static void check_ota_zone(void) {
     int ret = my_tinfl_decompress_mem_to_callback(ptr, &inSize, ota_gzcb, NULL, 0);
     // LLOGD("OTA数据的前8个字节 %02X%02X%02X%02X%02X%02X%02X%02X", ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7]);
     LLOGD("OTA解压函数的返回值 %d", ret);
+    // 清除OTA区域
+clean:
+    tls_fls_erase((upgrade_img_addr) / INSIDE_FLS_SECTOR_SIZE);
 }
 
