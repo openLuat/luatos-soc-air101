@@ -268,10 +268,10 @@
  *
  */
 #define MBEDTLS_AES_ALT /* xt804 hard key only 16bytes length */
-#define MBEDTLS_ARC4_ALT
+// #define MBEDTLS_ARC4_ALT
 #define MBEDTLS_DES_ALT
 #define MBEDTLS_MD5_ALT
-#define MBEDTLS_SHA1_ALT
+// #define MBEDTLS_SHA1_ALT
 
 /*
  * When replacing the elliptic curve module, pleace consider, that it is
