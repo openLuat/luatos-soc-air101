@@ -303,14 +303,14 @@ void luat_openlibs(lua_State *L) {
 
 const char* luat_os_bsp(void)
 {
-#ifdef AIR601
+#if defined(AIR601)
     return "AIR601";
-#else
-#ifdef AIR103
+#elif defined(AIR690)
+    return "AIR690";
+#elif defined(AIR103)
     return "AIR103";
 #else
     return "AIR101";
-#endif
 #endif
 }
 
