@@ -482,6 +482,7 @@ target("air10x")
         local ld_data = io.readfile("./ld/xt804.ld")
         local ld_data_n = ld_data:gsub("SRAM_O", string.format("0x%X", chip.flash_app_offset))
         ld_data_n = ld_data_n:gsub("SRAM_L", string.format("0x%X", chip.flash_app_size))
+        ld_data_n = ld_data_n:gsub("RAM_END", string.format("0x%X", chip.ram_end))
         io.writefile("./ld/air101_103.ld", ld_data_n)
 
         TARGET_NAME = chip.target_name

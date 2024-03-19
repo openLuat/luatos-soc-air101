@@ -61,7 +61,7 @@ extern int luat_profiler_memdebug;
 extern luat_profiler_mem_t profiler_memregs[];
 #endif
 
-
+extern uint32_t __ram_end;
 
 void luat_heap_init(void) {
 	// 毕竟sram还是快很多的, 优先sram吧
@@ -95,10 +95,18 @@ void luat_heap_init(void) {
 		return;
 	}
 #else
+    // LLOGD("__ram_end %08X", (uint32_t)&__ram_end);
+    char* ptr = (void*)(0x20028000);
+    size_t heap2_size = LUAT_HEAP_P2_SIZE;
+    #if defined(LUAT_USE_NIMBLE) && defined(LUAT_USE_TLS) && defined(LUAT_USE_WLAN)
+    heap2_size -= 32*1024;
+    ptr += 32*1024;
+    #endif
+
 #ifndef LUAT_USE_TLSF
-	bpool((void*)(0x20028000), LUAT_HEAP_P2_SIZE);
+	bpool(ptr, heap2_size);
 #else
-	luavm_tlsf_ext = tlsf_add_pool(0x20028000 - LUAT_HEAP_P2_SIZE), LUAT_HEAP_P2_SIZE);
+	luavm_tlsf_ext = tlsf_add_pool(ptr, heap2_size);
 #endif
 	#endif
 }

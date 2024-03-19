@@ -13,6 +13,10 @@ function chip()
     local custom_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
     local FDB_CONF = conf_data:find("\r#define LUAT_USE_FDB") or conf_data:find("\n#define LUAT_USE_FDB") or conf_data:find("\r#define LUAT_USE_FSKV") or conf_data:find("\n#define LUAT_USE_FSKV") 
     local FOTA_CONF = conf_data:find("\r#define LUAT_USE_FOTA") or conf_data:find("\n#define LUAT_USE_FOTA")
+    local WLAN_CONF = conf_data:find("\r#define LUAT_USE_WLAN") or conf_data:find("\n#define LUAT_USE_WLAN")
+    local NIMBLE_CONF = conf_data:find("\r#define LUAT_USE_NIMBLE") or conf_data:find("\n#define LUAT_USE_NIMBLE")
+    local TLS_CONF = conf_data:find("\r#define LUAT_USE_TLS") or conf_data:find("\n#define LUAT_USE_TLS")
+
 
     -- 根据型号判断flash大小
     local is_air101 = custom_data:find("\r#define AIR101") or custom_data:find("\n#define AIR101")
@@ -23,6 +27,11 @@ function chip()
     local flash_size = 1*1024*1024
     if is_air101 or is_air690 then 
         flash_size = 2*1024*1024
+    end
+
+    -- 如果是air601/690,那么wlan肯定是开启的
+    if is_air601 or is_air690 then
+        WLAN_CONF = true
     end
 
     -- 然后, 根据flash大小, 计算flash的分区
@@ -55,6 +64,12 @@ function chip()
     elseif is_air690 then TARGET_NAME = "AIR690"
     else TARGET_NAME = "AIR10X" end
 
+    -- 处理内存大小
+    local ram_end = 0x20028000
+    if WLAN_CONF and NIMBLE_CONF and TLS_CONF then
+        ram_end = ram_end + 32 * 1024
+    end
+
     local result = {}
 
     result.target_name = TARGET_NAME
@@ -77,6 +92,12 @@ function chip()
     result.use_fdb = FDB_CONF
     result.bsp_version = AIR10X_VERSION
     result.use_64bit = VM_64BIT
+    result.use_wlan = WLAN_CONF
+    result.use_nimble = NIMBLE_CONF
+    result.use_tls = TLS_CONF
+    result.ram_end = ram_end
+
+
 
     return result
 end
