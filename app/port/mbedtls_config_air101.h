@@ -1263,7 +1263,7 @@
  *
  * Comment this macro to disable support for TLS 1.0
  */
-// #define MBEDTLS_SSL_PROTO_TLS1
+#define MBEDTLS_SSL_PROTO_TLS1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_1
@@ -1275,7 +1275,7 @@
  *
  * Comment this macro to disable support for TLS 1.1 / DTLS 1.0
  */
-// #define MBEDTLS_SSL_PROTO_TLS1_1
+#define MBEDTLS_SSL_PROTO_TLS1_1
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_2
