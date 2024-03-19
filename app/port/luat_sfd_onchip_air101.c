@@ -45,7 +45,7 @@ int sfd_onchip_write (void* userdata, const char* buff, size_t offset, size_t le
     sfd_onchip_t* onchip = (sfd_onchip_t*)userdata;
     if (onchip == NULL)
        return -1;
-    ret = tls_fls_write(offset + onchip->addr, (u8 *)buff, len);
+    ret = tls_fls_write_without_erase(offset + onchip->addr, (u8 *)buff, len);
     if (ret != TLS_FLS_STATUS_OK)
     {
         return -1;
