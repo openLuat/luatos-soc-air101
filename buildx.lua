@@ -29,13 +29,13 @@ function chip()
     local flash_fs_size = LUAT_FS_SIZE * 1024                  -- 这个直接取宏定义的值
     local flash_script_size = LUAT_SCRIPT_SIZE * 1024          -- 这个直接取宏定义的值
     local flash_kv_size = FDB_CONF and 64*1024 or 0            -- 如果是FDB, 则需要预留64k
-    local flash_fota_size = 5 * 1024
+    local flash_fota_size = 4 * 1024
     -- APP区域大小 = 剩余flash大小 - fs分区大小 - script分区大小 - kv分区大小 - secboot区域大小 - 末尾分区64k - OTA区域大小(按比例)
     local flash_app_size = flash_size - (flash_fs_size + flash_script_size + flash_kv_size) - 16*1024 - 64*1024
     if FOTA_CONF then
         flash_fota_size = (flash_app_size + flash_script_size // 4 * 3) // 2 // 5 * 4
-        flash_fota_size = flash_fota_size // 1024
-        flash_fota_size = flash_fota_size * 1024
+        flash_fota_size = flash_fota_size // 4096
+        flash_fota_size = flash_fota_size * 4096
     end
     flash_app_size = flash_app_size - flash_fota_size - 1024 -- 末尾还需要加1k的image head
     local flash_app_offset = 64*1024 + flash_fota_size + 0x08000000 + 1024
