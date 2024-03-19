@@ -132,7 +132,7 @@ static int block_device_prog(const struct lfs_config *cfg, lfs_block_t block,
 {
     int ret;
     //LLOGD("block_device_prog ,block = %d, off = %d,  size = %d",block, off, size);
-    ret = tls_fls_write(block * 4096 + off + LFS_START_ADDR, (u8 *)buffer, size);
+    ret = tls_fls_write_without_erase(block * 4096 + off + LFS_START_ADDR, (u8 *)buffer, size);
     //LLOGD("block_device_prog return val : %d",ret);
     if (ret != TLS_FLS_STATUS_OK)
     {
