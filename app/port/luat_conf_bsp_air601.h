@@ -57,7 +57,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V1022"
+#define LUAT_BSP_VERSION "V1023"
 
 // Air601
 #define AIR601
