@@ -31,6 +31,9 @@
 #include "host/ble_hs.h"
 #include "store/ram/ble_store_ram.h"
 
+#include "wm_bt.h"
+#include "wm_mem.h"
+
 static struct ble_store_value_sec
 ble_store_ram_our_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
 static int ble_store_ram_num_our_secs;
@@ -39,8 +42,12 @@ static struct ble_store_value_sec
 ble_store_ram_peer_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
 static int ble_store_ram_num_peer_secs;
 
+#if MYNEWT_VAL(SYS_MEM_DYNAMIC)
+static struct ble_store_value_cccd *ble_store_ram_cccds;
+#else
 static struct ble_store_value_cccd
 ble_store_ram_cccds[MYNEWT_VAL(BLE_STORE_MAX_CCCDS)*MYNEWT_VAL(BLE_STORE_MAX_BONDS)];
+#endif
 static int ble_store_ram_num_cccds;
 
 /*****************************************************************************
@@ -484,6 +491,11 @@ ble_store_ram_delete(int obj_type, const union ble_store_key *key)
 void
 ble_store_ram_init(void)
 {
+    #if MYNEWT_VAL(SYS_MEM_DYNAMIC)
+    //printf("malloc for ble_store_ram_cccds %d\n", sizeof(struct ble_store_value_cccd) * MYNEWT_VAL(BLE_STORE_MAX_CCCDS)*MYNEWT_VAL(BLE_STORE_MAX_BONDS));
+    if (!ble_store_ram_cccds)
+        ble_store_ram_cccds = tls_mem_alloc(sizeof(struct ble_store_value_cccd) * MYNEWT_VAL(BLE_STORE_MAX_CCCDS)*MYNEWT_VAL(BLE_STORE_MAX_BONDS));
+    #endif
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
     ble_hs_cfg.store_read_cb = ble_store_ram_read;
