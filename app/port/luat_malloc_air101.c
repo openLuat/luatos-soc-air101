@@ -91,7 +91,6 @@ void luat_heap_init(void) {
 		#else
 		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
 		#endif
-		luat_main();
 		return;
 	}
 #else
