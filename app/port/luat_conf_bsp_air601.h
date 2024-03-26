@@ -67,15 +67,10 @@
 
 
 
-// FLASH_FS_REGION_SIZE包含2部分: 脚本区和文件系统区
 // 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
 // 若需要增加脚本区的大小, 那么大小必须是64的整数倍, 例如变成 128,192,256
-// 128k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 176, 因为 128+48=176 
-// 192k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 240, 因为 192+48=240 
-// 256k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 304, 因为 256+48=304 
 #define LUAT_FS_SIZE                48      //文件系统大小
 #define LUAT_SCRIPT_SIZE            64      //脚本大小
-#define FLASH_FS_REGION_SIZE        (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE)
 
 // 内存优化: 减少内存消耗, 会稍微减低性能
 // #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1

@@ -19,9 +19,6 @@
 extern uint32_t lfs_addr;
 extern uint32_t lfs_size_kb;
 
-#ifdef FLASH_FS_REGION_SIZE
-#undef FLASH_FS_REGION_SIZE
-#endif
 
 #ifdef LFS_START_ADDR
 #undef LFS_START_ADDR

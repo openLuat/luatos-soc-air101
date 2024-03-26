@@ -25,9 +25,6 @@ uint32_t luadb_size_kb;
 uint32_t lfs_addr;
 uint32_t lfs_size_kb;
 
-#ifndef FLASH_FS_REGION_SIZE
-#define FLASH_FS_REGION_SIZE 112
-#endif
 
 extern const struct luat_vfs_filesystem vfs_fs_lfs2;
 extern const char luadb_inline_sys[];
@@ -51,9 +48,9 @@ void lv_split_jpeg_init(void);
 void luat_fs_update_addr(void) {
     //luat_timer_mdelay(1000);
 #if (defined(AIR103) || defined(AIR601))
-    luadb_addr =  0x0E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
+    luadb_addr =  0x0E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
 #else
-    luadb_addr =  0x1E0000 - (FLASH_FS_REGION_SIZE - 112) * 1024U;
+    luadb_addr =  0x1E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
 #endif
     //LLOGD("luadb_addr 0x%08X", luadb_addr);
     //LLOGD("luadb_addr ptr %p", ptr);
@@ -101,7 +98,7 @@ int luat_fs_init(void) {
 		.mount_point = "/luadb/",
 	};
 	luat_fs_mount(&conf2);
-    luat_luadb_act_size = (FLASH_FS_REGION_SIZE - 112);
+    luat_luadb_act_size = LUAT_SCRIPT_SIZE;
 
 	#ifdef LUAT_USE_LVGL
 	luat_lv_fs_init();

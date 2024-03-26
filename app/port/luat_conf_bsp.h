@@ -12,18 +12,14 @@
 
 
 // Air101 与 Air103 的Flash大小有差异,需要区分
-// 可选值, AIR101 AIR103 AIR601 分别对应3种模块
+// 可选值, AIR101 AIR103 AIR601 Air690 分别对应3种模块
 #define AIR101
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
 
-// FLASH_FS_REGION_SIZE包含2部分: 脚本区和文件系统区
 // 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
 // 若需要增加脚本区的大小, 那么大小必须是64的整数倍, 例如变成 128,192,256
-// 128k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 176, 因为 128+48=176 
-// 192k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 240, 因为 192+48=240 
-// 256k脚本区, 对应的 FLASH_FS_REGION_SIZE 为 304, 因为 256+48=304 
 #define LUAT_FS_SIZE                48      //文件系统大小
 #define LUAT_SCRIPT_SIZE            64      //脚本大小
 
@@ -67,7 +63,7 @@
 // #define LUAT_USE_FTP
 // #define LUAT_USE_ERRDUMP 1
 
-#define LUAT_USE_FOTA 1
+// #define LUAT_USE_FOTA 1
 
 #define LUAT_USE_IOTAUTH 1
 
@@ -354,7 +350,6 @@
 #if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
 #ifndef LUAT_USE_NETWORK
 #define LUAT_USE_NETWORK
-#define LUAT_USE_DNS
 #endif
 #ifndef LUAT_USE_DNS
 #define LUAT_USE_DNS 1
@@ -376,8 +371,6 @@
 #define LUAT_LV_DEBUG 0
 
 #define LV_MEM_CUSTOM 1
-
-#define FLASH_FS_REGION_SIZE        (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE)
 
 // 内存优化: 减少内存消耗, 会稍微减低性能
 // #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
