@@ -88,6 +88,9 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
         /* As the last thing, process events from default event queue. */
         tls_nimble_start();
         inited = 1;
+        #ifndef LUAT_USE_WLAN
+        tls_bt_ctrl_sleep(true);
+        #endif
     }
     return 0;
 }
