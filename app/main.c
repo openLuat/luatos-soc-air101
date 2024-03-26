@@ -239,17 +239,18 @@ void UserMain(void){
 	tls_os_timer_create(&os_timer, lvgl_timer_cb, NULL, 10/(1000 / configTICK_RATE_HZ), 1, NULL);
 	tls_os_timer_start(os_timer);
 #endif
+	#define VM_SIZE (12*1024)
 	#if defined(LUAT_USE_WLAN) && defined(LUAT_USE_NIMBLE) && defined(LUAT_USE_TLS)
-	char *vm_task_stack = luat_heap_alloc(NULL, NULL, 0, 8192);
+	char *vm_task_stack = luat_heap_alloc(NULL, NULL, 0, VM_SIZE);
 	// LLOGD("VM heap start %p", vm_task_stack);
 	#else
-	static char vm_task_stack[8*1024] = {0};
+	char *vm_task_stack = luat_heap_malloc(VM_SIZE);
 	#endif
 	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,
 				(void *)vm_task_stack,          /* task's stack start address */
-				8*1024, /* task's stack size, unit:byte */
+				VM_SIZE, /* task's stack size, unit:byte */
 				21,
 				0);
 	// tls_os_task_create(NULL, "cstack", check_stack, NULL, NULL, 2048, 10, 0);
