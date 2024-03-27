@@ -11,6 +11,7 @@
 #define LUAT_LOG_TAG "heap"
 #include "luat_log.h"
 #include "wm_mem.h"
+#include "wm_ram_config.h"
 
 void* __wrap_malloc(size_t len);
 void  __wrap_free(void* ptr);
@@ -100,6 +101,10 @@ void luat_heap_init(void) {
     #if defined(LUAT_USE_NIMBLE) && defined(LUAT_USE_TLS) && defined(LUAT_USE_WLAN)
     heap2_size -= 32*1024;
     ptr += 32*1024;
+    #endif
+    #if defined(LUAT_USE_SPI_SLAVE)
+    heap2_size -= SLAVE_HSPI_MAX_SIZE;
+    ptr += SLAVE_HSPI_MAX_SIZE;
     #endif
 
 #ifndef LUAT_USE_TLSF

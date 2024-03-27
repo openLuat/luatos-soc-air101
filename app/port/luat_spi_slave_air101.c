@@ -77,10 +77,10 @@ int luat_spi_slave_read(luat_spi_slave_conf_t *conf, uint8_t* src, uint8_t* buf,
 }
 
 int luat_spi_slave_write(luat_spi_slave_conf_t *conf, uint8_t* buf, size_t len) {
-    LLOGD("从机-->主机 写入 %p %d", buf, len);
+    // LLOGD("从机-->主机 写入 %p %d", buf, len);
     int ret = tls_hspi_tx_data((char*)buf, len);
-    LLOGD("从机-->主机 写入 %p %d %d", buf, len, ret);
-    return 0;
+    // LLOGD("从机-->主机 写入 %p %d %d", buf, len, ret);
+    return ret;
 }
 
 int tls_hspi_writable(void);
