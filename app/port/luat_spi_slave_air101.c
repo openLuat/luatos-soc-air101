@@ -31,7 +31,7 @@ static s16 hsp_rx_data_cb(char *buf) {
     return WM_SUCCESS;
 }
 static s16 hsp_tx_data_cb(char *buf) {
-    printf("hsp_tx_data_cb %p %d %d", buf, buf[0], buf[1]);
+    // printf("hsp_tx_data_cb %p %d %d", buf, buf[0], buf[1]);
     return WM_SUCCESS;
 }
 
@@ -62,7 +62,7 @@ int luat_spi_slave_open(luat_spi_slave_conf_t *conf) {
     // 注册消息回调
     tls_hspi_rx_cmd_callback_register(hsp_rx_cmd_cb);
     tls_hspi_rx_data_callback_register(hsp_rx_data_cb);
-    tls_hspi_tx_data_callback_register(hsp_tx_data_cb);
+    // tls_hspi_tx_data_callback_register(hsp_tx_data_cb);
 
     return 0;
 }

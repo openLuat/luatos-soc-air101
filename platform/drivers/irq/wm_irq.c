@@ -13,6 +13,7 @@
 #include "wm_irq.h"
 #include "wm_config.h"
 #include "wm_mem.h"
+#include "luat_conf_bsp.h"
 
 /* irq functions declare */
 extern ATTRIBUTE_ISR void i2s_I2S_IRQHandler(void);
@@ -62,7 +63,7 @@ void tls_irq_init(void)
 	csi_vic_set_vector(UART24_IRQn, (uint32_t)UART2_4_IRQHandler);
 	csi_vic_set_vector(PWM_IRQn, (uint32_t)PWM_IRQHandler);
 	csi_vic_set_vector(SPI_LS_IRQn, (uint32_t)SPI_LS_IRQHandler);
-#if TLS_CONFIG_HS_SPI
+#ifdef LUAT_USE_SPI_SLAVE
 	csi_vic_set_vector(SPI_HS_IRQn, (uint32_t)HSPI_IRQHandler);
 	csi_vic_set_vector(SDIO_IRQn, (uint32_t)SDIOA_IRQHandler);
 #endif
