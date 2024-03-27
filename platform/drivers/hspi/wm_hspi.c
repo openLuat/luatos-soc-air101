@@ -20,7 +20,7 @@
 //#include "lwip/mem.h"
 #include "wm_io.h"
 
-#if TLS_CONFIG_HS_SPI
+#if 1
 
 struct tls_slave_hspi g_slave_hspi;
 #define SET_BIT(x) (1UL << (x))
@@ -138,7 +138,7 @@ void SDIO_TX_IRQHandler(void)
 {
     struct tls_slave_hspi *hspi = (struct tls_slave_hspi *) &g_slave_hspi;
 
-//ÓÃ»§Ä£Ê½ÏÂ£¬Ö±½Ó¸ø³öÊı¾İ£¬Á´±íµÄ²Ù×÷²»¶ÔÍâ¿ª·Å£¬±ÜÃâÔì³ÉÁ´±í²Ù×÷´íÎó
+//ç”¨æˆ·æ¨¡å¼ä¸‹ï¼Œç›´æ¥ç»™å‡ºæ•°æ®ï¼Œé“¾è¡¨çš„æ“ä½œä¸å¯¹å¤–å¼€æ”¾ï¼Œé¿å…é€ æˆé“¾è¡¨æ“ä½œé”™è¯¯
     if (hspi->ifusermode)
     {
         slave_spi_rx_data(hspi);
@@ -161,7 +161,7 @@ void SDIO_RX_CMD_IRQHandler(void)
     if (hspi->rx_cmd_callback)
         hspi->rx_cmd_callback((char *) SDIO_CMD_RXBUF_ADDR);
 
-    if (hspi->ifusermode)       // ÓÃ»§Ä£Ê½ÏÂ£¬Êı¾İ¸ø³öÈ¥Ö®ºó£¬¼Ä´æÆ÷ÓÉÇı¶¯×Ô¼º²Ù×÷
+    if (hspi->ifusermode)       // ç”¨æˆ·æ¨¡å¼ä¸‹ï¼Œæ•°æ®ç»™å‡ºå»ä¹‹åï¼Œå¯„å­˜å™¨ç”±é©±åŠ¨è‡ªå·±æ“ä½œ
     {
         tls_reg_write32(HR_SDIO_DOWNCMDVALID, 0x1);
     }
@@ -202,7 +202,7 @@ ATTRIBUTE_ISR void SDIOA_IRQHandler(void)
 void hspi_free_rxdesc(struct tls_hspi_rx_desc *rx_desc)
 {
     rx_desc->valid_ctrl = SET_BIT(31);
-/* ÉèÖÃhspi/sdio tx enable¼Ä´æÆ÷£¬ÈÃsdioÓ²¼şÖªµÀÓĞ¿ÉÓÃµÄtx descriptor */
+/* è®¾ç½®hspi/sdio tx enableå¯„å­˜å™¨ï¼Œè®©sdioç¡¬ä»¶çŸ¥é“æœ‰å¯ç”¨çš„tx descriptor */
     tls_reg_write32(HR_SDIO_TXEN, SET_BIT(0));
 }
 
@@ -436,7 +436,7 @@ int tls_hspi_tx_data(char *txbuf, int len)
                 mem_free((void *) tx_desc->txbuf_addr);
                 tx_desc->txbuf_addr = NULL;
             }
-            else                // ²»Ó¦¸Ã³öÏÖ
+            else                // ä¸åº”è¯¥å‡ºç°
             {
                 printf("\nhspi tx mem error\n");
                 break;
