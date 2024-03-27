@@ -466,4 +466,8 @@ int tls_hspi_tx_data(char *txbuf, int len)
 
 #endif
 
-
+int tls_hspi_writable(void) {
+    struct tls_hspi_tx_desc *tx_desc;
+    tx_desc = g_slave_hspi.curr_tx_desc;
+    return (tx_desc->valid_ctrl & SET_BIT(31)) == 0;
+}

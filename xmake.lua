@@ -407,6 +407,10 @@ target("network")
     -- add_includedirs(luatos.."components/network/ulwip/include",{public = true})
     add_files(luatos.."components/network/ulwip/**.c")
 
+    -- spi slave
+    add_includedirs(luatos.."components/device/spi_slave/include",{public = true})
+    add_files(luatos.."components/device/spi_slave/**.c")
+
 target_end()
 
 target("nes")
