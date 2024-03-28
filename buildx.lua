@@ -29,11 +29,6 @@ function chip()
         flash_size = 2*1024*1024
     end
 
-    -- 如果是air601/690,那么wlan肯定是开启的
-    if is_air601 or is_air690 then
-        WLAN_CONF = true
-    end
-
     -- 然后, 根据flash大小, 计算flash的分区
     local flash_fs_size = LUAT_FS_SIZE * 1024                  -- 这个直接取宏定义的值
     local flash_script_size = LUAT_SCRIPT_SIZE * 1024          -- 这个直接取宏定义的值

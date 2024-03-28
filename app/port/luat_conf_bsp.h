@@ -38,31 +38,35 @@
 // SDIO 仅支持TF/SD卡的挂载
 #define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
-#define LUAT_USE_LCDSEG 1
+// #define LUAT_USE_LCDSEG 1
 // OTP
 #define LUAT_USE_OTP 1
-#define LUAT_USE_TOUCHKEY 1
-#define LUAT_USE_SPI_SLAVE 1
+// #define LUAT_USE_TOUCHKEY 1
+// #define LUAT_USE_SPI_SLAVE 1
 
 // #define LUAT_USE_ICONV 1
 
-// wlan库相关, 仅AIR601
-// #define LUAT_USE_WLAN
+// wlan库相关
+// #define LUAT_USE_WLAN 1
+// #define LUAT_USE_NETWORK 1
+// #define LUAT_USE_HTTP 1
+// #define LUAT_USE_MQTT 1
+// #define LUAT_USE_WEBSOCKET 1
+// #define LUAT_USE_SNTP 1
+// #define LUAT_USE_HTTPSRV 1
+// #define LUAT_USE_FTP 1
+// #define LUAT_USE_ERRDUMP 1
 
 // 外置网络支持
-// #define LUAT_USE_W5500
+// #define LUAT_USE_W5500 1
 // #define LUAT_USE_ULWIP 1
 
 // 开启TLS
-#define LUAT_USE_TLS
-#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+// #define LUAT_USE_TLS 1
+// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED 1
 // #define LUAT_USE_CRYPTO_AES_MBEDTLS 1
 
 // 其他网络功能
-// #define LUAT_USE_SNTP
-// #define LUAT_USE_HTTPSRV
-// #define LUAT_USE_FTP
-// #define LUAT_USE_ERRDUMP 1
 
 // #define LUAT_USE_FOTA 1
 
@@ -72,6 +76,7 @@
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
 #define LUAT_USE_CRYPTO  1
 #define LUAT_USE_CJSON  1
+// #define LUAT_USE_JSON2 1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 #define LUAT_USE_LIBGNSS  1
@@ -111,9 +116,6 @@
 // // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
 // #define LUAT_USE_TLSF 1
 
-// 禁用AES的硬件加速版本, 改用mbedtls的软件版本
-// 硬件加速的版本只支持AES128,若使用AES256就报错了
-#define LUAT_USE_CRYPTO_AES_MBEDTLS  1
 
 // 音频相关
 // #define LUAT_USE_I2S 1
@@ -342,25 +344,27 @@
 //<-- custom
 //------------------------------------------------------------------------------
 
-#if defined(AIR601) || defined(AIR690)
-#ifndef LUAT_USE_WLAN
- #define LUAT_USE_WLAN 1
+#if defined(LUAT_USE_HTTP) || defined(LUAT_USE_MQTT) || defined(LUAT_USE_FTP) || defined(LUAT_USE_SNTP) || defined(LUAT_USE_ERRDUMP)
+#ifndef LUAT_USE_NETWORK
+#define LUAT_USE_NETWORK
 #endif
 #endif
 
-#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
+#if defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
 #ifndef LUAT_USE_NETWORK
 #define LUAT_USE_NETWORK
+#endif
+#endif
+
+#if defined(LUAT_USE_NETWORK) || defined(LUAT_USE_ULWIP)
+#ifndef LUAT_USE_LWIP
+#define LUAT_USE_LWIP
 #endif
 #ifndef LUAT_USE_DNS
 #define LUAT_USE_DNS 1
 #endif
 #endif
-#if defined(LUAT_USE_WLAN) || defined(LUAT_USE_ULWIP)
-#ifndef LUAT_USE_LWIP
-#define LUAT_USE_LWIP
-#endif
-#endif
+
 #ifdef LUAT_USE_W5500
 #ifndef LUAT_USE_DHCP
 #define LUAT_USE_DHCP
@@ -391,6 +395,7 @@
 #define LUAT_RET int
 #define LUAT_RT_RET_TYPE	void
 #define LUAT_RT_CB_PARAM void *param
+// #define LUAT_USE_LOG2 1
 
 // 单纯为了生成文档的宏
 #define LUAT_USE_PIN 1

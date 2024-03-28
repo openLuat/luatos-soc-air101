@@ -189,9 +189,15 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 #ifdef LUAT_USE_NETWORK
   {"socket", luaopen_socket_adapter},
+#ifdef LUAT_USE_HTTP
   {"http", luaopen_http},
+#endif
+#ifdef LUAT_USE_MQTT
   {"mqtt", luaopen_mqtt},
+#endif
+#ifdef LUAT_USE_WEBSOCKET
   {"websocket", luaopen_websocket},
+#endif
 #ifdef LUAT_USE_W5500
   {"w5500", luaopen_w5500},
 #endif
@@ -203,6 +209,9 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 #ifdef LUAT_USE_ULWIP
   {"ulwip", luaopen_ulwip},
+#endif
+#ifdef LUAT_USE_ERRDUMP
+  {"errDump", luaopen_errdump},
 #endif
 #endif
 #ifdef LUAT_USE_LORA
@@ -234,9 +243,6 @@ static const luaL_Reg loadedlibs[] = {
 #endif
 #ifdef LUAT_USE_WLAN
   {"wlan", luaopen_wlan},
-#endif
-#ifdef LUAT_USE_ERRDUMP
-  {"errDump", luaopen_errdump},
 #endif
 #ifdef LUAT_USE_PROFILER
   {"profiler", luaopen_profiler},

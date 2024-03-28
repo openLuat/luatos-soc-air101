@@ -110,6 +110,10 @@
 #define LUAT_USE_DNS
 #define LUAT_USE_SNTP
 #define LUAT_USE_HTTPSRV
+#define LUAT_USE_HTTP
+#define LUAT_USE_MQTT
+#define LUAT_USE_WEBSOCKET
+#define LUAT_USE_FTP
 
 // 外置网络支持
 // #define LUAT_USE_W5500_XXX

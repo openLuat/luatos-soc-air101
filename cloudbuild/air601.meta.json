@@ -17,9 +17,9 @@
                     "dft": 112
                 },
                 "rom": {
-                    "min": 518336,
-                    "max": 518336,
-                    "dft": 518336,
+                    "min": 782336,
+                    "max": 782336,
+                    "dft": 782336,
                     "rsize": 271352
                 }
             },
@@ -51,7 +51,7 @@
                 "children": [
                     {
                         "name": "@note_1",
-                        "content": "本BSP强制开启WLAN功能,即WIIF功能, 并包含socket/http/mqtt/websocket库",
+                        "content": "本BSP不再强制开启wifi及网络功能,支持完全自定义",
                         "rsize": 0,
                         "fsize": 275108,
                         "dft": false
@@ -64,25 +64,60 @@
                         "dft": false
                     }
                 ]
-            },            {
-                
+            },            
+            {
                 "icon": "zmdi-input-composite",
                 "name": "@NETWORKS",
                 "content": "网络相关",
                 "rsize": 0,
                 "children": [
                     {
+                        "name": "wlan",
+                        "content": "开启wifi功能",
+                        "rsize": 200000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "network",
+                        "content": "开启socket库, 支持TCP/UDP连接",
+                        "rsize": 50000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "http",
+                        "content": "开启http库",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "mqtt",
+                        "content": "开启mqtt库, 支持http 1.0/1.1, 不支持http 2.0",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "websocket",
+                        "content": "开启websocket库",
+                        "rsize": 10000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
                         "name": "httpsrv",
                         "content": "http server库, 支持监听一个端口提供http服务",
                         "rsize": 3000,
-                        "fsize": 275108,
+                        "fsize": 27108,
                         "dft": false
                     },
                     {
                         "name": "tls",
                         "content": "启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
                         "rsize": 65000,
-                        "fsize": 275108,
+                        "fsize": 40108,
                         "dft": false,
                         "children": [
                             {

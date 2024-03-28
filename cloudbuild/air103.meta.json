@@ -281,35 +281,56 @@
             {
                 "icon": "zmdi-input-composite",
                 "name": "@NETWORKS",
-                "content": "网络外设",
+                "content": "网络相关",
                 "rsize": 0,
                 "children": [
                     {
-                        "name": "w5500",
-                        "content": "驱动w5500以太网",
-                        "rsize": 23240,
-                        "fsize": 464592,
+                        "name": "wlan",
+                        "content": "开启wifi功能",
+                        "rsize": 200000,
+                        "fsize": 275108,
                         "dft": false
                     },
                     {
-                        "name": "sntp",
-                        "content": "网络对时",
-                        "rsize": 23240,
-                        "fsize": 464592,
+                        "name": "network",
+                        "content": "开启socket库, 支持TCP/UDP连接",
+                        "rsize": 50000,
+                        "fsize": 275108,
                         "dft": false
                     },
                     {
-                        "name": "ftp",
-                        "content": "FTP客户端",
-                        "rsize": 23240,
-                        "fsize": 464592,
+                        "name": "http",
+                        "content": "开启http库",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "mqtt",
+                        "content": "开启mqtt库, 支持http 1.0/1.1, 不支持http 2.0",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "websocket",
+                        "content": "开启websocket库",
+                        "rsize": 10000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "httpsrv",
+                        "content": "http server库, 支持监听一个端口提供http服务",
+                        "rsize": 3000,
+                        "fsize": 27108,
                         "dft": false
                     },
                     {
                         "name": "tls",
-                        "content": "网络层TLS/SSL支持",
+                        "content": "启用加密支持, 可使用https/mqtts/tcpssl等,但只能建立一个加密连接",
                         "rsize": 65000,
-                        "fsize": 464592,
+                        "fsize": 40108,
                         "dft": false,
                         "children": [
                             {
@@ -329,15 +350,15 @@
                         ]
                     },
                     {
-                        "name": "wlan",
-                        "content": "[试用]wlan库,wifi支持,注意天线必须加上ESD防护",
-                        "rsize": 123240,
-                        "fsize": 464592,
+                        "name": "ftp",
+                        "content": "支持FTP操作",
+                        "rsize": 3000,
+                        "fsize": 275108,
                         "dft": false
                     },
                     {
                         "name": "errdump",
-                        "content": "错误上报,需要开启wlan或者w5500才能编译通过",
+                        "content": "错误上报",
                         "rsize": 4240,
                         "fsize": 464592,
                         "dft": false
