@@ -71,12 +71,14 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         lua_call(L, 1, 0);
         break;
     case ONESHOT_RESULT:
+        #ifdef LUAT_USE_NETWORK
         lua_pushstring(L, "SC_RESULT");
         tls_wifi_get_oneshot_ssidpwd(ssid, pwd);
         LLOGD("oneshot %s %s", ssid, pwd);
         lua_pushstring(L, (const char*)ssid);
         lua_pushstring(L, (const char*)pwd);
         lua_call(L, 3, 0);
+        #endif
         break;
     default:
         break;
@@ -116,6 +118,7 @@ static void netif_event_cb(u8 status) {
         msg.arg1 = status;
         luat_msgbus_put(&msg, 0);
         break;
+#if TLS_CONFIG_AP
     case NETIF_WIFI_SOFTAP_SUCCESS :
         LLOGI("softap create success");
         #ifdef LUAT_USE_NETWORK
@@ -137,6 +140,7 @@ static void netif_event_cb(u8 status) {
     case NETIF_IP_NET2_UP :
         LLOGI("softap netif up");
         break;
+#endif
     default:
         break;
     }
@@ -186,7 +190,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
             wireless_protocol = TLS_PARAM_IEEE80211_INFRA;
             tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
         }
-        //tls_wifi_enable_log(1);
+        tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
 
@@ -194,9 +198,13 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         extern void luat_zlink_wlan_init(void);
         luat_zlink_wlan_init();
         #else
+        #ifdef LUAT_USE_NETWORK
         tls_ethernet_init();
         tls_sys_init();
         tls_netif_add_status_event(netif_event_cb);
+        #else
+        tls_wifi_status_change_cb_register(netif_event_cb);
+        #endif
         tls_wifi_scan_result_cb_register(NULL);
         #endif
 
@@ -316,14 +324,22 @@ extern u8 gucssidData[];
 extern u8 gucpwdData[];
 int luat_wlan_smartconfig_start(int tp) {
     (void)tp;
+    #ifdef LUAT_USE_NETWORK
     gucssidData[0] = 0;
     gucpwdData[0] = 0;
     tls_wifi_oneshot_result_cb_register(luat_sc_callback);
     return tls_wifi_set_oneshot_flag(1);
+    #else
+    return -1;
+    #endif
 }
 
 int luat_wlan_smartconfig_stop(void) {
+    #ifdef LUAT_USE_NETWORK
     return tls_wifi_set_oneshot_flag(0);
+    #else
+    return -1;
+    #endif
 }
 
 // 数据类
@@ -359,11 +375,15 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
 
 int luat_wlan_get_ip(int type, char* data) {
     (void)type;
+    #ifdef LUAT_USE_NETWORK
     struct netif *et0 = tls_get_netif();
     if (et0 == NULL || ip_addr_isany(&et0->ip_addr))
         return -1;
     ipaddr_ntoa_r(&et0->ip_addr, data, 16);
     return 0;
+    #else
+    return -1;
+    #endif
 }
 
 // 设置和获取省电模式
@@ -377,28 +397,41 @@ int luat_wlan_get_ps(void) {
 }
 
 int luat_wlan_get_ap_bssid(char* buff) {
+    #if TLS_CONFIG_AP
     struct tls_curr_bss_t bss = {0};
     tls_wifi_get_current_bss(&bss);
     memcpy(buff, bss.bssid, ETH_ALEN);
+    #else
+    memset(buff, 0, ETH_ALEN);
+    #endif
     return 0;
 }
 
 int luat_wlan_get_ap_rssi(void) {
+    #if TLS_CONFIG_AP
     struct tls_curr_bss_t bss = {0};
     tls_wifi_get_current_bss(&bss);
     return bss.rssi;
+    #else
+    return 0;
+    #endif
 }
 
 int luat_wlan_get_ap_gateway(char* buff) {
+    #if TLS_CONFIG_AP
     struct netif *et0 = tls_get_netif();
     if (et0 == NULL || ip_addr_isany(&et0->gw))
         return -1;
     ipaddr_ntoa_r(&et0->gw, buff, 16);
     return 0;
+    #else
+    return -1;
+    #endif
 }
 
 // AP类
 int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
+    #if TLS_CONFIG_AP
     int ret = 0;
     struct tls_softap_info_t apinfo = {0};
     struct tls_ip_info_t ipinfo = {
@@ -458,6 +491,9 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     if (ret)
         LLOGD("tls_wifi_softap_create %d", ret);
     return ret;
+    #else
+    return -1;
+    #endif
 }
 
 extern u8 *wpa_supplicant_get_mac(void);
@@ -487,6 +523,7 @@ int luat_wlan_ap_stop(void) {
 }
 
 int luat_wlan_set_station_ip(luat_wlan_station_info_t *info) {
+    #ifdef LUAT_USE_NETWORK
     struct tls_ethif *ethif;
     struct tls_param_ip param_ip;
     if (info == NULL) {
@@ -533,6 +570,29 @@ int luat_wlan_set_station_ip(luat_wlan_station_info_t *info) {
     MEMCPY((char *)param_ip.ip, info->ipv4_addr, 4);
     MEMCPY((char *)param_ip.netmask, info->ipv4_netmask, 4);
     tls_param_set(TLS_PARAM_ID_IP, (void *)&param_ip, false);
+    #endif
+    return 0;
+}
 
+extern u8* tls_wifi_buffer_acquire(int total_len);
+extern void tls_wifi_buffer_release(bool is_apsta, u8* buffer);
+int luat_wlan_macpkg_write(int is_apsta, uint8_t* buff, size_t len) {
+    u8* tmp = tls_wifi_buffer_acquire(len);
+    if (tmp == NULL) {
+        return -1;
+    }
+    memcpy(tmp, buff, len);
+    tls_wifi_buffer_release(is_apsta, tmp);
+    return 0;
+}
+
+static int macpkg_in(const u8 *bssid, u8 *buf, u32 buf_len) {
+    return luat_wlan_macpkg_input(bssid, buf, buf_len);
+}
+
+int luat_wlan_macpkg_rawmode(int enable) {
+    if (enable) {
+        tls_ethernet_data_rx_callback(macpkg_in);
+    }
     return 0;
 }
