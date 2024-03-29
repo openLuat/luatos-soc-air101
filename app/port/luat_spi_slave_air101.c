@@ -21,12 +21,12 @@ static int inited;
 
 
 static s16 hsp_rx_cmd_cb(char *buf) {
-    printf("hsp_rx_cmd_cb %p %d", buf, buf[0]);
+    // printf("hsp_rx_cmd_cb %p %d\n", buf, buf[0]);
     l_spi_slave_event(0, 0, buf, 256);
     return WM_SUCCESS;
 }
 static s16 hsp_rx_data_cb(char *buf) {
-    printf("hsp_rx_data_cb %p %d %d", buf, buf[0], buf[1]);
+    // printf("hsp_rx_data_cb %p %d %d\n", buf, buf[0], buf[1]);
     l_spi_slave_event(0, 1, buf, 1500);
     return WM_SUCCESS;
 }
