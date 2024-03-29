@@ -149,6 +149,13 @@
                         "rsize": 4240,
                         "fsize": 464592,
                         "dft": false
+                    },
+                    {
+                        "name": "sntp",
+                        "content": "NTP网络对时",
+                        "rsize": 2240,
+                        "fsize": 464592,
+                        "dft": false
                     }
                 ]
             },
