@@ -57,7 +57,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V1023"
+#define LUAT_BSP_VERSION "V1025"
 
 // Air601
 #define AIR601
@@ -123,7 +123,7 @@
 // #define LUAT_USE_TLS
 
 
-// #define LUAT_USE_IOTAUTH 1
+#define LUAT_USE_IOTAUTH 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
