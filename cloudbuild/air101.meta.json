@@ -312,6 +312,12 @@
                         "rsize": 4240,
                         "fsize": 464592,
                         "dft": false
+                    },{
+                        "name": "w5500",
+                        "content": "驱动w5500以太网",
+                        "rsize": 23240,
+                        "fsize": 464592,
+                        "dft": false
                     },
                     {
                         "name": "sntp",
@@ -351,8 +357,15 @@
                     },
                     {
                         "name": "ota",
-                        "content": "脚本升级",
+                        "content": "脚本升级,通过文件系统存放升级文件",
                         "rsize": 4056,
+                        "fsize": 272408,
+                        "dft": false
+                    },
+                    {
+                        "name": "fota",
+                        "content": "底层+脚本升级, 独立的FOTA区域需要占用40%的flash,慎选!!!",
+                        "rsize": 400056,
                         "fsize": 272408,
                         "dft": false
                     },
