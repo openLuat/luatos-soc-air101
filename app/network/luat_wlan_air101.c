@@ -51,20 +51,20 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     case NETIF_IP_NET_UP:
         #ifdef LUAT_USE_NETWORK
         net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
-        #endif
         luat_wlan_get_ip(0, sta_ip);
         LLOGD("sta ip %s", sta_ip);
         lua_pushstring(L, "IP_READY");
         lua_pushstring(L, sta_ip);
         lua_pushinteger(L, NW_ADAPTER_INDEX_LWIP_WIFI_STA);
         lua_call(L, 3, 0);
+        #endif
         break;
     case NETIF_WIFI_DISCONNECTED:
         #ifdef LUAT_USE_NETWORK
         net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
-        #endif
         lua_pushstring(L, "IP_LOSE");
         lua_call(L, 1, 0); // 暂时只发个IP_LOSE
+        #endif
         break;
     case SCAN_DONE :
         lua_pushstring(L, "WLAN_SCAN_DONE");
@@ -83,6 +83,18 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     default:
         break;
     }
+    #ifndef LUAT_USE_NETWORK
+    switch (msg->arg1)
+    {
+        case NETIF_WIFI_DISCONNECTED:
+        case NETIF_WIFI_JOIN_SUCCESS:
+            lua_getglobal(L, "sys_pub");
+            lua_pushstring(L, "WLAN_STATUS");
+            lua_pushinteger(L, wlan_state);
+            lua_call(L, 2, 0);
+            break;
+    }
+    #endif
     return 0;
 }
 
@@ -91,6 +103,7 @@ static void netif_event_cb(u8 status) {
     struct tls_param_ip ip_param;
     // LLOGD("netif_event %d", status);
     msg.handler = l_wlan_cb;
+    msg.arg1 = status;
 	switch (status)
     {
     case NETIF_WIFI_JOIN_FAILED:
@@ -106,12 +119,15 @@ static void netif_event_cb(u8 status) {
     case NETIF_WIFI_JOIN_SUCCESS :
         wlan_state = 1;
         LLOGI("join success");
+        #ifdef LUAT_USE_NETWORK
         tls_param_get(TLS_PARAM_ID_IP, (void *)&ip_param, false);
         if (!ip_param.dhcp_enable) {
             LLOGI("dhcp is disable, so 'join success' as 'IP_READY'");
-            msg.arg1 = status;
             luat_msgbus_put(&msg, 0);
         }
+        #else
+        luat_msgbus_put(&msg, 0);
+        #endif
         break;
     case NETIF_IP_NET_UP :
         LLOGI("IP READY");
