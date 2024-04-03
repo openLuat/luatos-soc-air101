@@ -252,9 +252,9 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
 }
 
 int luat_wlan_mode(luat_wlan_config_t *conf) {
+    (void)conf;
     #if TLS_CONFIG_AP
     // 不需要设置, 反正都能用
-    (void)conf;
     if (conf->mode == LUAT_WLAN_MODE_STA) {
         tls_wifi_softap_destroy();
     }
@@ -414,36 +414,28 @@ int luat_wlan_get_ps(void) {
 }
 
 int luat_wlan_get_ap_bssid(char* buff) {
-    #if TLS_CONFIG_AP
     struct tls_curr_bss_t bss = {0};
     tls_wifi_get_current_bss(&bss);
     memcpy(buff, bss.bssid, ETH_ALEN);
-    #else
-    memset(buff, 0, ETH_ALEN);
-    #endif
     return 0;
 }
 
 int luat_wlan_get_ap_rssi(void) {
-    #if TLS_CONFIG_AP
     struct tls_curr_bss_t bss = {0};
     tls_wifi_get_current_bss(&bss);
     return bss.rssi;
-    #else
-    return 0;
-    #endif
 }
 
 int luat_wlan_get_ap_gateway(char* buff) {
-    #if TLS_CONFIG_AP
+    #ifdef LUAT_USE_NETWORK
     struct netif *et0 = tls_get_netif();
     if (et0 == NULL || ip_addr_isany(&et0->gw))
         return -1;
     ipaddr_ntoa_r(&et0->gw, buff, 16);
-    return 0;
     #else
-    return -1;
+    buff[0] = 0;
     #endif
+    return 0;
 }
 
 // AP类
