@@ -108,14 +108,18 @@ static void netif_event_cb(u8 status) {
     {
     case NETIF_WIFI_JOIN_FAILED:
         LLOGI("join failed");
-        tls_auto_reconnect(3);
+        #ifndef LUAT_USE_NETWORK
+        tls_auto_reconnect(0);
+        #endif
         break;
     case NETIF_WIFI_DISCONNECTED:
         wlan_state = 0;
-        tls_auto_reconnect(3);
         LLOGI("disconnected");
         msg.arg1 = status;
         luat_msgbus_put(&msg, 0);
+        #ifndef LUAT_USE_NETWORK
+        tls_auto_reconnect(0);
+        #endif
         break;
     case NETIF_WIFI_JOIN_SUCCESS :
         wlan_state = 1;
@@ -207,7 +211,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
             wireless_protocol = TLS_PARAM_IEEE80211_INFRA;
             tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void *) &wireless_protocol, FALSE);
         }
-        tls_wifi_enable_log(1);
+        // tls_wifi_enable_log(1);
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
 
