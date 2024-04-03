@@ -112,6 +112,7 @@ static void netif_event_cb(u8 status) {
         break;
     case NETIF_WIFI_DISCONNECTED:
         wlan_state = 0;
+        tls_auto_reconnect(3);
         LLOGI("disconnected");
         msg.arg1 = status;
         luat_msgbus_put(&msg, 0);
