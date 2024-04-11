@@ -21,7 +21,7 @@ extern unsigned int __heap_start;
 #define SLAVE_HSPI_SDIO_ADDR        ((unsigned int)(&__heap_end))
 
 // #if TLS_CONFIG_HS_SPI
-#define SLAVE_HSPI_MAX_SIZE         (0x2000)
+#define SLAVE_HSPI_MAX_SIZE         (0x2400)
 // #else
 // #define SLAVE_HSPI_MAX_SIZE         (0x0)
 // #endif

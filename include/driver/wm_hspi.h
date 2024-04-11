@@ -31,8 +31,8 @@
 #define HSPI_TX_DESC_NUM            HSPI_TXBUF_NUM
 #define HSPI_RXBUF_NUM              3
 #define HSPI_RX_DESC_NUM            HSPI_RXBUF_NUM
-#define HSPI_TXBUF_SIZE             1500
-#define HSPI_RXBUF_SIZE             1500
+#define HSPI_TXBUF_SIZE             1600
+#define HSPI_RXBUF_SIZE             1600
 
 #define HSPI_TX_DESC_SIZE          sizeof(struct tls_hspi_tx_desc)
 #define HSPI_RX_DESC_SIZE          sizeof(struct tls_hspi_rx_desc)
