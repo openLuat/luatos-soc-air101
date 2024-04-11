@@ -43,6 +43,7 @@
 #define LUAT_USE_OTP 1
 // #define LUAT_USE_TOUCHKEY 1
 // #define LUAT_USE_SPI_SLAVE 1
+// #define LUAT_USE_WLAN_RAW 1
 
 // #define LUAT_USE_ICONV 1
 

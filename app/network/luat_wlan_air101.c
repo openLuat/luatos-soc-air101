@@ -24,6 +24,7 @@
 #include "lwip/tcp.h"
 
 void net_lwip2_set_link_state(uint8_t adapter_index, uint8_t updown);
+int luat_wlan_raw_in(const u8 *bssid, u8 *buf, u32 buf_len);
 
 #define SCAN_DONE       (0x73)
 #define ONESHOT_RESULT  (0x74)
@@ -135,9 +136,11 @@ static void netif_event_cb(u8 status) {
         #endif
         break;
     case NETIF_IP_NET_UP :
+        #ifdef LUAT_USE_NETWORK
         LLOGI("IP READY");
         msg.arg1 = status;
         luat_msgbus_put(&msg, 0);
+        #endif
         break;
 #if TLS_CONFIG_AP
     case NETIF_WIFI_SOFTAP_SUCCESS :
@@ -225,6 +228,9 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         tls_netif_add_status_event(netif_event_cb);
         #else
         tls_wifi_status_change_cb_register(netif_event_cb);
+        #ifdef LUAT_USE_WLAN_RAW
+        tls_ethernet_data_rx_callback(luat_wlan_raw_in);
+        #endif
         #endif
         tls_wifi_scan_result_cb_register(NULL);
         #endif
@@ -584,28 +590,5 @@ int luat_wlan_set_station_ip(luat_wlan_station_info_t *info) {
     MEMCPY((char *)param_ip.netmask, info->ipv4_netmask, 4);
     tls_param_set(TLS_PARAM_ID_IP, (void *)&param_ip, false);
     #endif
-    return 0;
-}
-
-extern u8* tls_wifi_buffer_acquire(int total_len);
-extern void tls_wifi_buffer_release(bool is_apsta, u8* buffer);
-int luat_wlan_macpkg_write(int is_apsta, uint8_t* buff, size_t len) {
-    u8* tmp = tls_wifi_buffer_acquire(len);
-    if (tmp == NULL) {
-        return -1;
-    }
-    memcpy(tmp, buff, len);
-    tls_wifi_buffer_release(is_apsta, tmp);
-    return 0;
-}
-
-static int macpkg_in(const u8 *bssid, u8 *buf, u32 buf_len) {
-    return luat_wlan_macpkg_input(bssid, buf, buf_len);
-}
-
-int luat_wlan_macpkg_rawmode(int enable) {
-    if (enable) {
-        tls_ethernet_data_rx_callback(macpkg_in);
-    }
     return 0;
 }
