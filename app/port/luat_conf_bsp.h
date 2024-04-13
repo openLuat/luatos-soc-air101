@@ -345,6 +345,8 @@
 //<-- custom
 //------------------------------------------------------------------------------
 
+#define LUAT_USE_LWIP 1
+
 #if defined(LUAT_USE_HTTP) || defined(LUAT_USE_MQTT) || defined(LUAT_USE_FTP) || defined(LUAT_USE_SNTP) || defined(LUAT_USE_ERRDUMP)
 #ifndef LUAT_USE_NETWORK
 #define LUAT_USE_NETWORK
@@ -358,9 +360,6 @@
 #endif
 
 #if defined(LUAT_USE_NETWORK) || defined(LUAT_USE_ULWIP)
-#ifndef LUAT_USE_LWIP
-#define LUAT_USE_LWIP
-#endif
 #ifndef LUAT_USE_DNS
 #define LUAT_USE_DNS 1
 #endif
