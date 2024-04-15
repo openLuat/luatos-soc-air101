@@ -703,6 +703,11 @@ target("air10x")
     add_includedirs(luatos.."components/onewire/include",{public = true})
     add_files(luatos.."components/onewire/src/*.c")
     add_files(luatos.."components/onewire/binding/*.c")
+
+    -- onewire
+    add_includedirs(luatos.."components/ht1621/include",{public = true})
+    add_files(luatos.."components/ht1621/src/*.c")
+    add_files(luatos.."components/ht1621/binding/*.c")
     
     -- local opus_dir = luatos .. "components/opus/"
     -- add_includedirs(opus_dir .. "opus-1.3.1/src", 

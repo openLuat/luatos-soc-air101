@@ -638,6 +638,13 @@
                         "rsize": 2008,
                         "fsize": 274360,
                         "dft": false
+                    },
+                    {
+                        "name": "ht1621",
+                        "content": "ht1621/ht1621b液晶驱动",
+                        "rsize": 2048,
+                        "fsize": 274360,
+                        "dft": false
                     }
                 ],
                 "fsize": 271352,

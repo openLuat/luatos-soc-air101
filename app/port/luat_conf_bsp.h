@@ -112,7 +112,7 @@
 
 // #define LUAT_USE_SQLITE3 1
 // #define LUAT_USE_WS2812 1
-
+// #define LUAT_USE_HT1621 1
 
 // // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
 // #define LUAT_USE_TLSF 1
