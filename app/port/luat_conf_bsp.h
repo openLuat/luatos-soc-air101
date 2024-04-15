@@ -365,7 +365,7 @@
 #endif
 #endif
 
-#ifdef LUAT_USE_W5500
+#if defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
 #ifndef LUAT_USE_DHCP
 #define LUAT_USE_DHCP
 #endif
