@@ -404,7 +404,7 @@ target("network")
     add_files(luatos.."components/network/zlink/src/*.c")
 
     -- ulwip
-    -- add_includedirs(luatos.."components/network/ulwip/include",{public = true})
+    add_includedirs(luatos.."components/network/ulwip/include",{public = true})
     add_files(luatos.."components/network/ulwip/**.c")
 
     -- spi slave
