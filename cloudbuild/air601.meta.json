@@ -87,14 +87,14 @@
                     },
                     {
                         "name": "http",
-                        "content": "开启http库",
+                        "content": "开启http库, 支持http 1.0/1.1, 不支持http 2.0",
                         "rsize": 20000,
                         "fsize": 275108,
                         "dft": false
                     },
                     {
                         "name": "mqtt",
-                        "content": "开启mqtt库, 支持http 1.0/1.1, 不支持http 2.0",
+                        "content": "开启mqtt库, 支持mqtt 3.1.1,不支持mqtt 5.0",
                         "rsize": 20000,
                         "fsize": 275108,
                         "dft": false
@@ -346,6 +346,20 @@
                                 "dft": false
                             }
                         ]
+                    },
+                    {
+                        "name": "spi_slave",
+                        "content": "SPI从机,最高波特率50M",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
+                    },
+                    {
+                        "name": "wlan_raw",
+                        "content": "开启wlan裸数据收发,直接传输MAC帧",
+                        "rsize": 20000,
+                        "fsize": 275108,
+                        "dft": false
                     }
                 ],
                 "fsize": 271352,
