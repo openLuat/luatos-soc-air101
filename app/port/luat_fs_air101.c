@@ -41,7 +41,6 @@ void lv_split_jpeg_init(void);
 #endif
 
 void luat_fs_update_addr(void) {
-    LLOGD("可读写文件系统大小 %d kb", LUAT_FS_SIZE);
 #if (defined(AIR103) || defined(AIR601))
     luadb_addr =  0x0E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
 #else
@@ -58,10 +57,8 @@ void luat_fs_update_addr(void) {
 #endif
         kv_addr = luadb_addr - kv_size_kb*1024U;
     // }
-
-    //LLOGD("lfs addr4 %p", &lfs_addr);
-    //LLOGD("lfs addr5 0x%08X", lfs_addr);
-    //LLOGD("luadb_addr 0x%08X", luadb_addr);
+	if (LUAT_FS_SIZE != 48)
+    	LLOGD("可读写文件系统大小 %dkb flash偏移量 %08X", LUAT_FS_SIZE, lfs_addr);
 }
 
 int luat_fs_init(void) {
@@ -69,7 +66,7 @@ int luat_fs_init(void) {
     LFS_Init();
     luat_vfs_reg(&vfs_fs_lfs2);
 	luat_fs_conf_t conf = {
-		.busname = &lfs,
+		.busname = (char*)&lfs,
 		.type = "lfs2",
 		.filesystem = "lfs2",
 		.mount_point = "/"
