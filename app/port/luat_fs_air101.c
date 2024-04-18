@@ -40,13 +40,8 @@ void luat_lv_fs_init(void);
 void lv_split_jpeg_init(void);
 #endif
 
-// 调整LUADB文件系统大小, 必须是 48+64*N, N为整数. 例如 48+64, 48+128
-#ifndef LUAT_FS_SIZE
-#define LUAT_FS_SIZE (48)
-#endif
-
 void luat_fs_update_addr(void) {
-    //luat_timer_mdelay(1000);
+    LLOGD("可读写文件系统大小 %d kb", LUAT_FS_SIZE);
 #if (defined(AIR103) || defined(AIR601))
     luadb_addr =  0x0E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
 #else
