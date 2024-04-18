@@ -36,7 +36,7 @@ int luat_wlan_raw_in(const u8 *bssid, u8 *buf, u32 buf_len) {
     // printf("pkgin %02X%02X%02X%02X%02X%02X %p %d\n", 
     //     bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5], 
     //     buf, buf_len);
-    if (memcmp(bssid, wlan_raw_ap_mac, 6) != 0) {
+    if (memcmp(bssid, wlan_raw_ap_mac, 6) == 0) {
         l_wlan_raw_event(1, buf, buf_len); // AP数据包
     }
     else {
