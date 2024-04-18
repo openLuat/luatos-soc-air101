@@ -411,7 +411,7 @@ target("network")
     add_includedirs(luatos.."components/device/spi_slave/include",{public = true})
     add_files(luatos.."components/device/spi_slave/**.c")
 
-    -- spi slave
+    -- wlan raw
     add_includedirs(luatos.."components/device/wlanraw/include",{public = true})
     add_files(luatos.."components/device/wlanraw/**.c")
 
