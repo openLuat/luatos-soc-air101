@@ -97,7 +97,7 @@ static void uart1Init (int bandrate)
 #endif
 void board_init(void)
 {
-#ifdef LUAT_CONF_LOG_UART1
+#ifndef LUAT_CONF_LOG_UART1
     /* use uart0 as log output io */
     uart0Init(921600);
 #else
