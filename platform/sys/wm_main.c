@@ -341,6 +341,10 @@ void task_start (void *data)
     tls_fls_init();
     tls_fls_sys_param_postion_init();
 
+#ifdef LUAT_CONF_LOG_UART1
+    luat_log_set_uart_port(1);
+#endif
+
     /*PARAM GAIN,MAC default*/
 #if defined(LUAT_USE_NIMBLE) || defined(LUAT_USE_WLAN)
     tls_ft_param_init();
