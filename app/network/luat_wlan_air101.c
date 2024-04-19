@@ -200,6 +200,10 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         {
             TLS_DBGPRT_INFO("supplicant initial failured\n");
         }
+        // 设置到AP的mac地址位置去
+        luat_wlan_get_mac(1, mac_addr);
+        memcpy(hostapd_get_mac(), mac_addr, 6);
+        
     	/*wifi-temperature compensation,default:open*/
         if (tls_wifi_get_tempcomp_flag() != 0)
     	    tls_wifi_set_tempcomp_flag(0);
