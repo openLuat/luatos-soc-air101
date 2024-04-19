@@ -9,6 +9,9 @@
 extern luat_cmux_t cmux_ctx;
 #endif
 
+#ifdef LUAT_CONF_LOG_UART1
+#else
+
 static uint8_t luat_log_uart_port = 0;
 static uint8_t luat_log_level_cur = LUAT_LOG_DEBUG;
 
@@ -108,3 +111,4 @@ void luat_log_printf(int level, const char* _fmt, ...) {
     }
     luat_heap_free(tmp);
 }
+#endif

@@ -616,9 +616,6 @@ static int is_mac_ok(u8 mac_addr[6]) {
 }
 
 void sys_mac_init() {
-#ifdef LUAT_CONF_LOG_UART1
-	luat_log_set_uart_port(1);
-#endif
 	u8 tmp_mac[6] = {0};
     u8 mac_addr[6] = {0};
 	u8 ap_mac[6] = {0};

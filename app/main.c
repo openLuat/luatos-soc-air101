@@ -109,13 +109,16 @@ void luat_fs_update_addr(void);
 void UserMain(void){
 	unsigned  char unique_id [20] = {0};
 
-	tls_uart_options_t opt = {0};
-	opt.baudrate = UART_BAUDRATE_B921600;
-	opt.charlength = TLS_UART_CHSIZE_8BIT;
-	opt.flow_ctrl = TLS_UART_FLOW_CTRL_NONE;
-	opt.paritytype = TLS_UART_PMODE_DISABLED;
-	opt.stopbits = TLS_UART_ONE_STOPBITS;
-	tls_uart_port_init(0, &opt, 0);
+	#ifdef LUAT_CONF_LOG_UART1
+	luat_uart_t uart1_conf = {
+		.id = 1,
+		.baud_rate = 921600,
+		.data_bits = 8,
+		.parity = 0,
+		.stop_bits = 1,
+	};
+	luat_uart_setup(&uart1_conf);
+	#endif
 
 	LLOGD("poweron: %s", reason[luat_pm_get_poweron_reason()]);
 	luat_fs_update_addr();
