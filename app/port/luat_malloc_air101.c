@@ -47,7 +47,11 @@ void* __wrap_realloc(void*ptr, size_t len);
 #endif
 
 #if (LUAT_HEAP_P1_SIZE > 0)
+#ifndef LUAT_USE_PSRAM
 __attribute__((aligned(8))) static uint64_t heap_ext[(LUAT_HEAP_P1_SIZE) / 8];
+#else
+static uint64_t* heap_ext;
+#endif
 #endif
 
 #ifdef LUAT_USE_TLSF
@@ -75,11 +79,13 @@ void luat_heap_init(void) {
 	// 毕竟sram还是快很多的, 优先sram吧
     //LLOGD("VM MEM P1 %08X P2 %08X", LUAT_HEAP_P1_SIZE, LUAT_HEAP_P2_SIZE);
 #if (LUAT_HEAP_P1_SIZE > 0)
-#ifndef LUAT_USE_TLSF
-	bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
-#else
-	luavm_tlsf = tlsf_create_with_pool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
-#endif
+    if (heap_ext) {
+    #ifndef LUAT_USE_TLSF
+	    bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
+    #else
+	    luavm_tlsf = tlsf_create_with_pool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
+    #endif
+    }
 #endif
 
 #ifdef LUAT_USE_PSRAM
@@ -100,6 +106,10 @@ void luat_heap_init(void) {
     LLOGD("PSRAM size %dkb", psram_size / 1024);
 	if (psram_size == 0) {
 		LLOGE("psram is enable, but can't access!!");
+        #if (LUAT_HEAP_P1_SIZE > 0)
+            heap_ext = tls_mem_alloc(LUAT_HEAP_P1_SIZE);
+            bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
+        #endif
 	}
 	else {
 		// LLOGD("psram is ok");
@@ -531,14 +541,14 @@ void* luat_heap_opt_malloc(LUAT_HEAP_TYPE_E type,size_t len){
 }
 
 void luat_heap_opt_free(LUAT_HEAP_TYPE_E type,void* ptr){
-    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size && ((uint32_t)ptr) > 0x30010000) {
         return luat_brel(&psram_bget, ptr);
     }
     luat_heap_free(ptr);
 }
 
 void* luat_heap_opt_realloc(LUAT_HEAP_TYPE_E type,void* ptr, size_t len){
-    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size &&  (!ptr || ((uint32_t)ptr) > 0x30010000)) {
         return luat_bgetr(&psram_bget, ptr, len);
     }
     return luat_heap_realloc(ptr, len);
