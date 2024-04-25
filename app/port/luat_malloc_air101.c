@@ -63,6 +63,13 @@ extern luat_profiler_mem_t profiler_memregs[];
 #endif
 
 extern uint32_t __ram_end;
+#ifdef LUAT_USE_PSRAM
+size_t psram_size = 0;
+size_t psram_lua_size = 0;
+size_t psram_sys_size = 0;
+#include "luat_bget.h"
+luat_bget_t psram_bget;
+#endif
 
 void luat_heap_init(void) {
 	// 毕竟sram还是快很多的, 优先sram吧
@@ -76,22 +83,54 @@ void luat_heap_init(void) {
 #endif
 
 #ifdef LUAT_USE_PSRAM
-	char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
+	const char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
 	char* psram_ptr = (void*)0x30010000;
-	LLOGD("check psram ...");
-	memcpy(psram_ptr, test, 4);
-	if (memcmp(psram_ptr, test, 4)) {
+	// LLOGD("check psram ...");
+    for (size_t i = 0; i <= 16; i++)
+    {
+        psram_size = i * 512 * 1024;
+        memcpy(psram_ptr + psram_size + 128 * 1024, test, 4);
+        if (memcmp(psram_ptr + psram_size + 128 * 1024, test, 4)) {
+            break;
+        }
+    }
+    if (psram_size <= 512 * 1024) {
+        psram_size = 0;
+    }
+    LLOGD("PSRAM size %dkb", psram_size / 1024);
+	if (psram_size == 0) {
 		LLOGE("psram is enable, but can't access!!");
 	}
 	else {
-		LLOGD("psram is ok");
-		memset(psram_ptr, 0, 1024);
+		// LLOGD("psram is ok");
 		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
+        if (psram_size >= 6 * 1024 * 1024) {
+            psram_lua_size = 5*1024*1024;
+        }
+        else if (psram_size >= 4 * 1024 * 1024) {
+            psram_lua_size = 3*1024*1024;
+        }
+        else if (psram_size >= 2 * 1024 * 1024) {
+            psram_lua_size = 1*1024*1024;
+        }
+        else {
+            psram_lua_size = 512*1024;
+        }
+        psram_sys_size = psram_size - psram_lua_size;
+        LLOGD("PSRAM 内存分配 --> Lua %dkb Sys %dkb", psram_lua_size / 1024, psram_sys_size / 1024);
 		#ifdef LUAT_USE_TLSF
-		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, psram_ptr, 4*1024*1024);
+		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, psram_ptr, psram_lua_size);
 		#else
-		bpool(psram_ptr, 4*1024*1024); // 如果是8M内存, 改成 8也可以.
+        bpool(psram_ptr, psram_lua_size); // 如果是8M内存, 改成 8也可以
 		#endif
+        if (psram_sys_size > 0) {
+            luat_bget_init(&psram_bget);
+            luat_bpool(&psram_bget, psram_ptr + psram_lua_size, psram_sys_size);
+            char* tmp = luat_bget(&psram_bget, 1024);
+            if (tmp) {
+                luat_brel(&psram_bget, tmp);
+            }
+        }
 		return;
 	}
 #else
@@ -481,4 +520,63 @@ void* __wrap_zalloc(size_t size) {
 }
 #endif
 
+#ifdef LUAT_USE_PSRAM
+#include "luat_mem.h"
+
+void* luat_heap_opt_malloc(LUAT_HEAP_TYPE_E type,size_t len){
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+        return luat_bget(&psram_bget, len);
+    }
+    return luat_heap_malloc(len);
+}
+
+void luat_heap_opt_free(LUAT_HEAP_TYPE_E type,void* ptr){
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+        return luat_brel(&psram_bget, ptr);
+    }
+    luat_heap_free(ptr);
+}
+
+void* luat_heap_opt_realloc(LUAT_HEAP_TYPE_E type,void* ptr, size_t len){
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+        return luat_bgetr(&psram_bget, ptr, len);
+    }
+    return luat_heap_realloc(ptr, len);
+}
+
+void* luat_heap_opt_calloc(LUAT_HEAP_TYPE_E type,size_t count, size_t size){
+    if (type == LUAT_HEAP_PSRAM && psram_sys_size) {
+        return luat_bgetz(&psram_bget, count*size);
+    }
+    return luat_heap_opt_zalloc(type,count*size);
+}
+
+void* luat_heap_opt_zalloc(LUAT_HEAP_TYPE_E type,size_t size){
+    void *ptr = luat_heap_opt_malloc(type,size);
+    if (ptr) {
+        memset(ptr, 0, size);
+    }
+    return ptr;
+}
+
+void luat_meminfo_opt_sys(LUAT_HEAP_TYPE_E type,size_t* total, size_t* used, size_t* max_used){
+    if (type == LUAT_HEAP_PSRAM){
+        if (psram_sys_size > 0) {
+            long curalloc, totfree, maxfree;
+	        unsigned long nget, nrel;
+	        luat_bstats(&psram_bget, &curalloc, &totfree, &maxfree, &nget, &nrel);
+	        *used = curalloc;
+	        *max_used = luat_bstatsmaxget(&psram_bget);
+            *total = curalloc + totfree;
+        }
+        else {
+            *total = 0;
+            *used = 0;
+            *max_used = 0;
+        }
+    }else
+        luat_meminfo_sys(total, used, max_used);
+}
+
+#endif
 

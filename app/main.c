@@ -208,11 +208,10 @@ void UserMain(void){
 #define LUAT_USE_PSRAM_PORT 1
 #endif
 #endif
-	printf("psram init\n");
+	//printf("psram init\n");
 	wm_psram_config(LUAT_USE_PSRAM_PORT);
 	// 然后初始化psram的寄存器
 	psram_init(PSRAM_QPI);
-	//uint8_t* psram_ptr = (uint8_t*)(PSRAM_ADDR_START);
 #endif
 
 	#if defined(LUAT_USE_FOTA)
