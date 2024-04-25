@@ -182,7 +182,7 @@
                     },
                     {
                         "name": "psram",
-                        "content": "外挂PSRAM(必须焊上psram芯片才能使用,否则必死机)",
+                        "content": "外挂PSRAM(必须焊上psram芯片才能使用)",
                         "rsize": 588,
                         "fsize": 271940,
                         "dft": false
