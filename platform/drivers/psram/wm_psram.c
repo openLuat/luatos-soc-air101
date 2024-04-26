@@ -13,7 +13,7 @@
 /* Threshhold for punting to the byte copier.  */
 #define TOO_SMALL(LEN)  ((LEN) < BIGBLOCKSIZE)
 
-volatile static uint32_t dma_rx_tx_done = 0;
+static volatile uint32_t dma_rx_tx_done = 0;
 static uint32_t psram_channel = 0;
 
 
