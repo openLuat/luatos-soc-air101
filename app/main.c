@@ -105,6 +105,7 @@ static const const char* reason[] = {
 extern int luat_pm_get_poweron_reason(void);
 extern int power_bk_reg;
 void luat_fs_update_addr(void);
+extern int luat_wlan_get_mac(int id, char* mac);
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 void UserMain(void){
 	unsigned  char unique_id [20] = {0};
@@ -188,9 +189,9 @@ void UserMain(void){
 
 #ifdef LUAT_USE_WLAN
 	u8 tmpmac[8] = {0};
-	tls_ft_param_get(CMD_WIFI_MACAP, tmpmac, 6);
+	luat_wlan_get_mac(1, tmpmac);
 	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
-	tls_ft_param_get(CMD_WIFI_MAC, tmpmac, 6);
+	luat_wlan_get_mac(0, tmpmac);
 	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 #endif
 

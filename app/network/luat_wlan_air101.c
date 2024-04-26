@@ -26,6 +26,7 @@
 
 void net_lwip2_set_link_state(uint8_t adapter_index, uint8_t updown);
 int luat_wlan_raw_in(const u8 *bssid, u8 *buf, u32 buf_len);
+extern u8 *hostapd_get_mac(void);
 
 #define SCAN_DONE       (0x73)
 #define ONESHOT_RESULT  (0x74)
@@ -188,8 +189,8 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         {
             TLS_DBGPRT_INFO("wl mem initial failured\n");
         }
-    
-        tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
+
+        luat_wlan_get_mac(0, mac_addr);
         TLS_DBGPRT_INFO("mac addr ");
         TLS_DBGPRT_DUMP((char *)(&mac_addr[0]), 6);
         if(tls_wl_init(NULL, &mac_addr[0], NULL) == NULL)
@@ -377,7 +378,7 @@ int luat_wlan_smartconfig_stop(void) {
 // 数据类
 int luat_wlan_get_mac(int id, char* mac) {
     if (id == 0)
-        tls_get_mac_addr((u8*)mac);
+        tls_ft_param_get(CMD_WIFI_MAC, mac, 6);
     else
         tls_ft_param_get(CMD_WIFI_MACAP, mac, 6);
     return 0;
@@ -387,10 +388,10 @@ int luat_wlan_set_mac(int id, const char* mac_addr) {
     u8 mac[8] = {0};
     int ret = 0;
     if (id == 0) {
-        tls_ft_param_get(CMD_WIFI_MAC, mac, 6);
+        luat_wlan_get_mac(0, mac);
     }
     else {
-        tls_ft_param_get(CMD_WIFI_MACAP, mac, 6);
+        luat_wlan_get_mac(1, mac);
     }
     if (memcmp(mac_addr, mac, 6) == 0) {
         // 完全相同, 不需要设置
@@ -490,7 +491,7 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
     );
     // ----------------------------
     u8 mac[6] = {0};
-    tls_get_mac_addr(mac);
+    luat_wlan_get_mac(1, mac);
     sprintf_((char*)ipinfo.dnsname, "LUATOS_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     //------------------------------
 
@@ -510,7 +511,7 @@ int luat_wlan_ap_start(luat_wlan_apinfo_t *apinfo2) {
         value = 1;
         tls_param_set(TLS_PARAM_ID_BRDSSID, (void *) &value, FALSE);
     }
-
+    
     ret = tls_wifi_softap_create(&apinfo, &ipinfo);
     if (ret)
         LLOGD("tls_wifi_softap_create %d", ret);
@@ -645,11 +646,8 @@ void sys_mac_init() {
 #endif
 
 #ifdef LUAT_USE_WLAN
-	ret = tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
-	if (ret) {
-		printf("tls_ft_param_get mac addr FALED %d !!!\n", ret);
-	}
-	tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
+    luat_wlan_get_mac(0, mac_addr);
+	luat_wlan_get_mac(1, ap_mac);
 	//printf("CMD_WIFI_MAC ret %d %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 	int sta_mac_ok = is_mac_ok(mac_addr);
 	int ap_mac_ok = is_mac_ok(ap_mac);
@@ -695,7 +693,7 @@ void sys_mac_init() {
 	// 全部mac都得到了, 然后重新读一下mac, 不相同的就重新写入
 	
 	// 先判断sta的mac
-	tls_ft_param_get(CMD_WIFI_MAC, tmp_mac, 6);
+    luat_wlan_get_mac(0, tmp_mac);
 	if (memcmp(tmp_mac, mac_addr, 6)) {
 		// 不一致, 写入
 		tls_ft_param_set(CMD_WIFI_MAC, mac_addr, 6);
@@ -703,7 +701,7 @@ void sys_mac_init() {
 	}
 
 	// 再判断ap的mac
-	tls_ft_param_get(CMD_WIFI_MACAP, tmp_mac, 6);
+    luat_wlan_get_mac(1, tmp_mac);
 	if (memcmp(tmp_mac, ap_mac, 6)) {
 		// 不一致, 写入
 		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
