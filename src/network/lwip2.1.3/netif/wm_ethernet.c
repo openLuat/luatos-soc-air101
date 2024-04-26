@@ -367,10 +367,10 @@ err_t tls_netif_set_addr(ip_addr_t *ipaddr,
 {
     return netifapi_netif_set_addr(nif, (ip4_addr_t *)ipaddr, (ip4_addr_t *)netmask, (ip4_addr_t *)gw);
 }
-void tls_netif_dns_setserver(u8 numdns, ip_addr_t *dnsserver)
-{
-    dns_setserver(numdns, dnsserver);
-}
+// void tls_netif_dns_setserver(u8 numdns, ip_addr_t *dnsserver)
+// {
+//     dns_setserver(numdns, dnsserver);
+// }
 err_t tls_netif_set_up(void)
 {
 	netif_set_link_up(nif);
@@ -484,14 +484,14 @@ err_t tls_netif2_set_addr(ip_addr_t *ipaddr,
     return netifapi_netif_set_addr(nif->next, (ip4_addr_t *)ipaddr, (ip4_addr_t *)netmask, (ip4_addr_t *)gw);
 }
 /* numdns 0/1  --> dns 1/2 */
-void tls_dhcps_setdns(u8_t numdns)
-{
-    const ip_addr_t* dns;
-	dns = dns_getserver(numdns);
-	DHCPS_SetDns(numdns, ip_addr_get_ip4_u32(dns));
+// void tls_dhcps_setdns(u8_t numdns)
+// {
+//     const ip_addr_t* dns;
+// 	dns = dns_getserver(numdns);
+// 	DHCPS_SetDns(numdns, ip_addr_get_ip4_u32(dns));
 
-	return;
-}
+// 	return;
+// }
 #endif
 
 struct netif *tls_get_netif(void)
