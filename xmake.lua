@@ -578,8 +578,6 @@ target("air10x")
 
     add_includedirs(luatos.."components/lvgl/src/lv_font",{public = true})
 
-    add_files(luatos.."components/zlib/*.c")
-    add_includedirs(luatos.."components/zlib")
 
     add_files(luatos.."components/mlx90640-library/*.c")
     add_includedirs(luatos.."components/mlx90640-library")
