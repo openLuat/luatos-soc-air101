@@ -107,7 +107,7 @@ static int zlink_net_rx_data_cb(const u8 *bssid, u8 *buf, u32 buf_len) {
 #define MAX_DEVICE_COUNT TLS_UART_MAX
 
 //存放串口设备句柄
-static uint8_t serials_buff_len[MAX_DEVICE_COUNT] ={TLS_UART_RX_BUF_SIZE};
+// static uint32_t serials_buff_len[MAX_DEVICE_COUNT] ={TLS_UART_RX_BUF_SIZE};
 extern struct tls_uart_port uart_port[TLS_UART_MAX];
 
 #define BUFF_SIZE (4096)
