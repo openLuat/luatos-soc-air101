@@ -10,7 +10,10 @@
 #define LUAT_LOG_TAG "pm"
 #include "luat_log.h"
 
+static int dtimer_id = 0xFF;
+
 int luat_pm_request(int mode) {
+    dtimer_id = 0xFF;
     if (mode == LUAT_PM_SLEEP_MODE_LIGHT) {
         tls_close_peripheral_clock(TLS_PERIPHERAL_TYPE_TIMER);
         tls_pmu_sleep_start();
@@ -26,10 +29,12 @@ int luat_pm_request(int mode) {
 
 static void pmu_timer0_irq(uint8_t *arg){
     tls_pmu_timer0_stop();
+    dtimer_id = 0;
 }
 
 static void pmu_timer1_irq(uint8_t *arg){
     tls_pmu_timer1_stop();
+    dtimer_id = 1;
 }
 
 //int luat_pm_release(int mode);
@@ -65,7 +70,7 @@ int luat_pm_dtimer_stop(int id) {
 }
 
 int luat_pm_dtimer_check(int id) {
-    return -1;
+    return 0;
 }
 
 //void luat_pm_cb(int event, int arg, void* args);
@@ -143,6 +148,7 @@ int luat_pm_check(void) {
 }
 
 int luat_pm_dtimer_wakeup_id(int* id) {
+    *id = dtimer_id;
     return 0;
 }
 
