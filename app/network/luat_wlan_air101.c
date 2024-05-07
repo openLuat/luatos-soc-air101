@@ -286,11 +286,22 @@ int luat_wlan_ready(void) {
 }
 
 int luat_wlan_connect(luat_wlan_conninfo_t* info) {
-	tls_wifi_connect((u8*)info->ssid, strlen(info->ssid), (u8*)info->password, strlen(info->password));
+    int ret = 0;
+    if (info->bssid[5]) {
+        if (strlen(info->ssid) > 0) {
+            ret = tls_wifi_connect_by_ssid_bssid((u8*)info->ssid, strlen(info->ssid), (u8*)info->bssid, (u8*)info->password, strlen(info->password));
+        }
+        else {
+            ret = tls_wifi_connect_by_bssid((u8*)info->bssid, (u8*)info->password, strlen(info->password));
+        }
+    }
+    else {
+        ret = tls_wifi_connect((u8*)info->ssid, strlen(info->ssid), (u8*)info->password, strlen(info->password));
+    }
     u8 opt = WIFI_AUTO_CNT_FLAG_SET;
     u8 mode = WIFI_AUTO_CNT_ON;
     tls_wifi_auto_connect_flag(opt, &mode);
-    return 0;
+    return ret;
 }
 
 int luat_wlan_disconnect(void) {
