@@ -48,6 +48,20 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     u8 pwd[65] = {0};
     char sta_ip[16] = {0};
     rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
+    // 先发出wlan的状态变化
+    switch (msg->arg1)
+    {
+        case NETIF_WIFI_DISCONNECTED:
+        case NETIF_WIFI_JOIN_SUCCESS:
+            lua_getglobal(L, "sys_pub");
+            lua_pushstring(L, "WLAN_STATUS");
+            lua_pushinteger(L, wlan_state);
+            lua_call(L, 2, 0);
+            break;
+        default:
+            break;
+    }
+    // 然后再发出IP事件, 如果启用wlan的话
     lua_getglobal(L, "sys_pub");
     switch (msg->arg1)
     {
@@ -83,21 +97,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         lua_call(L, 3, 0);
         #endif
         break;
-    default:
-        break;
     }
-    #ifndef LUAT_USE_NETWORK
-    switch (msg->arg1)
-    {
-        case NETIF_WIFI_DISCONNECTED:
-        case NETIF_WIFI_JOIN_SUCCESS:
-            lua_getglobal(L, "sys_pub");
-            lua_pushstring(L, "WLAN_STATUS");
-            lua_pushinteger(L, wlan_state);
-            lua_call(L, 2, 0);
-            break;
-    }
-    #endif
     return 0;
 }
 
@@ -114,6 +114,9 @@ static void netif_event_cb(u8 status) {
         #ifndef LUAT_USE_NETWORK
         tls_auto_reconnect(0);
         #endif
+        wlan_state = 0;
+        msg.arg1 = status;
+        luat_msgbus_put(&msg, 0);
         break;
     case NETIF_WIFI_DISCONNECTED:
         wlan_state = 0;
@@ -131,11 +134,9 @@ static void netif_event_cb(u8 status) {
         tls_param_get(TLS_PARAM_ID_IP, (void *)&ip_param, false);
         if (!ip_param.dhcp_enable) {
             LLOGI("dhcp is disable, so 'join success' as 'IP_READY'");
-            luat_msgbus_put(&msg, 0);
         }
-        #else
-        luat_msgbus_put(&msg, 0);
         #endif
+        luat_msgbus_put(&msg, 0);
         break;
     case NETIF_IP_NET_UP :
         #ifdef LUAT_USE_NETWORK
