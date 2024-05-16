@@ -48,19 +48,6 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     u8 pwd[65] = {0};
     char sta_ip[16] = {0};
     rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
-    // 先发出wlan的状态变化
-    switch (msg->arg1)
-    {
-        case NETIF_WIFI_DISCONNECTED:
-        case NETIF_WIFI_JOIN_SUCCESS:
-            lua_getglobal(L, "sys_pub");
-            lua_pushstring(L, "WLAN_STATUS");
-            lua_pushinteger(L, wlan_state);
-            lua_call(L, 2, 0);
-            break;
-        default:
-            break;
-    }
     // 然后再发出IP事件, 如果启用wlan的话
     lua_getglobal(L, "sys_pub");
     switch (msg->arg1)
@@ -96,6 +83,12 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         lua_pushstring(L, (const char*)pwd);
         lua_call(L, 3, 0);
         #endif
+        break;
+    case NETIF_WIFI_JOIN_FAILED:
+    case NETIF_WIFI_JOIN_SUCCESS:
+        lua_pushstring(L, "WLAN_STATUS");
+        lua_pushinteger(L, wlan_state);
+        lua_call(L, 2, 0);
         break;
     }
     return 0;
