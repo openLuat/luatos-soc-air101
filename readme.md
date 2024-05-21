@@ -20,6 +20,10 @@ Air101/Air103/Air601是基于平头哥XT804内核设计的soc
 * air601: https://luatos.com/t/air601
 * LuatOS主库: https://gitee.com/openLuat/LuatOS
 
+## 量产说明
+
+量产脚本参考 [量产脚本工具](./tools/量产脚本工具.md)
+
 ## 如需帮助
 
 LuatOS/Air101/Air103/Air601问题请加QQ群: 1061642968 或提交issue
