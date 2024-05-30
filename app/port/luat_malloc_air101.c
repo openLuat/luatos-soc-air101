@@ -68,7 +68,15 @@ extern luat_profiler_mem_t profiler_memregs[];
 
 extern uint32_t __ram_end;
 #ifdef LUAT_USE_PSRAM
-size_t psram_size = 0;
+#ifdef LUAT_USE_PSRAM_1M
+const size_t psram_size = 1 * 1024 * 1024;
+#elif defined(LUAT_USE_PSRAM_2M)
+const size_t psram_size = 2 * 1024 * 1024;
+#elif defined(LUAT_USE_PSRAM_4M)
+const size_t psram_size = 4 * 1024 * 1024;
+#else
+const size_t psram_size = 8 * 1024 * 1024;
+#endif
 size_t psram_lua_size = 0;
 size_t psram_sys_size = 0;
 #include "luat_bget.h"
@@ -89,27 +97,14 @@ void luat_heap_init(void) {
 #endif
 
 #ifdef LUAT_USE_PSRAM
-	const char test[] = {0xAA, 0xBB, 0xCC, 0xDD};
 	char* psram_ptr = (void*)0x30010000;
-	// LLOGD("check psram ...");
-    for (size_t i = 0; i <= 16; i++)
-    {
-        psram_size = i * 512 * 1024;
-        memcpy(psram_ptr + psram_size + 128 * 1024, test, 4);
-        if (memcmp(psram_ptr + psram_size + 128 * 1024, test, 4)) {
-            break;
-        }
-    }
-    if (psram_size <= 512 * 1024) {
-        psram_size = 0;
-    }
     LLOGD("PSRAM size %dkb", psram_size / 1024);
 	if (psram_size == 0) {
-		LLOGE("psram is enable, but can't access!!");
-        #if (LUAT_HEAP_P1_SIZE > 0)
-            heap_ext = tls_mem_alloc(LUAT_HEAP_P1_SIZE);
-            bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
-        #endif
+		// LLOGE("psram is enable, but can't access!!");
+        // #if (LUAT_HEAP_P1_SIZE > 0)
+        //     heap_ext = tls_mem_alloc(LUAT_HEAP_P1_SIZE);
+        //     bpool((void*)heap_ext, LUAT_HEAP_P1_SIZE);
+        // #endif
 	}
 	else {
 		// LLOGD("psram is ok");

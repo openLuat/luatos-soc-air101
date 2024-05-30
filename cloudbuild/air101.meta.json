@@ -181,13 +181,6 @@
                         "dft": false
                     },
                     {
-                        "name": "psram",
-                        "content": "外挂PSRAM(必须焊上psram芯片才能使用)",
-                        "rsize": 588,
-                        "fsize": 271940,
-                        "dft": false
-                    },
-                    {
                         "name": "lcdseg",
                         "content": "段码屏(段式屏)",
                         "rsize": 2220,
@@ -638,6 +631,56 @@
                         "content": "日志走UART1, 不走UART0",
                         "rsize": 1024,
                         "fsize": 1024,
+                        "dft": false
+                    }
+                ]
+            },
+            {
+                "icon": "zmdi-puzzle-piece",
+                "name": "@param",
+                "content": "PSRAM配置项",
+                "rsize": 0,
+                "children" : [
+                    {
+                        "name": "@psram_comments",
+                        "content": "使用PSRAM功能,必须焊上psram芯片才能使用,否则必死机. 开发板没有自带PSRAM芯片!!!",
+                        "rsize": 588,
+                        "fsize": 271940,
+                        "dft": false
+                    },
+                    {
+                        "name": "psram",
+                        "content": "开启PSRAM功能, 请确保已经焊好PSRAM芯片, 并选择正确的PSRAM大小, 芯片不具有判断PSRAM大小的能力",
+                        "rsize": 1024,
+                        "fsize": 271940,
+                        "dft": false
+                    },
+                    {
+                        "name": "psram_1m",
+                        "content": "外挂PSRAM芯片为1M字节",
+                        "rsize": 0,
+                        "fsize": 271940,
+                        "dft": false
+                    },
+                    {
+                        "name": "psram_2m",
+                        "content": "外挂PSRAM芯片为2M字节",
+                        "rsize": 0,
+                        "fsize": 271940,
+                        "dft": false
+                    },
+                    {
+                        "name": "psram_4m",
+                        "content": "外挂PSRAM芯片为4M字节",
+                        "rsize": 0,
+                        "fsize": 271940,
+                        "dft": false
+                    },
+                    {
+                        "name": "psram_8m",
+                        "content": "外挂PSRAM芯片为8M字节",
+                        "rsize": 0,
+                        "fsize": 271940,
                         "dft": false
                     }
                 ]

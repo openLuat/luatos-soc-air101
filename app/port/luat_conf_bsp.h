@@ -412,8 +412,15 @@
 #endif
 #endif
 
+#ifndef LUAT_USE_PSRAM
+#if defined(LUAT_USE_PSRAM_1M) || defined(LUAT_USE_PSRAM_2M) || defined(LUAT_USE_PSRAM_4M) || defined(LUAT_USE_PSRAM_8M)
+#define LUAT_USE_PSRAM 1
+#endif
 #endif
 
 #ifdef LUAT_USE_SOFT_UART
 #undef LUAT_USE_SOFT_UART
 #endif
+
+#endif
+
