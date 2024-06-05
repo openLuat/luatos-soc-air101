@@ -94,3 +94,10 @@ int luat_nimble_init(uint8_t uart_idx, char* name, int mode) {
     }
     return 0;
 }
+
+#include "wm_efuse.h"
+int luat_nimble_mac_set(const char* tmac) {
+    tls_set_bt_mac_addr((u8*)tmac);
+    return 0;
+}
+
