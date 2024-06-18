@@ -101,3 +101,8 @@ int luat_nimble_mac_set(const char* tmac) {
     return 0;
 }
 
+int luat_nimble_mac_get(char* tmac) {
+    tls_get_bt_mac_addr((u8*)tmac);
+    return 0;
+}
+
