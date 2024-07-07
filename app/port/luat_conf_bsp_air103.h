@@ -60,27 +60,24 @@
 
 #define LUAT_BSP_VERSION "V1025"
 
+//------------------------------------------------------
+// 以下custom --> 到  <-- custom 之间的内容,是供用户配置的
+// 同时也是云编译可配置的部分. 提交代码时切勿删除会修改标识
+//custom -->
+//------------------------------------------------------
+
+
 // Air101 与 Air103 的Flash大小有差异,需要区分
+// 可选值, AIR101 AIR103 AIR601 Air690 分别对应3种模块
 #define AIR103
 
 // 启用64位虚拟机
 // #define LUAT_CONF_VM_64bit
 
-
-
-// 其中文件系统区固定48k, 脚本区默认64k
+// 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
 // 若需要增加脚本区的大小, 那么大小必须是64的整数倍, 例如变成 128,192,256
 #define LUAT_FS_SIZE                48      //文件系统大小
 #define LUAT_SCRIPT_SIZE            64      //脚本大小
-
-// 内存优化: 减少内存消耗, 会稍微减低性能
-// #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
-
-//----------------------------------
-// 使用VFS(虚拟文件系统)和内置库文件, 必须启用
-#define LUAT_USE_FS_VFS 1
-#define LUAT_USE_VFS_INLINE_LIB 1
-//----------------------------------
 
 //----------------------------
 // 外设,按需启用, 最起码启用uart和wdt库
@@ -97,11 +94,38 @@
 // SDIO 仅支持TF/SD卡的挂载
 #define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
-#define LUAT_USE_LCDSEG 1
+// #define LUAT_USE_LCDSEG 1
 // OTP
 #define LUAT_USE_OTP 1
-#define LUAT_USE_TOUCHKEY 1
+// #define LUAT_USE_TOUCHKEY 1
+// #define LUAT_USE_SPI_SLAVE 1
+// #define LUAT_USE_WLAN_RAW 1
 
+// #define LUAT_USE_ICONV 1
+
+// wlan库相关
+// #define LUAT_USE_WLAN 1
+// #define LUAT_USE_NETWORK 1
+// #define LUAT_USE_HTTP 1
+// #define LUAT_USE_MQTT 1
+// #define LUAT_USE_WEBSOCKET 1
+// #define LUAT_USE_SNTP 1
+// #define LUAT_USE_HTTPSRV 1
+// #define LUAT_USE_FTP 1
+// #define LUAT_USE_ERRDUMP 1
+
+// 外置网络支持
+// #define LUAT_USE_W5500 1
+// #define LUAT_USE_ULWIP 1
+
+// 开启TLS
+// #define LUAT_USE_TLS 1
+// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED 1
+// #define LUAT_USE_CRYPTO_AES_MBEDTLS 1
+
+// 其他网络功能
+
+// #define LUAT_USE_FOTA 1
 
 #define LUAT_USE_IOTAUTH 1
 
@@ -109,60 +133,139 @@
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
 #define LUAT_USE_CRYPTO  1
 #define LUAT_USE_CJSON  1
+// #define LUAT_USE_JSON2 1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 #define LUAT_USE_LIBGNSS  1
 #define LUAT_USE_FS  1
 #define LUAT_USE_SENSOR  1
 #define LUAT_USE_SFUD  1
-#define LUAT_USE_COREMARK 1
-#define LUAT_USE_IR 1
+// #define LUAT_USE_STATEM 1
+// 性能测试,跑完就是玩,不要与lvgl一起启用,生产环境的固件别加这个库
+// #define LUAT_USE_COREMARK 1
+// #define LUAT_USE_IR 1
+// FDB 提供kv数据库, 与nvm库类似
+// #define LUAT_USE_FDB 1
+// fskv提供与fdb库兼容的API,旨在替换fdb库
 #define LUAT_USE_FSKV 1
 #define LUAT_USE_OTA 1
 #define LUAT_USE_I2CTOOLS 1
 #define LUAT_USE_LORA 1
 #define LUAT_USE_MLX90640 1
-#define LUAT_USE_MAX30102 1
+// #define LUAT_USE_MAX30102 1
+// zlib压缩,更快更小的实现
 #define LUAT_USE_MINIZ 1
+// FASTLZ的内存需求小,压缩比不如miniz
+// #define LUAT_USE_FASTLZ 1
 
 // RSA 加解密,加签验签
 #define LUAT_USE_RSA 1
-#define LUAT_USE_GMSSL 1
-#define LUAT_USE_FATFS
+// #define LUAT_USE_XXTEA    1
+
+// 国密算法 SM2/SM3/SM4
+// #define LUAT_USE_GMSSL 1
+
+// #define LUAT_USE_SQLITE3 1
+// #define LUAT_USE_WS2812 1
+// #define LUAT_USE_HT1621 1
+
+// // 使用 TLSF 内存池, 实验性, 内存利用率更高一些
+// #define LUAT_USE_TLSF 1
+
+
+// 音频相关
+// #define LUAT_USE_I2S 1
+// #define LUAT_USE_MEDIA  1
+
+//---------------SDIO-FATFS特别配置
+// sdio库对接的是fatfs
+// fatfs的长文件名和非英文文件名支持需要180k的ROM, 非常奢侈
+// 从v0006开始默认关闭之, 需要用到就打开吧
+// #define LUAT_USE_FATFS
+// #define LUAT_USE_FATFS_CHINESE 1
 
 //----------------------------
-// 高级功能, 其中shell是推荐启用, 除非你打算uart0也读数据
-#define LUAT_USE_REPL
-#define LUAT_USE_PROTOBUF 1
+// 高通字体, 需配合芯片使用
+// #define LUAT_USE_GTFONT 1
+// #define LUAT_USE_GTFONT_UTF8 1
+
+// #define LUAT_USE_YMODEM 1
+// #define LUAT_USE_MQTTCORE 1
+// #define LUAT_USE_LIBCOAP 1
+// #define LUAT_USE_ERCOAP 1
+
+//----------------------------
+// 高级功能, 推荐使用REPL, 因为SHELL已废弃
+// #define LUAT_USE_SHELL 1
+// #define LUAT_USE_DBG
+// NIMBLE 是蓝牙功能, 名为BLE, 但绝非低功耗.
+// #define LUAT_USE_NIMBLE 1
+// 多虚拟机支持,实验性,一般不启用
+// #define LUAT_USE_VMX 1
+// #define LUAT_USE_NES
+// #define LUAT_USE_PROTOBUF 1
+// #define LUAT_USE_REPL 1
 
 //---------------------
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
-#define LUAT_USE_LCD
-#define LUAT_USE_TJPGD
+// #define LUAT_USE_LCD
+// #define LUAT_USE_TJPGD
 // EINK 是墨水屏
-#define LUAT_USE_EINK
+// #define LUAT_USE_EINK
 
 //---------------------
 // U8G2
 // 单色屏, 支持i2c/spi
 // #define LUAT_USE_DISP
-#define LUAT_USE_U8G2
+// #define LUAT_USE_U8G2
 
 /**************FONT*****************/
-#define LUAT_USE_FONTS
+// #define LUAT_USE_FONTS
 /**********U8G2&LCD&EINK FONT*************/
-#define USE_U8G2_OPPOSANSM_ENGLISH 1
+// #define USE_U8G2_OPPOSANSM_ENGLISH 1
+// #define USE_U8G2_OPPOSANSM8_CHINESE
+// #define USE_U8G2_OPPOSANSM10_CHINESE
+// #define USE_U8G2_OPPOSANSM12_CHINESE
+// #define USE_U8G2_OPPOSANSM16_CHINESE
+// #define USE_U8G2_OPPOSANSM24_CHINESE
+// #define USE_U8G2_OPPOSANSM32_CHINESE
+// SARASA
+// #define USE_U8G2_SARASA_ENGLISH
+// #define USE_U8G2_SARASA_M8_CHINESE
+// #define USE_U8G2_SARASA_M10_CHINESE
+// #define USE_U8G2_SARASA_M12_CHINESE
+// #define USE_U8G2_SARASA_M14_CHINESE
+// #define USE_U8G2_SARASA_M16_CHINESE
+// #define USE_U8G2_SARASA_M18_CHINESE
+// #define USE_U8G2_SARASA_M20_CHINESE
+// #define USE_U8G2_SARASA_M22_CHINESE
+// #define USE_U8G2_SARASA_M24_CHINESE
+// #define USE_U8G2_SARASA_M26_CHINESE
+// #define USE_U8G2_SARASA_M28_CHINESE
+/**********LVGL FONT*************/
+// #define LV_FONT_OPPOSANS_M_8
+// #define LV_FONT_OPPOSANS_M_10
+// #define LV_FONT_OPPOSANS_M_12
+// #define LV_FONT_OPPOSANS_M_16
+
+// -------------------------------------
+// PSRAM
+// 需要外挂PSRAM芯片, 否则不要启用, 必死机
+// air101虽然支持psram,但与spi存在复用冲突
+// air103支持psram与spi同时使用,复用不冲突
+// #define LUAT_USE_PSRAM 1
+// LVGL推荐把部分方法放入内存, 按需采用
+// #define LV_ATTRIBUTE_FAST_MEM __attribute__((section (".ram_run")))
+// ROTABLE技术是节省内存的关键技术, 启用PSRAM后内存不缺, 禁用可提高性能
+// #define LUAT_CONF_DISABLE_ROTABLE 1
+//---------------------------------------
 
 
 //---------------------
 // LVGL
 // 主推的UI库, 功能强大但API繁琐
-// #define LUAT_USE_LVGL
-#define LV_DISP_DEF_REFR_PERIOD 30
-#define LUAT_LV_DEBUG 0
-
-#define LV_MEM_CUSTOM 1
+// #define LUAT_USE_LVGL      1
 
 #define LUAT_USE_LVGL_INDEV 1 // 输入设备
 
@@ -200,6 +303,144 @@
 #define LUAT_USE_LVGL_TILEVIEW   //平铺视图 依赖页面PAGE
 #define LUAT_USE_LVGL_WIN   //窗口 依赖容器CONT 按钮BTN 标签LABEL 图片IMG 页面PAGE
 
+// 新字体系列
+// #define LUAT_FONTS_SARASA_BOLD_M8_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M10_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M12_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M14_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M16_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M18_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M20_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M22_CHINESE
+// #define LUAT_FONTS_SARASA_BOLD_M24_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M8_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M10_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M12_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M14_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M16_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M18_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M20_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M22_CHINESE
+// #define LUAT_FONTS_SARASA_LIGHT_M24_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M8_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M10_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M12_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M14_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M16_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M18_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M20_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M22_CHINESE
+// #define LUAT_FONTS_SARASA_REGULAR_M24_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M8_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M10_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M12_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M14_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M16_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M18_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M20_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M22_CHINESE
+// #define LUAT_FONTS_SARASA_SEMIBOLD_M24_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M8_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M10_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M12_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M14_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M16_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M18_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M20_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M22_CHINESE
+// #define LUAT_FONTS_SARASA_EXTRALIGHT_M24_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M8_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M10_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M12_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M14_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M16_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M18_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M20_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M22_CHINESE
+// #define LUAT_FONTS_OPPO_BOLD_M24_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M8_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M10_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M12_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M14_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M16_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M18_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M20_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M22_CHINESE
+// #define LUAT_FONTS_OPPO_HEAVY_M24_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M8_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M10_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M12_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M14_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M16_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M18_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M20_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M22_CHINESE
+// #define LUAT_FONTS_OPPO_LIGHT_M24_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M8_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M10_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M12_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M14_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M16_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M18_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M20_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M22_CHINESE
+// #define LUAT_FONTS_OPPO_MEDIUM_M24_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M8_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M10_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M12_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M14_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M16_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M18_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M20_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M22_CHINESE
+// #define LUAT_FONTS_OPPO_REGULAR_M24_CHINESE
+
+
+//-------------------------------------------------------------------------------
+//<-- custom
+//------------------------------------------------------------------------------
+
+#define LUAT_USE_LWIP 1
+
+#if defined(LUAT_USE_HTTP) || defined(LUAT_USE_MQTT) || defined(LUAT_USE_FTP) || defined(LUAT_USE_SNTP) || defined(LUAT_USE_ERRDUMP)
+#ifndef LUAT_USE_NETWORK
+#define LUAT_USE_NETWORK
+#endif
+#endif
+
+#if defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
+#ifndef LUAT_USE_NETWORK
+#define LUAT_USE_NETWORK
+#endif
+#endif
+
+#if defined(LUAT_USE_NETWORK) || defined(LUAT_USE_ULWIP)
+#ifndef LUAT_USE_DNS
+#define LUAT_USE_DNS 1
+#endif
+#endif
+
+#if defined(LUAT_USE_W5500) || defined(LUAT_USE_ULWIP)
+#ifndef LUAT_USE_DHCP
+#define LUAT_USE_DHCP
+#endif
+#endif
+
+
+#define LV_DISP_DEF_REFR_PERIOD 30
+#define LUAT_LV_DEBUG 0
+
+#define LV_MEM_CUSTOM 1
+
+// 内存优化: 减少内存消耗, 会稍微减低性能
+// #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
+
+//----------------------------------
+// 使用VFS(虚拟文件系统)和内置库文件, 必须启用
+#define LUAT_USE_FS_VFS 1
+#define LUAT_USE_VFS_INLINE_LIB 1
+//----------------------------------
+
 #define LV_HOR_RES_MAX          (160)
 #define LV_VER_RES_MAX          (80)
 #define LV_COLOR_DEPTH          16
@@ -209,5 +450,33 @@
 #define LUAT_RET int
 #define LUAT_RT_RET_TYPE	void
 #define LUAT_RT_CB_PARAM void *param
+// #define LUAT_USE_LOG2 1
+
+// 单纯为了生成文档的宏
+#define LUAT_USE_PIN 1
+
+#define LUAT_GPIO_PIN_MAX (48)
+#define LUAT_CONF_SPI_HALF_DUPLEX_ONLY 1
+
+#ifdef LUAT_USE_SHELL
+#undef LUAT_USE_REPL
+#endif
+
+#ifdef LUAT_USE_MEDIA
+#ifndef LUAT_USE_I2S
+#define LUAT_USE_I2S 1
+#endif
+#endif
+
+#ifndef LUAT_USE_PSRAM
+#if defined(LUAT_USE_PSRAM_1M) || defined(LUAT_USE_PSRAM_2M) || defined(LUAT_USE_PSRAM_4M) || defined(LUAT_USE_PSRAM_8M)
+#define LUAT_USE_PSRAM 1
+#endif
+#endif
+
+#ifdef LUAT_USE_SOFT_UART
+#undef LUAT_USE_SOFT_UART
+#endif
 
 #endif
+

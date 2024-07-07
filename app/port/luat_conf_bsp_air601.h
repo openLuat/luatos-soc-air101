@@ -96,7 +96,7 @@
 // 段码屏/段式屏, 按需启用
 // #define LUAT_USE_LCDSEG 1
 // OTP
-#define LUAT_USE_OTP 1
+// #define LUAT_USE_OTP 1
 // #define LUAT_USE_TOUCHKEY 1
 // #define LUAT_USE_SPI_SLAVE 1
 // #define LUAT_USE_WLAN_RAW 1
@@ -104,12 +104,12 @@
 // #define LUAT_USE_ICONV 1
 
 // wlan库相关
-// #define LUAT_USE_WLAN 1
-// #define LUAT_USE_NETWORK 1
-// #define LUAT_USE_HTTP 1
-// #define LUAT_USE_MQTT 1
-// #define LUAT_USE_WEBSOCKET 1
-// #define LUAT_USE_SNTP 1
+#define LUAT_USE_WLAN 1
+#define LUAT_USE_NETWORK 1
+#define LUAT_USE_HTTP 1
+#define LUAT_USE_MQTT 1
+#define LUAT_USE_WEBSOCKET 1
+#define LUAT_USE_SNTP 1
 // #define LUAT_USE_HTTPSRV 1
 // #define LUAT_USE_FTP 1
 // #define LUAT_USE_ERRDUMP 1
@@ -151,15 +151,15 @@
 #define LUAT_USE_OTA 1
 #define LUAT_USE_I2CTOOLS 1
 #define LUAT_USE_LORA 1
-#define LUAT_USE_MLX90640 1
+// #define LUAT_USE_MLX90640 1
 // #define LUAT_USE_MAX30102 1
 // zlib压缩,更快更小的实现
-#define LUAT_USE_MINIZ 1
+// #define LUAT_USE_MINIZ 1
 // FASTLZ的内存需求小,压缩比不如miniz
 // #define LUAT_USE_FASTLZ 1
 
 // RSA 加解密,加签验签
-#define LUAT_USE_RSA 1
+// #define LUAT_USE_RSA 1
 // #define LUAT_USE_XXTEA    1
 
 // 国密算法 SM2/SM3/SM4
