@@ -2,7 +2,7 @@
 #ifndef LUAT_CONF_BSP
 #define LUAT_CONF_BSP
 
-#define LUAT_BSP_VERSION "V1025"
+#define LUAT_BSP_VERSION "V1026"
 
 //------------------------------------------------------
 // 以下custom --> 到  <-- custom 之间的内容,是供用户配置的
