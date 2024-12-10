@@ -769,11 +769,9 @@ void *mem_calloc_debug(u32 n, u32 size)
     tls_os_release_critical(cpu_sr); 
 	tls_os_sem_release(mem_sem);
 #endif
-	//if(buffer == NULL)
-	//{
-	//	printf("calloc error \r\n");
-	//}
-    // printf("calloc %d %p %d\n", size, buffer, total_mem_size);
+	if (buffer) {
+        memset(buffer, 0, size);
+    }
 	return buffer;
 }
 #endif /* WM_MEM_DEBUG */
