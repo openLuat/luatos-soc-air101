@@ -230,6 +230,7 @@ target("lvgl")
     add_includedirs(luatos.."components/lvgl/font",{public = true})
     add_includedirs(luatos.."components/u8g2",{public = true})
     add_includedirs(luatos.."components/qrcode",{public = true})
+    add_includedirs(luatos.."components/tp/",{public = true})
 
     set_targetdir("$(buildir)/lib")
 target_end()
@@ -430,7 +431,7 @@ target("network")
 
     -- spi slave
     add_includedirs(luatos.."components/device/spi_slave/include",{public = true})
-    add_files(luatos.."components/device/spi_slave/**.c")
+    -- add_files(luatos.."components/device/spi_slave/**.c")
 
     -- wlan raw
     add_includedirs(luatos.."components/device/wlanraw/include",{public = true})
@@ -713,9 +714,9 @@ target("air10x")
     add_files(luatos.."components/network/ercoap/src/*.c")
     add_files(luatos.."components/network/ercoap/binding/*.c")
 
-    -- kcp
-    -- add_includedirs(luatos.."components/network/kcp/include",{public = true})
-    -- add_files(luatos.."components/network/kcp/src/*.c")
+    -- tp
+    add_includedirs(luatos.."components/tp/",{public = true})
+    add_files(luatos.."components/tp/*.c")
 
     -- ws2812
     add_includedirs(luatos.."components/ws2812/include",{public = true})
@@ -723,9 +724,9 @@ target("air10x")
     add_files(luatos.."components/ws2812/binding/*.c")
 
     -- onewire
-    add_includedirs(luatos.."components/onewire/include",{public = true})
-    add_files(luatos.."components/onewire/src/*.c")
-    add_files(luatos.."components/onewire/binding/*.c")
+    -- add_includedirs(luatos.."components/onewire/include",{public = true})
+    -- add_files(luatos.."components/onewire/src/*.c")
+    -- add_files(luatos.."components/onewire/binding/*.c")
 
     -- onewire
     add_includedirs(luatos.."components/ht1621/include",{public = true})
