@@ -376,7 +376,7 @@ target("network")
     
     -- httpsrv
     add_includedirs(luatos.."components/network/httpsrv/inc",{public = true})
-    add_files(luatos.."components/network/httpsrv/src/*.c")
+    -- add_files(luatos.."components/network/httpsrv/src/*.c")
 
     
     -- http

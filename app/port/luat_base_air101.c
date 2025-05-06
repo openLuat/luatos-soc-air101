@@ -172,9 +172,6 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FONTS
   {"fonts", luaopen_fonts},
 #endif
-#ifdef LUAT_USE_ZLIB
-  {"zlib", luaopen_zlib},
-#endif
 #ifdef LUAT_USE_MLX90640
   {"mlx90640", luaopen_mlx90640},
 #endif
@@ -202,7 +199,7 @@ static const luaL_Reg loadedlibs[] = {
   {"w5500", luaopen_w5500},
 #endif
 #ifdef LUAT_USE_HTTPSRV
-  {"httpsrv", luaopen_httpsrv},
+  // {"httpsrv", luaopen_httpsrv},
 #endif
 #ifdef LUAT_USE_FTP
   {"ftp", luaopen_ftp},
