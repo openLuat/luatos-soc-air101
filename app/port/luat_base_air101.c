@@ -437,4 +437,14 @@ int  strncasecmp ( const char* s1, const char* s2, size_t len )
 
 	return x1 - x2;
 }
+
+void luat_debug_assert(const char *fun_name, unsigned int line_no, const char *fmt, ...){
+  printf("luat_debug_assert: %s:%d ", fun_name, line_no);
+  va_list args;
+  va_start(args, fmt);
+  vprintf(fmt, args);
+  va_end(args);
+  printf("\n");
+  while (1){};
+}
 //--------------
