@@ -326,6 +326,7 @@ target("audio")
     add_includedirs(luatos.."components/multimedia/amr_decode/opencore-amrwb")
     add_includedirs(luatos.."components/multimedia/amr_decode/oscl")
     add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/enc/src")
+    add_includedirs(luatos.."components/multimedia/vtool/include")
     add_files(luatos.."components/multimedia/**.c")
 
 
@@ -531,9 +532,9 @@ target("air10x")
     add_deps("eink")
     add_deps("network")
     -- add_deps("opus131")
-    add_deps("nes")
-    add_deps("audio")
-    add_deps("luatfonts")
+    -- add_deps("nes")
+    -- add_deps("audio")
+    -- add_deps("luatfonts")
     add_deps("mbedtls")
     -- add files
     add_files("app/*.c")
@@ -585,11 +586,11 @@ target("air10x")
     add_files(luatos.."components/sfud/*.c")
     add_includedirs(luatos.."components/sfud")
 
-    add_files(luatos.."components/statem/*.c")
-    add_includedirs(luatos.."components/statem")
+    -- add_files(luatos.."components/statem/*.c")
+    -- add_includedirs(luatos.."components/statem")
 
-    add_files(luatos.."components/coremark/*.c")
-    add_includedirs(luatos.."components/coremark")
+    -- add_files(luatos.."components/coremark/*.c")
+    -- add_includedirs(luatos.."components/coremark")
 
     add_files(luatos.."components/cjson/*.c")
     add_includedirs(luatos.."components/cjson")
@@ -622,16 +623,16 @@ target("air10x")
     add_includedirs(luatos.."components/nr_micro_shell")
 
     -- flashdb & fal
-    add_includedirs(luatos.."components/fal/inc")
-    add_files(luatos.."components/fal/src/*.c")
-    add_includedirs(luatos.."components/flashdb/inc")
-    add_files(luatos.."components/flashdb/src/*.c")
+    -- add_includedirs(luatos.."components/fal/inc")
+    -- add_files(luatos.."components/fal/src/*.c")
+    -- add_includedirs(luatos.."components/flashdb/inc")
+    -- add_files(luatos.."components/flashdb/src/*.c")
 
     -- shell & cmux
     add_includedirs(luatos.."components/shell",{public = true})
     add_includedirs(luatos.."components/cmux",{public = true})
-    add_files(luatos.."components/shell/*.c")
-    add_files(luatos.."components/cmux/*.c")
+    -- add_files(luatos.."components/shell/*.c")
+    -- add_files(luatos.."components/cmux/*.c")
 
     -- ymodem
     add_includedirs(luatos.."components/ymodem",{public = true})
@@ -697,31 +698,31 @@ target("air10x")
     -- add_files(luatos.."components/nes/**.c")
 
     -- profiler
-    add_files(luatos.."components/mempool/profiler/**.c")
-    add_includedirs(luatos.."components/mempool/profiler/include")
+    -- add_files(luatos.."components/mempool/profiler/**.c")
+    -- add_includedirs(luatos.."components/mempool/profiler/include")
 
     -- repl
-    add_files(luatos.."components/repl/**.c")
-    add_includedirs(luatos.."components/repl/")
+    -- add_files(luatos.."components/repl/**.c")
+    -- add_includedirs(luatos.."components/repl/")
 
     -- sqlite3
-    add_includedirs(luatos.."components/sqlite3/include",{public = true})
-    add_files(luatos.."components/sqlite3/src/*.c")
-    add_files(luatos.."components/sqlite3/binding/*.c")
+    -- add_includedirs(luatos.."components/sqlite3/include",{public = true})
+    -- add_files(luatos.."components/sqlite3/src/*.c")
+    -- add_files(luatos.."components/sqlite3/binding/*.c")
 
     -- ercoap
-    add_includedirs(luatos.."components/network/ercoap/include",{public = true})
-    add_files(luatos.."components/network/ercoap/src/*.c")
-    add_files(luatos.."components/network/ercoap/binding/*.c")
+    -- add_includedirs(luatos.."components/network/ercoap/include",{public = true})
+    -- add_files(luatos.."components/network/ercoap/src/*.c")
+    -- add_files(luatos.."components/network/ercoap/binding/*.c")
 
     -- tp
     add_includedirs(luatos.."components/tp/",{public = true})
     add_files(luatos.."components/tp/*.c")
 
     -- ws2812
-    add_includedirs(luatos.."components/ws2812/include",{public = true})
-    add_files(luatos.."components/ws2812/src/*.c")
-    add_files(luatos.."components/ws2812/binding/*.c")
+    -- add_includedirs(luatos.."components/ws2812/include",{public = true})
+    -- add_files(luatos.."components/ws2812/src/*.c")
+    -- add_files(luatos.."components/ws2812/binding/*.c")
 
     -- onewire
     -- add_includedirs(luatos.."components/onewire/include",{public = true})
@@ -729,9 +730,9 @@ target("air10x")
     -- add_files(luatos.."components/onewire/binding/*.c")
 
     -- onewire
-    add_includedirs(luatos.."components/ht1621/include",{public = true})
-    add_files(luatos.."components/ht1621/src/*.c")
-    add_files(luatos.."components/ht1621/binding/*.c")
+    -- add_includedirs(luatos.."components/ht1621/include",{public = true})
+    -- add_files(luatos.."components/ht1621/src/*.c")
+    -- add_files(luatos.."components/ht1621/binding/*.c")
 
     -- rostr
     -- add_includedirs(luatos.."components/rostr",{public = true})
