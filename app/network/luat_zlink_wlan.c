@@ -50,7 +50,7 @@
 #include "luat_spi.h"
 #include "luat_malloc.h"
 #include "luat_uart.h"
-
+#if 0
 #include "luat_zlink.h"
 #include "crc.h"
 
@@ -125,7 +125,7 @@ static s16 uart_input_cb(u16 len, void* userdata) {
     //     buff_offset = 0;
     // }
     len = luat_uart_read(1, uart_buff + buff_offset, BUFF_SIZE - buff_offset);
-    if (len < 0) {
+    if (len & 0x8000) {
         printf("luat_uart_read %d\n", len);
         return 0;
     }
@@ -189,3 +189,4 @@ void luat_zlink_wlan_init(void) {
     tls_wifi_status_change_cb_register(zlink_wifi_status_change);
     tls_ethernet_data_rx_callback(zlink_net_rx_data_cb);
 }
+#endif

@@ -347,7 +347,7 @@ unsigned char tls_dma_request(unsigned char ch, unsigned char flags)
  	int i = 0;
 
 	/*If channel is valid, try to use specified DMA channel!*/
-	if ((ch >= 0) && (ch < 8))
+	if (ch < 8)
 	{
 		if (!(channels.channels[ch] & TLS_DMA_FLAGS_CHANNEL_VALID))
 		{
@@ -373,7 +373,7 @@ unsigned char tls_dma_request(unsigned char ch, unsigned char flags)
 		}
 	}
 
-	if ((freeCh >= 0) && (freeCh < 8))
+	if (freeCh < 8)
 	{
 		if (dma_used_bit == 0)
 		{

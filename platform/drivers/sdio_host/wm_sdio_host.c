@@ -3,6 +3,10 @@
 #include "wm_mem.h"
 #include "wm_dma.h"
 #include "wm_cpu.h"
+#include "stdio.h"
+#include "string.h"
+#include "wm_gpio_afsel.h"
+#include "wm_pmu.h"
 
 #define TEST_DEBUG_EN           0
 #if TEST_DEBUG_EN
@@ -143,10 +147,10 @@ begin:
 
 		wm_sdh_send_cmd(41, 0xC0100000, 0xC4); //Send ACMD41
 		sm_sdh_wait_interrupt(0, -1);
-		sm_sdh_wait_interrupt(3, 1000); //ÓÉÓÚsd¹æ·¶ÖĞ£¬Acmd41·µ»ØµÄcrcÓÀÔ¶ÊÇ11111£¬Ò²¾ÍÊÇÓ¦¸ÃºöÂÔcrc;ÕâÀïµÄcrc´íÎóÓ¦¸ÃºöÂÔ¡£
+		sm_sdh_wait_interrupt(3, 1000); //ç”±äºsdè§„èŒƒä¸­ï¼ŒAcmd41è¿”å›çš„crcæ°¸è¿œæ˜¯11111ï¼Œä¹Ÿå°±æ˜¯åº”è¯¥å¿½ç•¥crc;è¿™é‡Œçš„crcé”™è¯¯åº”è¯¥å¿½ç•¥ã€‚
 		wm_sdh_get_response(respCmd, 2);
 		sh_dumpBuffer("ACMD41 respCmd", (char *)respCmd, 5);
-		if((respCmd[1] & 0xFF) != 0x3F) //sd¹æ·¶¶¨Òå¹Ì¶¨Îª0x3F,ËùÒÔµ¼ÖÂcrc´íÎó
+		if((respCmd[1] & 0xFF) != 0x3F) //sdè§„èŒƒå®šä¹‰å›ºå®šä¸º0x3F,æ‰€ä»¥å¯¼è‡´crcé”™è¯¯
 			goto end;
 		if(respCmd[0] >> 31 & 0x1)
 		{
@@ -160,7 +164,7 @@ begin:
 	sm_sdh_wait_interrupt(3, 1000);
 	wm_sdh_get_response(respCmd, 4);
 	sh_dumpBuffer("CMD2 respCmd", (char *)respCmd, 16);
-	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sd¹æ·¶¶¨Òå¹Ì¶¨Îª0x3F,ËùÒÔµ¼ÖÂcrc´íÎó
+	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sdè§„èŒƒå®šä¹‰å›ºå®šä¸º0x3F,æ‰€ä»¥å¯¼è‡´crcé”™è¯¯
 		goto end;
 	wm_sdh_send_cmd(3, 0, 0xC4); //Send CMD3
 	sm_sdh_wait_interrupt(0, -1);
@@ -182,7 +186,7 @@ static uint32_t SD_GetCapacity(uint8_t *csd, SD_CardInfo_t *SDCardInfo)
   uint16_t n;
   uint32_t csize; 
 
-  if((csd[0]&0xC0)==0x40)//ÅĞ¶Ïbit126ÊÇ·ñÎª1
+  if((csd[0]&0xC0)==0x40)//åˆ¤æ–­bit126æ˜¯å¦ä¸º1
   { 
 	SDCardInfo->CSDVer = 2;
     csize = csd[9] + ((uint32_t)csd[8] << 8) + ((uint32_t)(csd[7] & 63) << 16) + 1;
@@ -215,7 +219,7 @@ int wm_sd_card_query_csd(uint32_t rca)
 	for(i=0; i<16; i++) adjustResp[15-i] = SDIO_HOST->CMD_BUF[i];
 	SD_GetCapacity((uint8_t*)&adjustResp[1], &SDCardInfo);
 	sh_dumpBuffer("CMD9 respCmd", adjustResp, 16);
-	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sd¹æ·¶¶¨Òå¹Ì¶¨Îª0x3F,ËùÒÔµ¼ÖÂcrc´íÎó
+	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sdè§„èŒƒå®šä¹‰å›ºå®šä¸º0x3F,æ‰€ä»¥å¯¼è‡´crcé”™è¯¯
 		goto end;
 	ret = 0;
 end:
@@ -756,14 +760,32 @@ end:
 	return ret;
 }
 
+static int sdio_init;
+
 void sdio_spi_init(u32 fclk){
+	if (sdio_init)
+		return;
+	sdio_init = 1;
+	printf("sdio_spi_init %d\n", fclk);
 	sdio_host_reset();
+
+    tls_io_cfg_set(WM_IO_PB_06, WM_IO_OPTION2);/*CK*/
+    tls_io_cfg_set(WM_IO_PB_07, WM_IO_OPTION2);/*CMD*/
+    // tls_io_cfg_set(WM_IO_PB_08, WM_IO_OPTION2);/*D0*/
+    tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_SDIO_MASTER);
+
+	tls_bitband_write(HR_CLK_RST_CTL, 27, 0);
+ 
+    tls_bitband_write(HR_CLK_RST_CTL, 27, 1);
+    while (tls_bitband_read(HR_CLK_RST_CTL, 27) == 0);
+
+
 	tls_sys_clk sysclk;	
 	tls_sys_clk_get(&sysclk);
 	SDIO_HOST->MMC_CARDSEL = 0xC0 | (sysclk.cpuclk / 2 - 1);
-	uint8_t ti= sysclk.cpuclk / 2 / fclk;
-	SDIO_HOST->MMC_CTL = 0x542 | (ti << 3);
-	SDIO_HOST->MMC_CTL = 0x542;
+	// SDIO_HOST->MMC_CTL = 0xD3;//0x542;
+	// SDIO_HOST->MMC_CTL = 0xD3;//0x542;
+	SDIO_HOST->MMC_CTL = 0x502;//0x542;
 	SDIO_HOST->MMC_INT_MASK = 0x100; // unmask sdio data interrupt.
 	SDIO_HOST->MMC_CRCCTL = 0x00; 
 	SDIO_HOST->MMC_TIMEOUTCNT = 0;
@@ -774,7 +796,72 @@ int sdio_spi_send(const u8 * buf, u32 len){
     if ((buf == NULL) || (len == 0)){
         return -1;
     }
-    if (len < 4) {          // Ö±½Ó´«Êä£¬ÕâÑù×öµÄÔ­ÒòÊÇDMA²»ÄÜÁ¬Ğø´«ÊäÉÙÓÚ4¸ö×Ö½ÚµÄÊı¾İ
+	// printf("sdioå‘é€æ•°æ® %p %d\n", buf, len);
+	u32 tmp;
+	size_t send_size = 0;
+	while (len > 0)
+	{
+		tmp = 0;
+		int t = len / 4;
+		if (t == 0) { // ä¸å¤Ÿ4ä¸ªå­—èŠ‚äº†
+			send_size = len;
+		}
+		else {
+			send_size = 4;
+		}
+		// else if (t > 0) {
+		// 	send_size = 1 * 4;
+		// }
+		// else {
+			// send_size = t * 4;
+		// }
+		memcpy((u8*)&tmp, buf, send_size);
+		// if (len >= 4) {
+		// 	memcpy(&tmp, buf, 4);
+		// 	send_size = 4;
+		// }
+		// else {
+		// 	// memcpy(&tmp, buf, len);
+		// 	tmp = *buf;
+		// 	send_size = len;
+		// 	// printf("sdioå‘é€æ•°æ® %08X %d\n", tmp, send_size);
+		// }
+		// printf("sdioå‘é€æ•°æ® %08X %d\n", tmp[0], send_size);
+		// if (send_size < 128) {
+
+		    SDIO_HOST->BUF_CTL = 0x4820;
+            SDIO_HOST->DATA_BUF[0] = tmp;
+            // SDIO_HOST->CMD_BUF[0] = tmp;
+            SDIO_HOST->MMC_BYTECNTL = send_size;
+            SDIO_HOST->MMC_IO = 0x01;
+		    while (1) {
+		    	if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
+		    		break;
+		    }
+		// }
+		// else {
+		// 	// u32 sendlen,txlen;
+		//     // txlen = len & 0xfffffffc;   // ä¸å¤Ÿå­—çš„æœ€åå•ç‹¬å‘
+		//     // sendlen = txlen/4;
+		//     SDIO_HOST->BUF_CTL = 0x4000; //disable dma,
+		//     unsigned char sdio_spi_dma_channel = wm_sd_card_dma_config((u32 *) tmp, send_size / 4, 1);
+		//     SDIO_HOST->BUF_CTL = 0xC20; //enable dma, write sd card
+		//     SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
+		//     SDIO_HOST->MMC_BYTECNTL = send_size;
+		//     SDIO_HOST->MMC_IO = 0x01;
+        //     while(1){
+        //         if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
+        //             break;
+        //     }
+		//     tls_dma_free(sdio_spi_dma_channel);
+		// }
+		len -= send_size;
+		buf += send_size;
+		// printf("done\n");
+	}
+	
+#if 0
+    if (len < 4) {          // ç›´æ¥ä¼ è¾“ï¼Œè¿™æ ·åšçš„åŸå› æ˜¯DMAä¸èƒ½è¿ç»­ä¼ è¾“å°‘äº4ä¸ªå­—èŠ‚çš„æ•°æ®
         SDIO_HOST->BUF_CTL = 0x4820;
         SDIO_HOST->DATA_BUF[0] = *((u32 *)buf);
         SDIO_HOST->MMC_BYTECNTL = len;
@@ -783,9 +870,9 @@ int sdio_spi_send(const u8 * buf, u32 len){
 			if ((SDIO_HOST->MMC_IO & 0x01) == 0x00)
 				break;
 		}
-    } else {                   // DMA´«Êä
+    } else {                   // DMAä¼ è¾“
 		u32 sendlen,txlen;
-		txlen = len & 0xfffffffc;   // ²»¹»×ÖµÄ×îºóµ¥¶À·¢
+		txlen = len & 0xfffffffc;   // ä¸å¤Ÿå­—çš„æœ€åå•ç‹¬å‘
 		sendlen = txlen/4;
 		SDIO_HOST->BUF_CTL = 0x4000; //disable dma,
 		unsigned char sdio_spi_dma_channel = wm_sd_card_dma_config((u32 *) buf, sendlen, 1);
@@ -809,6 +896,7 @@ int sdio_spi_send(const u8 * buf, u32 len){
 			}
 		}
     }
+#endif
     return 0;
 }
 

@@ -51,7 +51,7 @@ u8 lsd_head_bw20[LSD_SRC_CNT] = {0, 0, 0};
 u8 lsd_byte_cnt[LSD_SRC_CNT] = {0, 0, 0};
 u8 lsd_sync_cnt[LSD_SRC_CNT] = {0, 0, 0};
 u8 lsd_src_mac[LSD_SRC_CNT][6] = {{0}, {0}, {0}};
-u8 lsd_data_cnt[LSD_SRC_CNT] = {0, 0, 0};
+u16 lsd_data_cnt[LSD_SRC_CNT] = {0, 0, 0};
 u16 lsd_last_seq[LSD_SRC_CNT] = {0, 0, 0};
 u16 lsd_last_len[LSD_SRC_CNT] = {0, 0, 0};
 u8 lsd_temp_lock[LSD_SRC_CNT] = {0, 0, 0};
@@ -200,7 +200,7 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 	{
 		return -1;
 	}
-	if(hdr->duration_id == 0)		//normal mode stbc ²»´¦Àí
+	if(hdr->duration_id == 0)		//normal mode stbc ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		tods = 2;
 	}
@@ -309,10 +309,10 @@ int tls_lsd_recv(u8 *buf, u16 data_len)
 				for(i=1; i<=3; i++)
 				{
 					if(guide_len > lsd_head[tods][i])
-						guide_len = lsd_head[tods][i];								//È¡³öÍ¬²½Í·ÖÐ×îÐ¡Öµ					
+						guide_len = lsd_head[tods][i];								//È¡ï¿½ï¿½Í¬ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ð¡Öµ					
 				}
-				lsd_state[tods] = 1;														//Í¬²½Íê³É, Ëø¶¨Ô´MACºÍÐÅµÀ
-				lsd_data_datum[tods] = guide_len - LSD_GUIDE_DATUM + LSD_DATA_OFFSET;		//»ñÈ¡µ½»ù×¼³¤¶È
+				lsd_state[tods] = 1;														//Í¬ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½Ô´MACï¿½ï¿½ï¿½Åµï¿½
+				lsd_data_datum[tods] = guide_len - LSD_GUIDE_DATUM + LSD_DATA_OFFSET;		//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½
 				if(lsd_printf)
 					lsd_printf("lsd lock:%d\n", lsd_data_datum);	
 				if (lsd_printf)

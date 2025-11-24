@@ -284,9 +284,6 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_FOTA
   {"fota", luaopen_fota},
 #endif
-#ifdef LUAT_USE_SPI_SLAVE
-  {"spislave", luaopen_spislave},
-#endif
 #ifdef LUAT_USE_HT1621
   {"ht1621", luaopen_ht1621},
 #endif

@@ -17,7 +17,6 @@
 #include "luat_msgbus.h"
 #include "luat_pm.h"
 #include "luat_rtc.h"
-#include "luat_pcap.h"
 #include "luat_uart.h"
 #include "luat_malloc.h"
 
