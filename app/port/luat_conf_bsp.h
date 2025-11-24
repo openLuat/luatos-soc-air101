@@ -48,7 +48,7 @@
 // #define LUAT_USE_ICONV 1
 
 // wlan库相关
-#define LUAT_USE_WLAN 1
+// #define LUAT_USE_WLAN 1
 #define LUAT_USE_NETWORK 1
 #define LUAT_USE_HTTP 1
 #define LUAT_USE_MQTT 1
