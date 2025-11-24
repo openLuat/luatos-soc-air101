@@ -632,7 +632,7 @@ target("air10x")
     add_includedirs("src/bt/blehost/nimble/transport/uart/include", "src/bt/blehost/porting/xt804/include")
     add_includedirs("src/bt/blehost/ext/tinycrypt/include", "src/bt/blehost/nimble/host/util/include")
 
-    add_includedirs(luatos.."components/nr_micro_shell")
+    -- add_includedirs(luatos.."components/nr_micro_shell")
 
     -- flashdb & fal
     -- add_includedirs(luatos.."components/fal/inc")
