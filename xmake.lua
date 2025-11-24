@@ -56,20 +56,20 @@ add_cxflags(flto .. "-DTLS_CONFIG_CPU_XT804=1 -DGCC_COMPILE=1 -mcpu=ck804ef -std
 
 -- 已经生效的GCC警告信息
 -- add_cxflags("-Werror=maybe-uninitialized")
--- add_cxflags("-Werror=unused-value")
--- add_cxflags("-Werror=array-bounds")
--- add_cxflags("-Werror=return-type")
--- add_cxflags("-Werror=overflow")
--- add_cxflags("-Werror=empty-body")
--- add_cxflags("-Werror=old-style-declaration")
--- add_cxflags("-Werror=implicit-function-declaration")
+add_cxflags("-Werror=unused-value")
+add_cxflags("-Werror=array-bounds")
+add_cxflags("-Werror=return-type")
+add_cxflags("-Werror=overflow")
+add_cxflags("-Werror=empty-body")
+add_cxflags("-Werror=old-style-declaration")
+add_cxflags("-Werror=implicit-function-declaration")
 
 -- -- 暂不考虑的GCC警告信息
--- add_cxflags("-Wno-unused-parameter")
--- add_cxflags("-Wno-unused-but-set-variable")
--- add_cxflags("-Wno-sign-compare")
--- add_cxflags("-Wno-unused-variable")
--- add_cxflags("-Wno-unused-function")
+add_cxflags("-Wno-unused-parameter")
+add_cxflags("-Wno-unused-but-set-variable")
+add_cxflags("-Wno-sign-compare")
+add_cxflags("-Wno-unused-variable")
+add_cxflags("-Wno-unused-function")
 
 -- -- 待修复的GCC警告信息
 -- add_cxflags("-Wno-int-conversion")
