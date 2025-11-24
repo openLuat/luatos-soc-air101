@@ -165,7 +165,7 @@ void UserMain(void){
 	luat_shell_poweron(0);
 #endif
 
-#ifdef __LUATOS__
+#if 0
 	extern void luat_mcu_tick64_init(void);
 	luat_mcu_tick64_init();
 	
