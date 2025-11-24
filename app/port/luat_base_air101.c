@@ -287,6 +287,12 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_HT1621
   {"ht1621", luaopen_ht1621},
 #endif
+#ifdef LUAT_USE_AIRLINK
+  {"airlink", luaopen_airlink},
+#endif
+#ifdef LUAT_USE_NETDRV
+  {"netdrv", luaopen_netdrv},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };

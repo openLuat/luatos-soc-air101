@@ -148,6 +148,18 @@
 // #define LUAT_USE_PROTOBUF 1
 // #define LUAT_USE_REPL 1
 
+// airlink和netdrv相关的功能
+#define LUAT_USE_AIRLINK 1
+#define LUAT_USE_AIRLINK_EXEC_SDATA 1
+#define LUAT_USE_AIRLINK_EXEC_NOTIFY 1
+#define LUAT_USE_AIRLINK_EXEC_WIFI 1
+#define LUAT_USE_AIRLINK_SPI_MASTER 1
+// #define LUAT_USE_AIRLINK_UART 1
+
+#define LUAT_USE_NETDRV 1
+#define LUAT_USE_NETDRV_NAPT 1
+#define LUAT_USE_NETDRV_CH390H 1
+
 //---------------------
 // UI
 // LCD  是彩屏, 若使用LVGL就必须启用LCD

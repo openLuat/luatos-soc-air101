@@ -84,8 +84,8 @@ add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-buil
 
 -- add_cflags("-Werror=unused-value")
 
-set_dependir("$(buildir)/.deps")
-set_objectdir("$(buildir)/.objs")
+set_dependir("$(builddir)/.deps")
+set_objectdir("$(builddir)/.objs")
 
 set_policy("build.across_targets_in_parallel", false)
 
@@ -232,7 +232,7 @@ target("lvgl")
     add_includedirs(luatos.."components/qrcode",{public = true})
     add_includedirs(luatos.."components/tp/",{public = true})
 
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("u8g2")
@@ -250,7 +250,7 @@ target("u8g2")
     add_includedirs(luatos.."components/gtfont")
     add_includedirs(luatos.."components/qrcode",{public = true})
 
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("miniz")
@@ -264,7 +264,7 @@ target("miniz")
     add_includedirs(luatos.."lua/include")
     add_includedirs(luatos.."luat/include")
     add_includedirs(luatos.."components/miniz")
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 
@@ -280,7 +280,7 @@ target("fastlz")
     add_includedirs(luatos.."lua/include")
     add_includedirs(luatos.."luat/include")
     add_includedirs(luatos.."components/fastlz")
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("eink")
@@ -302,7 +302,7 @@ target("eink")
     add_includedirs(luatos.."components/u8g2")
     add_includedirs(luatos.."components/gtfont")
     add_includedirs(luatos.."components/qrcode")
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("audio")
@@ -330,7 +330,7 @@ target("audio")
     add_files(luatos.."components/multimedia/**.c")
 
 
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("network")
@@ -357,11 +357,19 @@ target("network")
     add_includedirs(luatos.."components/network/adapter_lwip2",{public = true})
     add_files(luatos.."components/network/adapter_lwip2/*.c")
 
+    -- netdrv
+    add_includedirs(luatos.."components/network/netdrv/include",{public = true})
+    add_files(luatos.."components/network/netdrv/**.c")
+
+    -- airlink
+    add_includedirs(luatos.."components/airlink/include",{public = true})
+    add_files(luatos.."components/airlink/**.c")
+
     -- w5500
     add_includedirs(luatos.."components/ethernet/common",{public = true})
     add_files(luatos.."components/ethernet/common/*.c")
-    add_includedirs(luatos.."components/ethernet/w5500",{public = true})
-    add_files(luatos.."components/ethernet/w5500/*.c")
+    -- add_includedirs(luatos.."components/ethernet/w5500",{public = true})
+    -- add_files(luatos.."components/ethernet/w5500/*.c")
 
     -- usernet
     -- add_includedirs(luatos.."components/network/usernet",{public = true})
@@ -409,9 +417,9 @@ target("network")
     add_files(luatos.."components/network/errdump/*.c")
 
     -- ercoap
-    add_includedirs(luatos.."components/network/ercoap/include",{public = true})
-    add_files(luatos.."components/network/ercoap/src/*.c")
-    add_files(luatos.."components/network/ercoap/binding/*.c")
+    -- add_includedirs(luatos.."components/network/ercoap/include",{public = true})
+    -- add_files(luatos.."components/network/ercoap/src/*.c")
+    -- add_files(luatos.."components/network/ercoap/binding/*.c")
 
     -- xxtea
     add_includedirs(luatos.."components/xxtea/include",{public = true})
@@ -420,11 +428,11 @@ target("network")
 
     -- pcap
     add_includedirs(luatos.."components/network/pcap/include",{public = true})
-    add_files(luatos.."components/network/pcap/src/*.c")
+    -- add_files(luatos.."components/network/pcap/src/*.c")
 
     -- zlink
     add_includedirs(luatos.."components/network/zlink/include",{public = true})
-    add_files(luatos.."components/network/zlink/src/*.c")
+    -- add_files(luatos.."components/network/zlink/src/*.c")
 
     -- ulwip
     add_includedirs(luatos.."components/network/ulwip/include",{public = true})
@@ -442,13 +450,17 @@ target("network")
     -- add_includedirs(luatos.."components/network/qxwz/include",{public = true})
     -- add_files(luatos.."components/network/qxwz/**.c")
 
+    -- hmeta
+    add_includedirs(luatos.."components/hmeta",{public = true})
+    add_files(luatos.."components/hmeta/**.c")
+
 target_end()
 
 target("nes")
     set_kind("static")
     set_plat("cross")
     set_optimize("fastest",{force = true})
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
     add_includedirs("app/port")
     add_includedirs("include")
     add_includedirs(luatos.."lua/include")
@@ -464,7 +476,7 @@ target("mbedtls")
     set_kind("static")
     set_plat("cross")
     set_optimize("fastest",{force = true})
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
     add_includedirs("app/port")
     add_includedirs("include")
     add_includedirs(luatos.."lua/include")
@@ -495,7 +507,7 @@ target("luatfonts")
     add_includedirs(luatos.."components/lvgl/src",{public = true})
     add_includedirs(luatos.."components/lvgl/font",{public = true})
 
-    set_targetdir("$(buildir)/lib")
+    set_targetdir("$(builddir)/lib")
 target_end()
 
 target("air10x")
@@ -503,7 +515,7 @@ target("air10x")
     set_kind("binary")
     set_plat("cross")
     set_arch("c-sky")
-    set_targetdir("$(buildir)/out")
+    set_targetdir("$(builddir)/out")
     on_load(function (target)
 
 
@@ -754,17 +766,17 @@ target("air10x")
         local AIR10X_VERSION = chip.bsp_version
 
         sdk_dir = target:toolchains()[1]:sdkdir().."/"
-        os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(buildir)/out/"..TARGET_NAME..".elf $(buildir)/out/"..TARGET_NAME..".bin")
+        os.exec(sdk_dir .. "bin/csky-elfabiv2-objcopy -O binary $(builddir)/out/"..TARGET_NAME..".elf $(builddir)/out/"..TARGET_NAME..".bin")
         -- 默认不生成.asm和.list,调试的时候自行打开吧
-        -- io.writefile("$(buildir)/out/"..TARGET_NAME..".asm", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -d $(buildir)/out/"..TARGET_NAME..".elf"))
-        -- io.writefile("$(buildir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(buildir)/out/"..TARGET_NAME..".elf"))
-        io.writefile("$(buildir)/out/"..TARGET_NAME..".size", os.iorun(sdk_dir .. "bin/csky-elfabiv2-size $(buildir)/out/"..TARGET_NAME..".elf"))
-        io.cat("$(buildir)/out/"..TARGET_NAME..".size")
+        -- io.writefile("$(builddir)/out/"..TARGET_NAME..".asm", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -d $(builddir)/out/"..TARGET_NAME..".elf"))
+        -- io.writefile("$(builddir)/out/"..TARGET_NAME..".list", os.iorun(sdk_dir .. "bin/csky-elfabiv2-objdump -h -S $(builddir)/out/"..TARGET_NAME..".elf"))
+        io.writefile("$(builddir)/out/"..TARGET_NAME..".size", os.iorun(sdk_dir .. "bin/csky-elfabiv2-size $(builddir)/out/"..TARGET_NAME..".elf"))
+        io.cat("$(builddir)/out/"..TARGET_NAME..".size")
         
         local wm_tool = "./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "")
-        local app_image = "-fc 0 -it 1 -ih %x -ra %x -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(buildir)/out/%s"
+        local app_image = "-fc 0 -it 1 -ih %x -ra %x -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(builddir)/out/%s"
         app_image = string.format(app_image, chip.flash_app_offset - 1024, chip.flash_app_offset, chip.target_name)
-        local cmd = wm_tool.." -b $(buildir)/out/"..TARGET_NAME..".bin " .. app_image
+        local cmd = wm_tool.." -b $(builddir)/out/"..TARGET_NAME..".bin " .. app_image
         print(cmd)
         os.exec(cmd)
         local sec_image = "-fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh %x -un 0 -o ./tools/xt804/%s_secboot"
@@ -773,27 +785,27 @@ target("air10x")
         print(cmd)
         os.exec(cmd)
 
-        os.cp("./tools/xt804/"..TARGET_NAME.."_secboot.img", "$(buildir)/out/"..TARGET_NAME..".fls")
-        local img = io.readfile("$(buildir)/out/"..TARGET_NAME..".img", {encoding = "binary"})
-        local fls = io.open("$(buildir)/out/"..TARGET_NAME..".fls", "a+")
+        os.cp("./tools/xt804/"..TARGET_NAME.."_secboot.img", "$(builddir)/out/"..TARGET_NAME..".fls")
+        local img = io.readfile("$(builddir)/out/"..TARGET_NAME..".img", {encoding = "binary"})
+        local fls = io.open("$(builddir)/out/"..TARGET_NAME..".fls", "a+")
         if fls then fls:write(img) fls:close() end
         -- if is_mode("debug") then
         --     os.cd("./mklfs")
         --     os.exec("./luac_536_32bits.exe -s -o ./disk/main.luac ../main.lua")
         --     os.exec("./mklfs.exe -size 112")
         --     os.cd("../")
-        --     os.mv("./mklfs/disk.fs", "$(buildir)/out/script.bin")
+        --     os.mv("./mklfs/disk.fs", "$(builddir)/out/script.bin")
         --     if TARGET_NAME == "AIR101" then
-        --         os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
+        --         os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(builddir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 81E0000 -ua 0 -nh 0  -un 0 -o $(builddir)/out/script")
         --     else
-        --         os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(buildir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 80E0000 -ua 0 -nh 0  -un 0 -o $(buildir)/out/script")
+        --         os.exec("./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "").." -b  $(builddir)/out/script.bin -it 1 -fc 0 -ih 20008000 -ra 80E0000 -ua 0 -nh 0  -un 0 -o $(builddir)/out/script")
         --     end
-        --     local script = io.readfile("$(buildir)/out/script.img", {encoding = "binary"})
-        --     local fls = io.open("$(buildir)/out/"..TARGET_NAME..".fls", "a+")
+        --     local script = io.readfile("$(builddir)/out/script.img", {encoding = "binary"})
+        --     local fls = io.open("$(builddir)/out/"..TARGET_NAME..".fls", "a+")
         --     if fls then fls:write(script) fls:close() end
         -- elseif is_mode("release") then
             import("lib.detect.find_file")
-            os.cp("$(buildir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
+            os.cp("$(builddir)/out/"..TARGET_NAME..".fls", "./soc_tools/"..TARGET_NAME..".fls")
             local path7z = nil
             if is_plat("windows") then
                 path7z = "\"$(programdir)/winenv/bin/7z.exe\""
@@ -832,7 +844,7 @@ target("air10x")
                 end
 
                 os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./soc_tools/script.img ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
-                os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(buildir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
+                os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(builddir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
                 os.rm("./soc_tools/info.json")
                 os.rm("./soc_tools/script.img")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")

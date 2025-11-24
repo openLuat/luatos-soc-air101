@@ -166,3 +166,9 @@ int luat_pm_wakeup_pin(int pin, int val){
     LLOGW("not support yet");
     return -1;
 }
+
+int luat_pm_reset(void) {
+    extern void luat_os_reboot(int code);
+    luat_os_reboot(0);
+    return 0;
+}

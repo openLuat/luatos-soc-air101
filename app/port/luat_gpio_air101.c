@@ -142,3 +142,23 @@ void luat_gpio_close(int pin)
     }
 }
 
+void luat_gpio_set_default_cfg(luat_gpio_cfg_t* gpio) {
+    if (gpio) {
+        memset(gpio, 0, sizeof(luat_gpio_cfg_t));
+    }
+}
+
+int luat_gpio_open(luat_gpio_cfg_t* gpio) {
+    luat_gpio_t g;
+    if (gpio == NULL) {
+        return -1;
+    }
+    memset(&g, 0, sizeof(luat_gpio_t));
+    g.pin = gpio->pin;
+    g.mode = gpio->mode;
+    g.pull = gpio->pull;
+    g.irq = gpio->irq_type;
+    g.irq_cb = gpio->irq_cb;
+    g.irq_args = gpio->irq_args;
+    return luat_gpio_setup(&g);
+}
