@@ -165,10 +165,10 @@ void UserMain(void){
 	luat_shell_poweron(0);
 #endif
 
-#if 0
 	extern void luat_mcu_tick64_init(void);
 	luat_mcu_tick64_init();
-	
+
+#if 0
 	tls_fls_read_unique_id(unique_id);
 	if (unique_id[1] == 0x10) {
 		printf("I/main auth ok %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X %s\n",
