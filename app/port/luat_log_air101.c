@@ -4,6 +4,7 @@
 #include "luat_uart.h"
 #include "printf.h"
 #include "luat_malloc.h"
+#include "luat_mcu.h"
 #ifdef LUAT_USE_DBG
 #include "luat_cmux.h"
 extern luat_cmux_t cmux_ctx;
@@ -55,35 +56,25 @@ int luat_log_get_level() {
     return luat_log_level_cur;
 }
 
-
+static const char lstr[] = {'D', 'I', 'W', 'E'};
 
 void luat_log_log(int level, const char* tag, const char* _fmt, ...) {
     if (luat_log_level_cur > level) return;
     // char log_printf_buff[LOGLOG_SIZE]  = {0};
+    char header[128] = {0};
+    uint64_t time_ms = luat_mcu_tick64_ms();
     char *tmp = (char *)luat_heap_malloc(LOGLOG_SIZE);
     if (tmp == NULL) {
         return;
     }
-    switch (level)
-        {
-        case LUAT_LOG_DEBUG:
-            luat_log_write("D/", 2);
-            break;
-        case LUAT_LOG_INFO:
-            luat_log_write("I/", 2);
-            break;
-        case LUAT_LOG_WARN:
-            luat_log_write("W/", 2);
-            break;
-        case LUAT_LOG_ERROR:
-            luat_log_write("E/", 2);
-            break;
-        default:
-            luat_log_write("D/", 2);
-            break;
-        }
-    luat_log_write((char*)tag, strlen(tag));
-    luat_log_write(" ", 1);
+    if (level > LUAT_LOG_ERROR) {
+        level = LUAT_LOG_ERROR;
+    }
+    else if (level < LUAT_LOG_DEBUG) {
+        level = LUAT_LOG_DEBUG;
+    }
+    snprintf(header, sizeof(header), "[%08llu.%03llu]%c/%s ", time_ms / 1000, time_ms % 1000, lstr[level - 1], tag);
+    luat_log_write(header, strlen(header));
 
     va_list args;
     va_start(args, _fmt);
