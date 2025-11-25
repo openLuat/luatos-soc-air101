@@ -112,7 +112,7 @@ void UserMain(void){
 	#ifdef LUAT_CONF_LOG_UART1
 	luat_uart_t uart1_conf = {
 		.id = 1,
-		.baud_rate = 921600,
+		.baud_rate = 2000000,
 		.data_bits = 8,
 		.parity = 0,
 		.stop_bits = 1,

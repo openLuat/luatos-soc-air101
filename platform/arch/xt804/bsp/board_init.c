@@ -99,11 +99,11 @@ void board_init(void)
 {
 #ifndef LUAT_CONF_LOG_UART1
     /* use uart0 as log output io */
-    uart0Init(921600);
+    uart0Init(2000000);
 #else
     // uart1_io_init();
     /* use uart1 as log output io */
-	// uart1Init(921600);
+	// uart1Init(2000000);
 	set_printf_port(0xff);	
 #endif
 }
