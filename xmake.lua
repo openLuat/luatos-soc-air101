@@ -204,37 +204,6 @@ target("blehost")
 
 target_end()
 
-target("lvgl")
-    set_kind("static")
-    set_plat("cross")
-    set_arch("c-sky")
-    
-    on_load(function (target)
-        local conf_data = io.readfile("$(projectdir)/app/port/luat_conf_bsp.h")
-        local LVGL_CONF = conf_data:find("\r#define LUAT_USE_LVGL") or conf_data:find("\n#define LUAT_USE_LVGL")
-        if LVGL_CONF then target:set("default", true) else target:set("default", false) end
-    end)
-
-    add_files(luatos.."components/lvgl/**.c")
-    remove_files(luatos.."components/lvgl/lv_demos/**.c")
-
-    add_includedirs("app/port",{public = true})
-    add_includedirs("include",{public = true})
-    add_includedirs(luatos.."lua/include",{public = true})
-    add_includedirs(luatos.."luat/include",{public = true})
-    add_includedirs(luatos.."components/lcd",{public = true})
-    add_includedirs(luatos.."components/lvgl",{public = true})
-    add_includedirs(luatos.."components/lvgl/binding",{public = true})
-    add_includedirs(luatos.."components/lvgl/gen",{public = true})
-    add_includedirs(luatos.."components/lvgl/src",{public = true})
-    add_includedirs(luatos.."components/lvgl/font",{public = true})
-    add_includedirs(luatos.."components/u8g2",{public = true})
-    add_includedirs(luatos.."components/qrcode",{public = true})
-    add_includedirs(luatos.."components/tp/",{public = true})
-
-    set_targetdir("$(builddir)/lib")
-target_end()
-
 target("u8g2")
     set_kind("static")
     set_plat("cross")
@@ -327,7 +296,7 @@ target("audio")
     add_includedirs(luatos.."components/multimedia/amr_decode/oscl")
     add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/enc/src")
     add_includedirs(luatos.."components/multimedia/vtool/include")
-    add_files(luatos.."components/multimedia/**.c")
+    --add_files(luatos.."components/multimedia/**.c")
 
 
     set_targetdir("$(builddir)/lib")
@@ -368,12 +337,6 @@ target("network")
     -- w5500
     add_includedirs(luatos.."components/ethernet/common",{public = true})
     add_files(luatos.."components/ethernet/common/*.c")
-    -- add_includedirs(luatos.."components/ethernet/w5500",{public = true})
-    -- add_files(luatos.."components/ethernet/w5500/*.c")
-
-    -- usernet
-    -- add_includedirs(luatos.."components/network/usernet",{public = true})
-    -- add_files(luatos.."components/network/usernet/*.c")
 
     -- wlan
     add_includedirs(luatos.."components/wlan")
@@ -385,7 +348,7 @@ target("network")
     
     -- httpsrv
     add_includedirs(luatos.."components/network/httpsrv/inc",{public = true})
-    -- add_files(luatos.."components/network/httpsrv/src/*.c")
+    add_files(luatos.."components/network/httpsrv/src/*.c")
 
     
     -- http
@@ -427,11 +390,11 @@ target("network")
     add_files(luatos.."components/xxtea/binding/*.c")
 
     -- pcap
-    add_includedirs(luatos.."components/network/pcap/include",{public = true})
+    -- add_includedirs(luatos.."components/network/pcap/include",{public = true})
     -- add_files(luatos.."components/network/pcap/src/*.c")
 
     -- zlink
-    add_includedirs(luatos.."components/network/zlink/include",{public = true})
+    -- add_includedirs(luatos.."components/network/zlink/include",{public = true})
     -- add_files(luatos.."components/network/zlink/src/*.c")
 
     -- ulwip
@@ -439,37 +402,17 @@ target("network")
     add_files(luatos.."components/network/ulwip/**.c")
 
     -- spi slave
-    add_includedirs(luatos.."components/device/spi_slave/include",{public = true})
+    -- add_includedirs(luatos.."components/device/spi_slave/include",{public = true})
     -- add_files(luatos.."components/device/spi_slave/**.c")
 
     -- wlan raw
     add_includedirs(luatos.."components/device/wlanraw/include",{public = true})
     add_files(luatos.."components/device/wlanraw/**.c")
 
-    -- qxwz
-    -- add_includedirs(luatos.."components/network/qxwz/include",{public = true})
-    -- add_files(luatos.."components/network/qxwz/**.c")
-
     -- hmeta
     add_includedirs(luatos.."components/hmeta",{public = true})
     add_files(luatos.."components/hmeta/**.c")
 
-target_end()
-
-target("nes")
-    set_kind("static")
-    set_plat("cross")
-    set_optimize("fastest",{force = true})
-    set_targetdir("$(builddir)/lib")
-    add_includedirs("app/port")
-    add_includedirs("include")
-    add_includedirs(luatos.."lua/include")
-    add_includedirs(luatos.."luat/include")
-    add_includedirs(luatos.."components/lcd",{public = true})
-    add_includedirs(luatos.."components/u8g2",{public = true})
-    add_includedirs(luatos.."components/nes/inc")
-    add_includedirs(luatos.."components/nes/port")
-    add_files(luatos.."components/nes/**.c")
 target_end()
 
 target("mbedtls")
@@ -485,30 +428,6 @@ target("mbedtls")
     add_files(luatos.."components/mbedtls/library/*.c")
 target_end()
 
-target("luatfonts")
-    set_kind("static")
-    set_plat("cross")
-    set_arch("c-sky")
-
-    add_files(luatos.."components/luatfonts/**.c")
-    add_includedirs(luatos.."components/luatfonts")
-
-    add_includedirs("app/port",{public = true})
-    add_includedirs("include",{public = true})
-    add_includedirs(luatos.."lua/include",{public = true})
-    add_includedirs(luatos.."luat/include",{public = true})
-    add_includedirs(luatos.."components/u8g2",{public = true})
-    add_includedirs(luatos.."components/gtfont")
-    add_includedirs(luatos.."components/qrcode",{public = true})
-    add_includedirs(luatos.."components/lcd",{public = true})
-    add_includedirs(luatos.."components/lvgl",{public = true})
-    add_includedirs(luatos.."components/lvgl/binding",{public = true})
-    add_includedirs(luatos.."components/lvgl/gen",{public = true})
-    add_includedirs(luatos.."components/lvgl/src",{public = true})
-    add_includedirs(luatos.."components/lvgl/font",{public = true})
-
-    set_targetdir("$(builddir)/lib")
-target_end()
 
 target("air10x")
     -- set kind
@@ -522,7 +441,6 @@ target("air10x")
         import "buildx"
         local chip = buildx.chip()
 
-        if chip.use_lvgl then target:add("deps", "lvgl") end
         target:add("deps", "miniz")
         target:add("deps", "fastlz")
         
@@ -557,6 +475,7 @@ target("air10x")
     add_files("src/os/**.c")
     add_files("src/os/**.S")
     add_files("platform/common/**.c")
+    remove_files("app/port/luat_spi_slave_air101.c")
 
 
     add_files(luatos.."lua/src/*.c")
@@ -583,11 +502,6 @@ target("air10x")
     add_includedirs(luatos.."lua/include",{public = true})
     add_includedirs(luatos.."luat/include",{public = true})
     add_includedirs(luatos.."components/lcd",{public = true})
-    add_includedirs(luatos.."components/lvgl",{public = true})
-    add_includedirs(luatos.."components/lvgl/binding",{public = true})
-    add_includedirs(luatos.."components/lvgl/gen",{public = true})
-    add_includedirs(luatos.."components/lvgl/src",{public = true})
-    add_includedirs(luatos.."components/lvgl/font",{public = true})
     add_includedirs(luatos.."components/miniz", {public = true})
 
     add_includedirs(luatos.."components/iconv")
@@ -601,8 +515,8 @@ target("air10x")
     -- add_files(luatos.."components/statem/*.c")
     -- add_includedirs(luatos.."components/statem")
 
-    -- add_files(luatos.."components/coremark/*.c")
-    -- add_includedirs(luatos.."components/coremark")
+    add_files(luatos.."components/coremark/*.c")
+    add_includedirs(luatos.."components/coremark")
 
     add_files(luatos.."components/cjson/*.c")
     add_includedirs(luatos.."components/cjson")
@@ -610,13 +524,6 @@ target("air10x")
     -- eink
     add_includedirs(luatos.."components/eink")
     add_includedirs(luatos.."components/epaper")
-
-    -- gtfont
-    add_includedirs(luatos.."components/gtfont")
-    add_files(luatos.."components/gtfont/*.c")
-
-    add_includedirs(luatos.."components/lvgl/src/lv_font",{public = true})
-
 
     add_files(luatos.."components/mlx90640-library/*.c")
     add_includedirs(luatos.."components/mlx90640-library")
@@ -668,8 +575,8 @@ target("air10x")
 
 
     -- tlfs3
-    add_includedirs(luatos.."components/mempool/tlsf3")
-    add_files(luatos.."components/mempool/tlsf3/*.c")
+    -- add_includedirs(luatos.."components/mempool/tlsf3")
+    -- add_files(luatos.."components/mempool/tlsf3/*.c")
     
     add_includedirs(luatos.."components/serialization/protobuf")
     add_files(luatos.."components/serialization/protobuf/*.c")
@@ -703,61 +610,10 @@ target("air10x")
     add_includedirs(luatos.."components/gmssl/include")
     add_files(luatos.."components/gmssl/src/**.c")
     add_files(luatos.."components/gmssl/bind/*.c")
-    
-    -- -- 添加nes
-    -- add_includedirs(luatos.."components/nes/inc")
-    -- add_includedirs(luatos.."components/nes/port")
-    -- add_files(luatos.."components/nes/**.c")
-
-    -- profiler
-    -- add_files(luatos.."components/mempool/profiler/**.c")
-    -- add_includedirs(luatos.."components/mempool/profiler/include")
-
-    -- repl
-    -- add_files(luatos.."components/repl/**.c")
-    -- add_includedirs(luatos.."components/repl/")
-
-    -- sqlite3
-    -- add_includedirs(luatos.."components/sqlite3/include",{public = true})
-    -- add_files(luatos.."components/sqlite3/src/*.c")
-    -- add_files(luatos.."components/sqlite3/binding/*.c")
-
-    -- ercoap
-    -- add_includedirs(luatos.."components/network/ercoap/include",{public = true})
-    -- add_files(luatos.."components/network/ercoap/src/*.c")
-    -- add_files(luatos.."components/network/ercoap/binding/*.c")
 
     -- tp
     add_includedirs(luatos.."components/tp/",{public = true})
     add_files(luatos.."components/tp/*.c")
-
-    -- ws2812
-    -- add_includedirs(luatos.."components/ws2812/include",{public = true})
-    -- add_files(luatos.."components/ws2812/src/*.c")
-    -- add_files(luatos.."components/ws2812/binding/*.c")
-
-    -- onewire
-    -- add_includedirs(luatos.."components/onewire/include",{public = true})
-    -- add_files(luatos.."components/onewire/src/*.c")
-    -- add_files(luatos.."components/onewire/binding/*.c")
-
-    -- onewire
-    -- add_includedirs(luatos.."components/ht1621/include",{public = true})
-    -- add_files(luatos.."components/ht1621/src/*.c")
-    -- add_files(luatos.."components/ht1621/binding/*.c")
-
-    -- rostr
-    -- add_includedirs(luatos.."components/rostr",{public = true})
-    -- add_files(luatos.."components/rostr/*.c")
-    
-    -- local opus_dir = luatos .. "components/opus/"
-    -- add_includedirs(opus_dir .. "opus-1.3.1/src", 
-    --                 opus_dir .. "opus-1.3.1/include", 
-    --                 opus_dir .. "opus-1.3.1/silk", 
-    --                 opus_dir .. "opus-1.3.1/silk/fixed", 
-    --                 opus_dir .. "opus-1.3.1/celt")
-    -- add_defines("FIXED_POINT=1", "USE_ALLOCA=1", "OPUS_BUILD=1")
-    -- add_files(opus_dir .. "bind/*.c")
 
 	after_build(function(target)
         import "buildx"
@@ -856,24 +712,3 @@ target("air10x")
     end)
 target_end()
 
---[[
-target("opus131")
-    set_kind("static")
-    set_plat("cross")
-    set_arch("c-sky")
-    set_optimize("fastest")
-    local opus_dir = luatos .. "/components/opus/"
-    add_includedirs(opus_dir .. "opus-1.3.1/src", 
-                    opus_dir .. "opus-1.3.1/include", 
-                    opus_dir .. "opus-1.3.1/silk", 
-                    opus_dir .. "opus-1.3.1/silk/fixed", 
-                    opus_dir .. "opus-1.3.1/celt")
-
-    add_defines("FIXED_POINT=1", "USE_ALLOCA=1", "OPUS_BUILD=1")
-
-    add_files(opus_dir .. "opus-1.3.1/src/*.c", opus_dir .. "opus-1.3.1/silk/*.c", opus_dir .. "opus-1.3.1/silk/fixed/*.c")
-    add_files(opus_dir .. "opus-1.3.1/celt/*.c")
-    -- add_files(opus_dir .. "opusfile-0.11/src/*.c")
-    -- add_files(opus_dir .. "libogg-1.3.5/src/*.c")
-target_end()
-]]

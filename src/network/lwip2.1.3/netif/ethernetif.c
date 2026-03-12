@@ -75,7 +75,6 @@
 #define NET_LINK_SPEED  100000000
 
 #include "luat_conf_bsp.h"
-#include "luat_pcap.h"
 
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
