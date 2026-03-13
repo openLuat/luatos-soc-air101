@@ -569,18 +569,18 @@
  *
  * Comment macros to disable the curve and functions for it
  */
-//#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
+#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
+#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP256R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP384R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP521R1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP192K1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP256K1_ENABLED
-//#define MBEDTLS_ECP_DP_BP256R1_ENABLED
-//#define MBEDTLS_ECP_DP_BP384R1_ENABLED
-//#define MBEDTLS_ECP_DP_BP512R1_ENABLED
-//#define MBEDTLS_ECP_DP_CURVE25519_ENABLED
+#define MBEDTLS_ECP_DP_SECP192K1_ENABLED
+#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
+#define MBEDTLS_ECP_DP_SECP256K1_ENABLED
+#define MBEDTLS_ECP_DP_BP256R1_ENABLED
+#define MBEDTLS_ECP_DP_BP384R1_ENABLED
+#define MBEDTLS_ECP_DP_BP512R1_ENABLED
+#define MBEDTLS_ECP_DP_CURVE25519_ENABLED
 
 /**
  * \def MBEDTLS_ECP_NIST_OPTIM
@@ -789,7 +789,7 @@
  *      MBEDTLS_TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_ECDHE_RSA_WITH_RC4_128_SHA
  */
-// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
@@ -813,7 +813,7 @@
  *      MBEDTLS_TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA
  *      MBEDTLS_TLS_ECDHE_ECDSA_WITH_RC4_128_SHA
  */
-//#define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED
@@ -1708,7 +1708,7 @@
  *          library/x509write_crt.c
  *          library/x509write_csr.c
  */
-// #define MBEDTLS_ASN1_WRITE_C
+#define MBEDTLS_ASN1_WRITE_C
 
 /**
  * \def MBEDTLS_BASE64_C
@@ -1815,7 +1815,7 @@
  * This module enables the AES-CCM ciphersuites, if other requisites are
  * enabled as well.
  */
-//#define MBEDTLS_CCM_C
+#define MBEDTLS_CCM_C
 
 /**
  * \def MBEDTLS_CERTS_C
@@ -1961,7 +1961,7 @@
  *
  * Requires: MBEDTLS_ECP_C, MBEDTLS_ASN1_WRITE_C, MBEDTLS_ASN1_PARSE_C
  */
-//#define MBEDTLS_ECDSA_C
+#define MBEDTLS_ECDSA_C
 
 /**
  * \def MBEDTLS_ECJPAKE_C
@@ -2008,7 +2008,7 @@
  *
  * This module provides a generic entropy pool
  */
-#define MBEDTLS_ENTROPY_C
+// #define MBEDTLS_ENTROPY_C
 
 /**
  * \def MBEDTLS_ERROR_C
@@ -2034,7 +2034,7 @@
  * This module enables the AES-GCM and CAMELLIA-GCM ciphersuites, if other
  * requisites are enabled as well.
  */
-// #define MBEDTLS_GCM_C
+#define MBEDTLS_GCM_C
 
 /**
  * \def MBEDTLS_HAVEGE_C
@@ -2439,7 +2439,7 @@
  *
  * This module adds support for SHA-384 and SHA-512.
  */
-// #define MBEDTLS_SHA512_C
+#define MBEDTLS_SHA512_C
 
 /**
  * \def MBEDTLS_SSL_CACHE_C
@@ -2830,15 +2830,15 @@ void tls_mem_free2(void* p);
 #include MBEDTLS_USER_CONFIG_FILE
 #endif
 
-#include "luat_conf_bsp.h"
-#ifndef LUAT_USE_TLS
-#undef MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
-#undef MBEDTLS_SSL_CLI_C
-#undef MBEDTLS_GCM_C
-#undef MBEDTLS_ECP_C
-#undef MBEDTLS_ECDH_C
-// #undef MBEDTLS_AES_ALT
-#endif
+// #include "luat_conf_bsp.h"
+// #ifndef LUAT_USE_TLS
+// #undef MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+// #undef MBEDTLS_SSL_CLI_C
+// #undef MBEDTLS_GCM_C
+// #undef MBEDTLS_ECP_C
+// #undef MBEDTLS_ECDH_C
+// // #undef MBEDTLS_AES_ALT
+// #endif
 
 #ifdef LUAT_USE_CRYPTO_AES_MBEDTLS
 #undef MBEDTLS_AES_ALT

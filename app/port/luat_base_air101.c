@@ -293,6 +293,15 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_NETDRV
   {"netdrv", luaopen_netdrv},
 #endif
+#ifdef LUAT_USE_AIRUI
+  {"airui",   luaopen_airui},
+#endif
+#ifdef LUAT_USE_HZFONT
+  {"hzfont",    luaopen_hzfont},
+#endif
+#ifdef LUAT_USE_PINYIN
+  {"pinyin",    luaopen_pinyin},
+#endif
   // {"opus", luaopen_opus},
   {NULL, NULL}
 };

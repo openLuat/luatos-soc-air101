@@ -428,6 +428,74 @@ target("mbedtls")
     add_files(luatos.."components/mbedtls/library/*.c")
 target_end()
 
+target("airui")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_includedirs("app/port")
+    add_includedirs("include")
+    add_includedirs(luatos.."lua/include")
+    add_includedirs(luatos.."luat/include")
+
+    add_includedirs(luatos.."components/lcd",{public = true})
+    add_includedirs(luatos.."components/u8g2",{public = true})
+    add_includedirs(luatos.."components/tp",{public = true})
+
+    -- LVGL 9.4 + AirUI - 最基础组件编译
+    -- 宏定义：启用 AirUI 和 SDL2 平台
+    -- 头文件添加：lvgl9
+    local luatos_root = luatos
+    add_includedirs(luatos_root.."/components/airui")
+    add_includedirs(luatos_root.."/components/airui/lvgl9")
+    add_includedirs(luatos_root.."/components/airui/lvgl9/src")
+
+    -- 先添加所有源文件
+    add_files(luatos_root.."/components/airui/lvgl9/src/**.c")
+
+    -- 排除不需要的组件（按优先级排序）
+    -- 1. 硬件驱动（不需要）
+    remove_files(luatos_root.."/components/airui/lvgl9/src/drivers/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/drivers/**/*.cpp")
+    
+    -- 2. 硬件加速绘制引擎（只保留软件渲染 SW）
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/dma2d/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/eve/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/nema_gfx/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/nxp/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/opengles/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/renesas/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/vg_lite/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/sdl/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/espressif/**/*.c")
+    remove_files(luatos_root.."/components/airui/lvgl9/src/draw/convert/**/*.c")
+    
+    -- AirUI 架构配置
+    -- 1. 公共头文件
+    add_includedirs(luatos_root.."/components/airui/inc")
+    
+    -- 2. 包含 src 目录下的所有文件（递归）
+    add_includedirs(luatos_root.."/components/airui/src")
+    add_files(luatos_root.."/components/airui/src/**/*.c")
+    
+    -- 3. Lua 绑定层（binding，不在 src 目录下，需单独处理）
+    add_includedirs(luatos_root.."/components/airui/binding")
+    add_files(luatos_root.."/components/airui/binding/*.c")
+
+    
+    -- hzfont
+    add_includedirs(luatos_root.."/components/hzfont/inc",{public = true})
+    add_files(luatos_root.."/components/hzfont/binding/*.c")
+    add_files(luatos_root.."/components/hzfont/src/*.c")
+
+    -- pinyin
+    add_includedirs(luatos_root.."/components/pinyin/inc",{public = true})
+    add_files(luatos_root.."/components/pinyin/binding/*.c")
+    add_files(luatos_root.."/components/pinyin/src/*.c")
+
+
+    set_targetdir("$(builddir)/lib")
+target_end()
 
 target("air10x")
     -- set kind
@@ -466,6 +534,7 @@ target("air10x")
     -- add_deps("audio")
     -- add_deps("luatfonts")
     add_deps("mbedtls")
+    add_deps("airui")
     -- add files
     add_files("app/*.c")
     add_files("app/port/*.c")
