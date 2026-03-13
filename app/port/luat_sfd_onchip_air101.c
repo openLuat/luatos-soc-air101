@@ -37,7 +37,7 @@ int sfd_onchip_read (void* userdata, char* buff, size_t offset, size_t len) {
     {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 int sfd_onchip_write (void* userdata, const char* buff, size_t offset, size_t len) {
@@ -50,7 +50,7 @@ int sfd_onchip_write (void* userdata, const char* buff, size_t offset, size_t le
     {
         return -1;
     }
-    return 0;
+    return len;
 }
 int sfd_onchip_erase (void* userdata, size_t offset, size_t len) {
     int ret;
