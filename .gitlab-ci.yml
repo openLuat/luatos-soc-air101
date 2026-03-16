@@ -6,6 +6,8 @@ variables:
 
 build_air101:
   stage: build
+  tags:
+    - linux
   script:
     - xmake --version
     - xmake -y
