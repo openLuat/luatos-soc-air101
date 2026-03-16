@@ -3,12 +3,31 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  LUATOS_REPO_URL: "http://sh.air32.cn:3580/openLuat/LuatOS.git"
+  LUATOS_REPO_BRANCH: "master"
+  LUATOS_REPO_DIR: "$CI_PROJECT_DIR/../LuatOS"
 
 build_air101:
   stage: build
   tags:
     - linux
+  cache:
+    key: "luatos-repo-$CI_COMMIT_REF_SLUG"
+    paths:
+      - ../LuatOS/
   script:
+    - |
+      set -euo pipefail
+      if [ -d "$LUATOS_REPO_DIR/.git" ]; then
+        echo "更新 LuatOS 仓库"
+        git -C "$LUATOS_REPO_DIR" remote set-url origin "$LUATOS_REPO_URL"
+        git -C "$LUATOS_REPO_DIR" fetch --depth=1 origin "$LUATOS_REPO_BRANCH"
+        git -C "$LUATOS_REPO_DIR" reset --hard "origin/$LUATOS_REPO_BRANCH"
+      else
+        echo "克隆 LuatOS 仓库"
+        rm -rf "$LUATOS_REPO_DIR"
+        git clone --depth=1 --branch "$LUATOS_REPO_BRANCH" "$LUATOS_REPO_URL" "$LUATOS_REPO_DIR"
+      fi
     - xmake --version
     - xmake -y
   only:
