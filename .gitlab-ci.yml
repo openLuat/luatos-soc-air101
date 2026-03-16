@@ -1,0 +1,19 @@
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build_air101:
+  stage: build
+  script:
+    - xmake --version
+    - xmake -y
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - build/out/
+  only:
+    - branches
+    - tags
