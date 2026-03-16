@@ -9,11 +9,6 @@ build_air101:
   script:
     - xmake --version
     - xmake -y
-  artifacts:
-    when: always
-    expire_in: 7 days
-    paths:
-      - build/out/
   only:
     - branches
     - tags
