@@ -21,11 +21,11 @@ package("csky")
     set_description("GNU Csky Embedded Toolchain")
 
     if is_host("windows") then
-        set_urls("http://xmake.vue2.cn/xmake/toolchains/csky/csky-elfabiv2-tools-mingw-minilibc-$(version).tar.gz")
+        set_urls("http://gz01.air32.cn:10888/files/public/xmake/csky-elfabiv2-tools-mingw-minilibc-$(version).tar.gz")
         add_versions("20210423", "e7d0130df26bcf7b625f7c0818251c04e6be4715ed9b3c8f6303081cea1f058b")
         add_versions("20230301", "1b958769601e8ba94a866df68215700614f55e0152933d5f5263899bb44d24f5")
     elseif is_host("linux") then
-        set_urls("http://xmake.vue2.cn/xmake/toolchains/csky/csky-elfabiv2-tools-x86_64-minilibc-$(version).tar.gz")
+        set_urls("http://gz01.air32.cn:10888/files/public/xmake/csky-elfabiv2-tools-x86_64-minilibc-$(version).tar.gz")
         add_versions("20210423", "8b9a353c157e4d44001a21974254a21cc0f3c7ea2bf3c894f18a905509a7048f")
         add_versions("20230301", "dac3c285d7dc9fe91805d6275c11fa260511cdd6a774891cbe2d79ec73535e10")
     end
