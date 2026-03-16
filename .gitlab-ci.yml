@@ -28,6 +28,7 @@ build_air101:
         rm -rf "$LUATOS_REPO_DIR"
         git clone --depth=1 --branch "$LUATOS_REPO_BRANCH" "$LUATOS_REPO_URL" "$LUATOS_REPO_DIR"
       fi
+    - gcc -o tools/xt804/wm_tool tools/xt804/wm_tool.c 
     - xmake --version
     - xmake -y
   only:
