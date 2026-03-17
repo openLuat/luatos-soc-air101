@@ -769,7 +769,13 @@ target("air10x")
                 end
 
                 os.exec(path7z.." a -mx9 LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z ./soc_tools/air101_flash.exe ./soc_tools/info.json ./soc_tools/script.img ./app/port/luat_conf_bsp.h ./soc_tools/"..TARGET_NAME..".fls")
-                os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", "$(builddir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".soc")
+                dst = ""
+                if chip.use_64bit then
+                    dst = "$(builddir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_Air"..TARGET_NAME:sub(3).."_101.soc"
+                else
+                    dst = "$(builddir)/out/LuatOS-SoC_"..AIR10X_VERSION.."_Air"..TARGET_NAME:sub(3).."_1.soc"
+                end
+                os.mv("LuatOS-SoC_"..AIR10X_VERSION.."_"..TARGET_NAME..".7z", dst)
                 os.rm("./soc_tools/info.json")
                 os.rm("./soc_tools/script.img")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
