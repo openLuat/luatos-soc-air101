@@ -6,6 +6,7 @@ variables:
   LUATOS_REPO_URL: "http://sh.air32.cn:3580/openLuat/LuatOS.git"
   LUATOS_REPO_BRANCH: "master"
   LUATOS_REPO_DIR: "$CI_PROJECT_DIR/../LuatOS"
+  DEPLOY_KEY: "deploy/id_ed25519"
 
 build_air101:
   stage: build
@@ -31,6 +32,18 @@ build_air101:
     - gcc -o tools/xt804/wm_tool tools/xt804/wm_tool.c 
     - xmake --version
     - xmake -y
+    - |
+      if [ -f "$DEPLOY_KEY" ]; then
+        chmod 400 "$DEPLOY_KEY"
+        python3 deploy.py
+      else
+        echo "未找到部署密钥 $DEPLOY_KEY, 跳过上传"
+      fi
+  artifacts:
+    paths:
+      - ci_build_result.json
+    expire_in: 1 year
+    when: on_success
   only:
     - branches
     - tags
