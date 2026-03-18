@@ -40,9 +40,9 @@ void* __wrap_realloc(void*ptr, size_t len);
 #endif
 #else
 #ifdef LUAT_USE_WLAN
-#define LUAT_HEAP_P1_SIZE 24* 1024
+#define LUAT_HEAP_P1_SIZE 0
 #else
-#define LUAT_HEAP_P1_SIZE 48*1024
+#define LUAT_HEAP_P1_SIZE 0
 #endif
 #endif
 
@@ -108,7 +108,7 @@ void luat_heap_init(void) {
 	}
 	else {
 		// LLOGD("psram is ok");
-		// 存在psram, 加入到内存次, 就不使用系统额外的内存了.
+		// 存在psram, 加入到内存池, 就不使用系统额外的内存了.
         if (psram_size >= 6 * 1024 * 1024) {
             psram_lua_size = 5*1024*1024;
         }
@@ -585,3 +585,11 @@ void luat_meminfo_opt_sys(LUAT_HEAP_TYPE_E type,size_t* total, size_t* used, siz
 
 #endif
 
+// 供mbedtls使用的内存分配函数
+void* mbedtls_mem_calloc(size_t count, size_t size) {
+    return luat_heap_opt_calloc(LUAT_HEAP_PSRAM, count, size);
+}
+
+void mbedtls_mem_free(void* ptr) {
+    luat_heap_opt_free(LUAT_HEAP_PSRAM, ptr);
+}
