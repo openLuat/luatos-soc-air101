@@ -36,7 +36,7 @@
 #define LUAT_USE_MCU  1
 #define LUAT_USE_RTC 1
 // SDIO 仅支持TF/SD卡的挂载
-#define LUAT_USE_SDIO 1
+// #define LUAT_USE_SDIO 1
 // 段码屏/段式屏, 按需启用
 // #define LUAT_USE_LCDSEG 1
 #define LUAT_USE_OTP 1
@@ -68,7 +68,7 @@
 
 // #define LUAT_USE_FOTA 1
 
-#define LUAT_USE_IOTAUTH 1
+// #define LUAT_USE_IOTAUTH 1
 
 //----------------------------
 // 常用工具库, 按需启用, cjson和pack是强烈推荐启用的
@@ -76,10 +76,10 @@
 #define LUAT_USE_CJSON  1
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
-#define LUAT_USE_LIBGNSS  1
-#define LUAT_USE_FS  1
-#define LUAT_USE_SENSOR  1
-#define LUAT_USE_SFUD  1
+// #define LUAT_USE_LIBGNSS  1
+// #define LUAT_USE_FS  1
+// #define LUAT_USE_SENSOR  1
+// #define LUAT_USE_SFUD  1
 // #define LUAT_USE_IR 1
 #define LUAT_USE_FSKV 1
 // #define LUAT_USE_OTA 1
@@ -88,16 +88,16 @@
 // #define LUAT_USE_MLX90640 1
 // #define LUAT_USE_MAX30102 1
 // zlib压缩,更快更小的实现
-#define LUAT_USE_MINIZ 1
+// #define LUAT_USE_MINIZ 1
 // FASTLZ的内存需求小,压缩比不如miniz
-#define LUAT_USE_FASTLZ 1
+// #define LUAT_USE_FASTLZ 1
 
 // RSA 加解密,加签验签
-#define LUAT_USE_RSA 1
-#define LUAT_USE_XXTEA    1
+// #define LUAT_USE_RSA 1
+// #define LUAT_USE_XXTEA    1
 
 // 国密算法 SM2/SM3/SM4
-#define LUAT_USE_GMSSL 1
+// #define LUAT_USE_GMSSL 1
 
 // #define LUAT_USE_SQLITE3 1
 // #define LUAT_USE_WS2812 1
@@ -149,12 +149,12 @@
 #define LUAT_USE_LCD
 #define LUAT_USE_TJPGD
 // EINK 是墨水屏
-#define LUAT_USE_EINK
+// #define LUAT_USE_EINK
 
 //---------------------
 // U8G2
 // 单色屏, 支持i2c/spi
-#define LUAT_USE_U8G2
+// #define LUAT_USE_U8G2
 
 /**************FONT*****************/
 // #define LUAT_USE_FONTS
@@ -176,6 +176,8 @@
 #define LUAT_USE_AIRUI_LUATOS 1
 #define LUAT_USE_PINYIN 1
 #define LUAT_USE_HZFONT 1
+#define LUAT_USE_AIRUI_MISANS_FONT_16 1
+// #define LUAT_USE_TP 1
 
 //-------------------------------------------------------------------------------
 //<-- custom
