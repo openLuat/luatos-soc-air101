@@ -145,6 +145,7 @@
 
 //---------------------
 // UI
+#define LUAT_USE_TP
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
 #define LUAT_USE_TJPGD

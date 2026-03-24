@@ -566,6 +566,7 @@ target("air10x")
     add_files(luatos.."components/lua-cjson/*.c")
     add_files(luatos.."components/minmea/*.c")
     add_files(luatos.."luat/weak/luat_spi_*.c")
+    add_files(luatos.."luat/weak/luat_rtos_legacy_to_std.c")
     add_files(luatos.."components/crypto/*.c")
 
     add_includedirs(luatos.."lua/include",{public = true})

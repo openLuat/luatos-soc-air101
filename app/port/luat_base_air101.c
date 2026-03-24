@@ -296,6 +296,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_AIRUI
   {"airui",   luaopen_airui},
 #endif
+#ifdef LUAT_USE_TP
+    {"tp", luaopen_tp},              // 触摸屏库
+#endif
 #ifdef LUAT_USE_HZFONT
   {"hzfont",    luaopen_hzfont},
 #endif
