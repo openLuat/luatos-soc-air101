@@ -302,6 +302,9 @@ static const luaL_Reg loadedlibs[] = {
 #ifdef LUAT_USE_PINYIN
   {"pinyin",    luaopen_pinyin},
 #endif
+#ifdef LUAT_USE_TP
+  {"tp",    luaopen_tp},
+#endif
   {"hmeta", luaopen_hmeta},
   // {"opus", luaopen_opus},
   {NULL, NULL}
