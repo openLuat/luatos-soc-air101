@@ -593,3 +593,11 @@ void* mbedtls_mem_calloc(size_t count, size_t size) {
 void mbedtls_mem_free(void* ptr) {
     luat_heap_opt_free(LUAT_HEAP_PSRAM, ptr);
 }
+
+void* luat_heap_zalloc(size_t _size) {
+    void* ptr = luat_heap_malloc(_size);
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0, _size);
+    return ptr;
+}
