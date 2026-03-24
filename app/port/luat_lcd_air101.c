@@ -49,6 +49,14 @@ int luat_sdio_lcd_write_cmd_data(luat_lcd_conf_t* conf,const uint8_t cmd, const 
 
 int luat_sdio_lcd_draw(luat_lcd_conf_t* conf, int16_t x1, int16_t y1, int16_t x2, int16_t y2, luat_color_t* color){
     uint32_t size = (x2 - x1 + 1) * (y2 - y1 + 1);
+    if (size<256){
+        uint8_t* buff = (uint8_t*)color;
+        luat_lcd_set_address(conf, x1, y1, x2, y2);
+        sdio_lcd_set_pin(conf->lcd_cs_pin, 0);
+        for (size_t i = 0; i < size * 2; i++)
+            sdio_spi_put( *buff++);
+        sdio_lcd_set_pin(conf->lcd_cs_pin, 1);
+    }else{
 #if LCD_ASYNC_SEND
     wait_sdio_spi_dma_ready();
 #endif
@@ -61,7 +69,7 @@ int luat_sdio_lcd_draw(luat_lcd_conf_t* conf, int16_t x1, int16_t y1, int16_t x2
 #endif
     sdio_lcd_set_pin(conf->lcd_cs_pin, 1);
     wait_sdio_spi_dma_ready();
-
+    }
     return 0;
 }
 
