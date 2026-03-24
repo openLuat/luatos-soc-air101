@@ -5,6 +5,7 @@
 #include "wm_rtc.h"
 #include "wm_osal.h"
 #include "wm_watchdog.h"
+#include "wm_cpu.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -209,6 +210,7 @@ void UserMain(void){
 #endif
 #endif
 	//printf("psram init\n");
+	tls_sys_clk_set(CPU_CLK_240M);
 	wm_psram_config(LUAT_USE_PSRAM_PORT);
 	// 然后初始化psram的寄存器
 	psram_init(PSRAM_QPI);
