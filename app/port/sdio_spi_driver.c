@@ -51,8 +51,6 @@ void init_sdio_spi_mode(u32 clk)
 #if LCD_ASYNC_SEND
     // 创建信号量 
     tls_os_sem_create(&sdio_spi_dma_ready, 1);
-    // 创建数据发送任务
-    lcd_task_create();
 #endif
 }
 
