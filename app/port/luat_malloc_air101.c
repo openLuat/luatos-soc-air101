@@ -601,3 +601,15 @@ void* luat_heap_zalloc(size_t _size) {
         return NULL;
     return ptr;
 }
+
+// lwip使用的内存分配函数
+void *luat_lwip_malloc(size_t size) {
+    return luat_heap_opt_malloc(LUAT_HEAP_PSRAM, size);
+}
+void luat_lwip_free(void* ptr) {
+    luat_heap_opt_free(LUAT_HEAP_PSRAM, ptr);
+}
+// calloc
+void *luat_lwip_calloc(size_t count, size_t size) {
+    return luat_heap_opt_calloc(LUAT_HEAP_PSRAM, count, size);
+}

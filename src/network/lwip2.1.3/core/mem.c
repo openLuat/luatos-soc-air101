@@ -174,20 +174,22 @@ mem_trim(void *mem, mem_size_t size)
 #endif /* MEM_LIBC_MALLOC || MEM_USE_POOLS */
 
 #if MEM_LIBC_MALLOC
-#include "wm_mem.h"
+// #include "wm_mem.h"
 /* lwIP heap implemented using C library malloc() */
-
+void *luat_lwip_malloc(size_t size);
+void luat_lwip_free(void* ptr);
+void *luat_lwip_calloc(size_t count, size_t size);
 /* in case C library malloc() needs extra protection,
  * allow these defines to be overridden.
  */
 #ifndef mem_clib_free
-#define mem_clib_free tls_mem_free
+#define mem_clib_free luat_lwip_free
 #endif
 #ifndef mem_clib_malloc
-#define mem_clib_malloc tls_mem_alloc
+#define mem_clib_malloc luat_lwip_malloc
 #endif
 #ifndef mem_clib_calloc
-#define mem_clib_calloc tls_mem_calloc
+#define mem_clib_calloc luat_lwip_calloc
 #endif
 
 #if LWIP_STATS && MEM_STATS
