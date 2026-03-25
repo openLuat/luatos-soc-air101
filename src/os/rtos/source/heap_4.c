@@ -34,6 +34,7 @@
  * memory management pages of http://www.FreeRTOS.org for more information.
  */
 #include <stdlib.h>
+#include <string.h>
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
@@ -339,12 +340,12 @@ void vPortInitialiseBlocks( void )
 /*-----------------------------------------------------------*/
 extern size_t __heap_start;
 extern size_t __heap_end;
+static size_t xTotalHeapSize = configTOTAL_HEAP_SIZE;
 static void prvHeapInit( void )
 {
 BlockLink_t *pxFirstFreeBlock;
 uint8_t *pucAlignedHeap;
 size_t uxAddress;
-size_t xTotalHeapSize = configTOTAL_HEAP_SIZE;
 
 	/* Ensure the heap starts on a correctly aligned boundary. */
 	// uxAddress = ( size_t ) (ucHeap);
@@ -599,6 +600,10 @@ int xPortMemIsKernel(void *mem)
 		return 1;
 	}
 	return 0;
+}
+
+size_t xPortGetTotalHeapSize(void) {
+	return xTotalHeapSize;
 }
 
 #endif

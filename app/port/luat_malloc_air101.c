@@ -122,7 +122,7 @@ void luat_heap_init(void) {
             psram_lua_size = 512*1024;
         }
         psram_sys_size = psram_size - psram_lua_size;
-        LLOGD("PSRAM 内存分配 --> Lua %dkb Sys %dkb", psram_lua_size / 1024, psram_sys_size / 1024);
+        LLOGD("PSRAM 内存分配 --> Lua %dkb psram-heap %dkb", psram_lua_size / 1024, psram_sys_size / 1024);
 		#ifdef LUAT_USE_TLSF
 		luavm_tlsf_ext = tlsf_add_pool(luavm_tlsf, psram_ptr, psram_lua_size);
 		#else
@@ -188,7 +188,11 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 }
 #else
 void* luat_heap_malloc(size_t len) {
-    return tls_mem_alloc(len);
+    void* ptr = tls_mem_alloc(len);
+    if (ptr) {
+        memset(ptr, 0, len);
+    }
+    return ptr;
 }
 
 void luat_heap_free(void* ptr) {
@@ -206,18 +210,15 @@ void* luat_heap_calloc(size_t count, size_t _size) {
 }
 #endif
 
-extern unsigned int heap_size_max;
-extern unsigned int total_mem_size;
-extern unsigned int min_free_size;
-extern size_t __heap_start;
-extern size_t __heap_end;
+
 void luat_meminfo_sys(size_t* total, size_t* used, size_t* max_used)
 {
 #if configUSE_HEAP4
+    extern size_t xPortGetTotalHeapSize(void);
     extern void vPortGetHeapStats( HeapStats_t *pxHeapStats );
     HeapStats_t stat = {0};
     vPortGetHeapStats(&stat);
-    *total = (size_t)(&__heap_end) - (size_t)(&__heap_start);
+    *total = xPortGetTotalHeapSize();
     *max_used = *total - stat.xMinimumEverFreeBytesRemaining;
     *used = (*total) - (stat.xAvailableHeapSpaceInBytes);
 #else
@@ -598,6 +599,5 @@ void* luat_heap_zalloc(size_t _size) {
     void* ptr = luat_heap_malloc(_size);
     if (ptr == NULL)
         return NULL;
-    memset(ptr, 0, _size);
     return ptr;
 }

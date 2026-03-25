@@ -7,53 +7,32 @@
 #include "stdio.h"
 
 #include "luat_conf_bsp.h"
-#if 0
-
-#ifdef LUAT_USE_PROFILER_XXX
+extern void *pvPortMalloc( size_t xWantedSize );
+extern void vPortFree( void *pv );
+extern void *pvPortRealloc( void *pv, size_t xWantedSize );
+#if 1
 void * mem_alloc_debug(u32 size) {
-    void* ptr = malloc(size);
-    printf("mem_alloc_debug %p %d\n", ptr, size);
+    void* ptr = pvPortMalloc(size);
+    if (ptr) {
+        memset(ptr, 0, size);
+    }
     return ptr;
 }
 void mem_free_debug(void *ptr) {
-    printf("mem_free_debug %p\n", ptr);
-    free(ptr);
-}
-void * mem_realloc_debug(void *mem_address, u32 size) {
-    void* ptr = realloc(mem_address, size);
-    printf("mem_realloc_debug %p %d %p\n", mem_address, size, ptr);
-    return ptr;
-}
-
-void *mem_calloc_debug(u32 length, u32 size) {
-    void* ptr = calloc(length, size);
-    printf("mem_calloc_debug %p %d\n", ptr, size * length);
-    return ptr;
-}
-#else
-TaskStatus_t stat;
-void * mem_alloc_debug(u32 size) {
-    if (size == 16) {
-        printf("mem_alloc_debug %d\n", size);
-        TaskHandle_t t = xTaskGetCurrentTaskHandle();
-        if (t != NULL) {
-            vTaskGetInfo(t, &stat, pdFALSE, eInvalid);
-            printf("task %s %d\n", stat.pcTaskName, stat.xTaskNumber);
-        }
+    if (ptr) {
+        vPortFree(ptr);
     }
-    return malloc(size);
-}
-void mem_free_debug(void *p) {
-    // printf("free %p\n", p);
-    free(p);
 }
 void * mem_realloc_debug(void *mem_address, u32 size) {
-    return realloc(mem_address, size);
+    return pvPortRealloc(mem_address, size);
 }
 
 void *mem_calloc_debug(u32 length, u32 size) {
-    return calloc(length, size);
+    void* ptr = pvPortMalloc(length * size);
+    if (ptr) {
+        memset(ptr, 0, length * size);
+    }
+    return ptr;
 }
-#endif
 
 #endif

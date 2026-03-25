@@ -11,7 +11,7 @@
 * 
 * Date : 2014-6-12 
 *****************************************************************************/ 
-
+#if 0
 #include "wm_osal.h"
 #include "wm_mem.h"
 #include "list.h"
@@ -870,5 +870,7 @@ END:
 #endif	
 }
 
+
+#endif
 
 #endif
