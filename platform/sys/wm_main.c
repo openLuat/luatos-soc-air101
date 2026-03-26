@@ -205,7 +205,7 @@ int main(void)
 	tls_reg_write32(HR_CLK_BBP_CLT_CTRL, 0x0F);
     #endif
 
-    tls_sys_clk_set(CPU_CLK_80M);
+    tls_sys_clk_set(CPU_CLK_240M);
     tls_os_init(NULL);
 
     /* before use malloc() function, must create mutex used by c_lib */
