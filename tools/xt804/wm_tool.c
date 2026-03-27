@@ -4557,7 +4557,7 @@ static int wm_tool_xmodem_download(const char *image)
 	                	if (sndlen % 10240 == 0)
                         {
     						//wm_tool_printf("#");
-                            wm_tool_printf("#download %d%%\r\n", sndlen >= fz ? 99 : sndlen / (fz));
+                            wm_tool_printf("#download %d%%\r\n", sndlen >= fz ? 99 : sndlen * 100 / (fz));
 						}
 	                }
 					else
@@ -4928,7 +4928,7 @@ static void wm_tool_free_res(void)
 int main(int argc, char *argv[])
 {
     int ret = 0;
-
+    printf("LuatOS XT804 Tools " __TIME__ " " __DATE__ "\r\n");
     if (!wm_tool_parse_arv(argc, argv))
     {
         wm_tool_print_usage(argv[0]);
