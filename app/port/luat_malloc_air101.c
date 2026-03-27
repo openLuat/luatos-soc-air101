@@ -98,7 +98,7 @@ void luat_heap_init(void) {
 
 #ifdef LUAT_USE_PSRAM
 	char* psram_ptr = (void*)0x30010000;
-    LLOGD("PSRAM size %dkb", psram_size / 1024);
+    // LLOGD("PSRAM size %dkb", psram_size / 1024);
 	if (psram_size == 0) {
 		// LLOGE("psram is enable, but can't access!!");
         // #if (LUAT_HEAP_P1_SIZE > 0)
