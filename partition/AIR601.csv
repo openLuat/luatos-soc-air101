@@ -1,0 +1,12 @@
+# Partition Table: AIR601 (1MB Flash)
+# flash_base = 0x08000000
+# flash_size = 1024K
+# ram_end = 0x20028000
+#
+# Name,        Type,       Offset,       Size
+secboot,       boot,       0x000000,     64K
+fota,          ota,        0x010000,     4K
+app,           app,        0x011000,     764K
+kv,            data,       0x0D0000,     64K
+script,        script,     0x0E0000,     64K
+fs,            fs,         0x0F0000,     48K
