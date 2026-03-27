@@ -148,7 +148,7 @@
 #define LUAT_USE_TP
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
-#define LUAT_USE_TJPGD
+// #define LUAT_USE_TJPGD
 // EINK 是墨水屏
 // #define LUAT_USE_EINK
 
@@ -175,10 +175,9 @@
 
 #define LUAT_USE_AIRUI 1
 #define LUAT_USE_AIRUI_LUATOS 1
-#define LUAT_USE_PINYIN 1
+// #define LUAT_USE_PINYIN 1
 #define LUAT_USE_HZFONT 1
 #define LUAT_USE_AIRUI_MISANS_FONT_16 1
-// #define LUAT_USE_TP 1
 
 //-------------------------------------------------------------------------------
 //<-- custom
@@ -199,12 +198,6 @@
 #endif
 
 
-
-#define LV_DISP_DEF_REFR_PERIOD 30
-#define LUAT_LV_DEBUG 0
-
-#define LV_MEM_CUSTOM 1
-
 // 内存优化: 减少内存消耗, 会稍微减低性能
 // #define LUAT_USE_MEMORY_OPTIMIZATION_CODE_MMAP 1
 
@@ -213,12 +206,6 @@
 #define LUAT_USE_FS_VFS 1
 #define LUAT_USE_VFS_INLINE_LIB 1
 //----------------------------------
-
-#define LV_HOR_RES_MAX          (160)
-#define LV_VER_RES_MAX          (80)
-#define LV_COLOR_DEPTH          16
-
-#define LV_COLOR_16_SWAP   1
 
 #define LUAT_RET int
 #define LUAT_RT_RET_TYPE	void
