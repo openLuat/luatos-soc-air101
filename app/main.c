@@ -19,7 +19,7 @@
 #include "luat_pm.h"
 #include "luat_rtc.h"
 #include "luat_uart.h"
-#include "luat_malloc.h"
+#include "luat_mem.h"
 
 #include <string.h>
 #include "wm_irq.h"
@@ -244,12 +244,7 @@ void UserMain(void){
 	tls_os_timer_start(os_timer);
 #endif
 	#define VM_SIZE (12*1024)
-	#if defined(LUAT_USE_WLAN) && defined(LUAT_USE_NIMBLE) && defined(LUAT_USE_TLS)
-	char *vm_task_stack = luat_heap_alloc(NULL, NULL, 0, VM_SIZE);
-	// LLOGD("VM heap start %p", vm_task_stack);
-	#else
-	char *vm_task_stack = luat_heap_malloc(VM_SIZE);
-	#endif
+	char *vm_task_stack = luat_heap_opt_zalloc(LUAT_HEAP_SRAM, VM_SIZE);
 	tls_os_task_create(NULL, "luatos",
 				luat_start,
 				NULL,

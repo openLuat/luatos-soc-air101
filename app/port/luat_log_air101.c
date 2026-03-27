@@ -3,7 +3,7 @@
 #include "luat_log.h"
 #include "luat_uart.h"
 #include "printf.h"
-#include "luat_malloc.h"
+#include "luat_mem.h"
 #include "luat_mcu.h"
 #ifdef LUAT_USE_DBG
 #include "luat_cmux.h"
@@ -63,7 +63,7 @@ void luat_log_log(int level, const char* tag, const char* _fmt, ...) {
     // char log_printf_buff[LOGLOG_SIZE]  = {0};
     char header[128] = {0};
     uint64_t time_ms = luat_mcu_tick64_ms();
-    char *tmp = (char *)luat_heap_malloc(LOGLOG_SIZE);
+    char *tmp = (char *)luat_heap_opt_malloc(LUAT_HEAP_SRAM, LOGLOG_SIZE);
     if (tmp == NULL) {
         return;
     }
@@ -89,7 +89,7 @@ void luat_log_log(int level, const char* tag, const char* _fmt, ...) {
 void luat_log_printf(int level, const char* _fmt, ...) {
     va_list args;
     if (luat_log_level_cur > level) return;
-    char *tmp = (char *)luat_heap_malloc(LOGLOG_SIZE);
+    char *tmp = (char *)luat_heap_opt_malloc(LUAT_HEAP_SRAM, LOGLOG_SIZE);
     if (tmp == NULL) {
         return;
     }
