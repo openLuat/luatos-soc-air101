@@ -55,10 +55,6 @@
 #define LUAT_USE_FTP 1
 #define LUAT_USE_ERRDUMP 1
 
-// 外置网络支持
-// #define LUAT_USE_W5500 1
-// #define LUAT_USE_ULWIP 1
-
 // 开启TLS
 #define LUAT_USE_TLS 1
 // #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED 1
@@ -148,7 +144,7 @@
 #define LUAT_USE_TP
 // LCD  是彩屏, 若使用LVGL就必须启用LCD
 #define LUAT_USE_LCD
-// #define LUAT_USE_TJPGD
+#define LUAT_USE_TJPGD
 // EINK 是墨水屏
 // #define LUAT_USE_EINK
 
@@ -175,10 +171,15 @@
 
 #define LUAT_USE_AIRUI 1
 #define LUAT_USE_AIRUI_LUATOS 1
-// #define LUAT_USE_PINYIN 1
+#define LUAT_USE_PINYIN 1
 #define LUAT_USE_HZFONT 1
 #define LUAT_USE_AIRUI_MISANS_FONT_16 1
 
+#define LV_HOR_RES_MAX          (480)
+#define LV_VER_RES_MAX          (480)
+#define LV_COLOR_DEPTH          16
+
+#define LV_COLOR_16_SWAP   1
 //-------------------------------------------------------------------------------
 //<-- custom
 //------------------------------------------------------------------------------
