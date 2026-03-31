@@ -700,13 +700,18 @@ target("air10x")
         io.cat("$(builddir)/out/"..TARGET_NAME..".size")
         
         local wm_tool = "./tools/xt804/wm_tool"..(is_plat("windows") and ".exe" or "")
-        local app_image = "-fc 0 -it 1 -ih %x -ra %x -ua 8010000 -nh 0 -un 0 -vs G01.00.02 -o $(builddir)/out/%s"
-        app_image = string.format(app_image, chip.flash_app_offset - 1024, chip.flash_app_offset, chip.target_name)
+        -- 计算升级区地址 (从分区表获取 fota 偏移)
+        local upgrade_addr = 0x8010000  -- 默认值
+        if chip.partitions and chip.partitions.fota then
+            upgrade_addr = chip.flash_base + chip.partitions.fota.offset
+        end
+        local app_image = "-fc 0 -it 1 -ih %x -ra %x -ua %x -nh 0 -un 0 -vs G01.00.02 -o $(builddir)/out/%s"
+        app_image = string.format(app_image, chip.flash_app_offset - 1024, chip.flash_app_offset, upgrade_addr, chip.target_name)
         local cmd = wm_tool.." -b $(builddir)/out/"..TARGET_NAME..".bin " .. app_image
         print(cmd)
         os.exec(cmd)
-        local sec_image = "-fc 0 -it 0 -ih 8002000 -ra 8002400 -ua 8010000 -nh %x -un 0 -o ./tools/xt804/%s_secboot"
-        sec_image = string.format(sec_image, chip.flash_app_offset - 1024, chip.target_name)
+        local sec_image = "-fc 0 -it 0 -ih 8002000 -ra 8002400 -ua %x -nh %x -un 0 -o ./tools/xt804/%s_secboot"
+        sec_image = string.format(sec_image, upgrade_addr, chip.flash_app_offset - 1024, chip.target_name)
         cmd = wm_tool .. " -b ./tools/xt804/xt804_secboot.bin " .. sec_image
         print(cmd)
         os.exec(cmd)
@@ -746,18 +751,47 @@ target("air10x")
                     import("core.base.json")
                     local data = json.decode(info_data)
                     data.rom.fs.script.size = tonumber(LUAT_SCRIPT_SIZE)
-                    if chip.flash_size == 2*1024*1024 then
-                        offset = string.format("%X",0x81FC000-chip.flash_fs_size - chip.flash_script_size)
-                        data.download.script_addr = offset
-                        data.rom.fs.script.offset = offset
+                    
+                    -- 从分区表获取各区域地址
+                    local app_offset = chip.partitions.app and chip.partitions.app.offset or 0
+                    local secboot_offset = chip.partitions.secboot and chip.partitions.secboot.offset or 0
+                    local script_offset = chip.partitions.script and chip.partitions.script.offset or 0
+                    local fota_offset = chip.partitions.fota and chip.partitions.fota.offset or 0
+                    
+                    -- 更新 app_addr (运行地址，app分区起始)
+                    if app_offset > 0 then
+                        data.download.app_addr = string.format("0x%08X", chip.flash_base + app_offset)
+                        print("分区表布局", "App运行地址", data.download.app_addr)
+                    end
+                    
+                    -- 更新 core_addr (secboot地址)
+                    if secboot_offset > 0 then
+                        data.download.core_addr = string.format("0x%08X", chip.flash_base + secboot_offset)
+                        print("分区表布局", "Core(secboot)地址", data.download.core_addr)
+                    end
+                    
+                    -- 从分区表获取脚本区偏移
+                    if script_offset > 0 then
+                        -- 使用分区表中的偏移量，统一使用 0x 前缀格式
+                        data.download.script_addr = string.format("0x%08X", chip.flash_base + script_offset)
+                        data.rom.fs.script.offset = data.download.script_addr
                         data.rom.fs.script.size = chip.flash_script_size // 1024
-                        print("2M布局", "脚本区偏移量", offset)
+                        print("分区表布局", "脚本区偏移量", data.download.script_addr)
+                    elseif chip.flash_size == 2*1024*1024 then
+                        data.download.script_addr = string.format("0x%08X", 0x81FC000-chip.flash_fs_size - chip.flash_script_size)
+                        data.rom.fs.script.offset = data.download.script_addr
+                        data.rom.fs.script.size = chip.flash_script_size // 1024
+                        print("2M布局", "脚本区偏移量", data.download.script_addr)
                     else
-                        offset = string.format("%X",0x80FC000-chip.flash_fs_size - chip.flash_script_size)
-                        print("1M布局", "脚本区偏移量", offset)
-                        data.download.script_addr = offset
-                        data.rom.fs.script.offset = offset
+                        data.download.script_addr = string.format("0x%08X", 0x80FC000-chip.flash_fs_size - chip.flash_script_size)
+                        data.rom.fs.script.offset = data.download.script_addr
                         data.rom.fs.script.size = chip.flash_script_size // 1024
+                        print("1M布局", "脚本区偏移量", data.download.script_addr)
+                    end
+                    -- 添加 OTA 升级区地址
+                    if fota_offset > 0 then
+                        data.download.ota_addr = string.format("0x%08X", chip.flash_base + fota_offset)
+                        print("分区表布局", "OTA升级区偏移量", data.download.ota_addr)
                     end
                     if chip.use_64bit then
                         data.script.bitw = 64

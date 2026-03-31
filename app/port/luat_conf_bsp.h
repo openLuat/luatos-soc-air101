@@ -11,9 +11,9 @@
 //------------------------------------------------------
 
 
-// Air101 与 Air103 的Flash大小有差异,需要区分
-// 可选值, AIR101 AIR103 AIR601 Air690 分别对应3种模块
-#define AIR101
+// 芯片型号选择
+// 可选值: AIR101, AIR103, AIR601, AIR690, AIR6208
+#define AIR6208
 
 // 启用64位虚拟机
 #define LUAT_CONF_VM_64bit
@@ -66,7 +66,7 @@
 
 // 其他网络功能
 
-// #define LUAT_USE_FOTA 1
+#define LUAT_USE_FOTA 1
 
 // #define LUAT_USE_IOTAUTH 1
 
@@ -77,7 +77,7 @@
 #define LUAT_USE_ZBUFF  1
 #define LUAT_USE_PACK  1
 // #define LUAT_USE_LIBGNSS  1
-// #define LUAT_USE_FS  1
+#define LUAT_USE_FS  1
 // #define LUAT_USE_SENSOR  1
 // #define LUAT_USE_SFUD  1
 // #define LUAT_USE_IR 1

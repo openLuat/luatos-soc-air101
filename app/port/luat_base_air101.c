@@ -334,7 +334,9 @@ void luat_openlibs(lua_State *L) {
 
 const char* luat_os_bsp(void)
 {
-#if defined(AIR601)
+#if defined(AIR6208)
+    return "AIR6208";
+#elif defined(AIR601)
     return "AIR601";
 #elif defined(AIR690)
     return "AIR690";

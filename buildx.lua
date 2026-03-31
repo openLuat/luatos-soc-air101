@@ -200,6 +200,11 @@ function chip()
     result.use_nimble = NIMBLE_CONF
     result.use_tls = TLS_CONF
     result.ram_end = ram_end
+    
+    -- 添加分区表原始信息供 after_build 使用
+    result.flash_base = flash_base
+    result.partitions = partitions
+    result.script_offset = partitions.script and partitions.script.offset or 0
 
     return result
 end

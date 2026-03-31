@@ -5,8 +5,8 @@
 #
 # Name,        Type,       Offset,       Size
 secboot,       boot,       0x000000,     64K
-fota,          ota,        0x010000,     1536K
-app,           app,        0x190000,     2112K
-kv,            data,       0x3A0000,     64K
-script,        script,     0x3B0000,     256K
-fs,            fs,         0x3F0000,     48K
+app,           app,        0x010000,     2112K
+kv,            data,       0x220000,     64K
+script,        script,     0x230000,     256K
+fs,            fs,         0x270000,     48K
+fota,          ota,        0x280000,     1536K

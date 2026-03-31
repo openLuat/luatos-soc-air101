@@ -1,7 +1,7 @@
 {
     "version" : 1,
     "chip" : {
-        "type" : "air101",
+        "type" : "air6208",
         "ram"  :  {
             "total" : 288,
             "sys" : 64,
@@ -9,11 +9,11 @@
         }
     },
     "rom": {
-        "file" : "AIR101.fls",
+        "file" : "AIR6208.fls",
         "fs" : {
             "script" : {
-                "offset" : "0x081E0000",
-                "size" : 64,
+                "offset" : "0x08230000",
+                "size" : 256,
                 "type" : "luadb"
             }
         },
@@ -37,14 +37,14 @@
     "user" : {
         "project" : "",
         "version" : "",
-        "log_br" : "2000000"
+        "log_br" : "115200"
     },
     "download" : {
         "core_addr" : "0x08000000",
-        "app_addr" : "0x08011000",
-        "script_addr" : "0x081E0000",
+        "app_addr" : "0x08010000",
+        "script_addr" : "0x08230000",
         "user_addr" : "0x00000000",
-        "ota_addr" : "0x08010000",
+        "ota_addr" : "0x08280000",
         "force_br" : "2M"
     }
 }

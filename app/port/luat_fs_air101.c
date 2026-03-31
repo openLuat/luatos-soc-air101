@@ -41,24 +41,27 @@ void lv_split_jpeg_init(void);
 #endif
 
 void luat_fs_update_addr(void) {
-#if (defined(AIR103) || defined(AIR601))
+#if defined(AIR6208)
+    // 4MB Flash - 从分区表计算地址
+    // script: 0x230000 (256K), fs: 0x270000 (48K)
+    luadb_addr = 0x230000;
+    lfs_addr = 0x270000 - (LUAT_FS_SIZE*1024);
+    lfs_size_kb = LUAT_FS_SIZE;
+#elif (defined(AIR103) || defined(AIR601))
+    // 1MB Flash
     luadb_addr =  0x0E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
+    lfs_addr = 0x0FC000 - (LUAT_FS_SIZE*1024);
+    lfs_size_kb = LUAT_FS_SIZE;
 #else
+    // 2MB Flash (AIR101/AIR690)
     luadb_addr =  0x1E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
+    lfs_addr = 0x1FC000 - (LUAT_FS_SIZE*1024);
+    lfs_size_kb = LUAT_FS_SIZE;
 #endif
-    //LLOGD("luadb_addr 0x%08X", luadb_addr);
-    //LLOGD("luadb_addr ptr %p", ptr);
-#if (defined(AIR103) || defined(AIR601))
-        lfs_addr = 0x0FC000 - (LUAT_FS_SIZE*1024);
-        lfs_size_kb = LUAT_FS_SIZE;
-#else
-        lfs_addr = 0x1FC000 - (LUAT_FS_SIZE*1024);
-        lfs_size_kb = LUAT_FS_SIZE;
-#endif
-        kv_addr = luadb_addr - kv_size_kb*1024U;
-    // }
-	if (LUAT_FS_SIZE != 48)
-    	LLOGD("可读写文件系统大小 %dkb flash偏移量 %08X", LUAT_FS_SIZE, lfs_addr);
+    kv_addr = luadb_addr - kv_size_kb*1024U;
+    
+    if (LUAT_FS_SIZE != 48)
+        LLOGD("可读写文件系统大小 %dkb flash偏移量 %08X", LUAT_FS_SIZE, lfs_addr);
 }
 
 int luat_fs_init(void) {

@@ -1,7 +1,7 @@
 {
     "version" : 1,
     "chip" : {
-        "type" : "air103",
+        "type" : "air601",
         "ram"  :  {
             "total" : 288,
             "sys" : 64,
@@ -12,8 +12,8 @@
         "file" : "AIR601.fls",
         "fs" : {
             "script" : {
-                "offset" : "80E0000",
-                "size" : 112,
+                "offset" : "0x080E0000",
+                "size" : 64,
                 "type" : "luadb"
             }
         },
@@ -28,7 +28,7 @@
         }
     },
     "script" : {
-		"file" : "script.img",
+        "file" : "script.img",
         "lua" : "5.3",
         "bitw" : 32,
         "use-luac" : true,
@@ -39,11 +39,12 @@
         "version" : "",
         "log_br" : "2000000"
     },
-	"download" : {
-		"core_addr" : "0x00000000",
-		"app_addr" : "0x00000000",
-		"script_addr" : "0x80E0000",
-		"user_addr" : "0x00000000",
+    "download" : {
+        "core_addr" : "0x08000000",
+        "app_addr" : "0x08011000",
+        "script_addr" : "0x080E0000",
+        "user_addr" : "0x00000000",
+        "ota_addr" : "0x08010000",
         "force_br" : "2M"
-	}
+    }
 }
