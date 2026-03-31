@@ -81,6 +81,7 @@ add_cxflags("-Wno-unused-function")
 -- add_cxflags("-Wno-int-to-pointer-cast")
 
 add_cflags("-fno-builtin-exit -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strlen -fno-builtin-calloc -fno-builtin-malloc -fno-builtin-free")
+add_cflags("-fjump-tables -ftree-switch-conversion")
 
 -- add_cflags("-Werror=unused-value")
 
