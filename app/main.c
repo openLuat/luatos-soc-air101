@@ -6,6 +6,7 @@
 #include "wm_osal.h"
 #include "wm_watchdog.h"
 #include "wm_cpu.h"
+#include "wm_internal_flash.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -194,6 +195,13 @@ void UserMain(void){
 	luat_wlan_get_mac(0, tmpmac);
 	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 #endif
+	
+	int32_t flash_id = 0;
+	int32_t flash_size = 0;
+	extern int tls_fls_get_param(u8 type, void *param);
+	tls_fls_get_param(TLS_FLS_PARAM_TYPE_FLASH_ID, &flash_id);
+	tls_fls_get_param(TLS_FLS_PARAM_TYPE_SIZE, &flash_size);
+	LLOGD("flash id 0x%x , size 0x%x", flash_id, flash_size);
 
 
 // 如要使用psram,启用以下代码,并重新编译sdk

@@ -112,6 +112,7 @@ typedef struct
 #define TLS_FLS_PARAM_TYPE_PAGE_SIZE      (2)
 #define TLS_FLS_PARAM_TYPE_PROG_SIZE      (3)
 #define TLS_FLS_PARAM_TYPE_SECTOR_SIZE      (4)
+#define TLS_FLS_PARAM_TYPE_FLASH_ID      (5)
 
 #define TLS_FLS_FLAG_UNDER_PROTECT      (1<<0)
 #define TLS_FLS_FLAG_FAST_READ      (1<<1)

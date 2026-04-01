@@ -1402,7 +1402,9 @@ int tls_fls_get_param(u8 type, void *param)
     case TLS_FLS_PARAM_TYPE_SECTOR_SIZE:
         *((u32 *) param) = INSIDE_FLS_SECTOR_SIZE;
         break;
-
+    case TLS_FLS_PARAM_TYPE_FLASH_ID:
+        *((u32 *) param) = inside_fls->flashid;
+        break;
     default:
         TLS_DBGPRT_WARNING("invalid parameter ID!\n");
         err = TLS_FLS_STATUS_EINVAL;
