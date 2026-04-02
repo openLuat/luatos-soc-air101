@@ -36,17 +36,31 @@ static uint32_t fota_write_offset;
 static uint32_t ota_zone_size;
 static uint32_t upgrade_img_addr;
 static uint32_t fota_head_check;
-// static IMAGE_HEADER_PARAM_ST fota_head;
+
+// 大缓冲区 - 减少Flash写入次数，每次写入约100ms
+#define FOTA_BUFFER_SIZE (32 * 1024)  // 32KB缓冲区
+static uint8_t* fota_buffer;  // 动态分配
+static uint32_t fota_buffer_len;
 
 static int check_image_head(IMAGE_HEADER_PARAM_ST* imghead, const char* tag);
 static uint32_t img_checksum(const char* ptr, size_t len);
+void luat_fota_boot_check(void);
 static void check_ota_zone(void);
 
 int luat_fota_init(uint32_t start_address, uint32_t len, luat_spi_device_t* spi_device, const char *path, uint32_t pathlen) {
     fota_state = FOTA_ONGO;
     fota_write_offset = 0;
     fota_head_check = 0;
-    // 读取update区域位置及大小, 按4k对齐的方式, 清除对应的区域
+    fota_buffer_len = 0;
+    
+    // 动态分配缓冲区（从PSRAM）
+    if (fota_buffer == NULL) {
+        fota_buffer = luat_heap_malloc(FOTA_BUFFER_SIZE);
+        if (fota_buffer == NULL) {
+            LLOGE("无法分配OTA缓冲区");
+            return -1;
+        }
+    }
     for (size_t i = 0; i < ota_zone_size / 4096; i++)
     {
         // LLOGD("清除ota区域: %08X", upgrade_img_addr + i * 4096);
@@ -57,65 +71,97 @@ int luat_fota_init(uint32_t start_address, uint32_t len, luat_spi_device_t* spi_
 }
 
 int luat_fota_write(uint8_t *data, uint32_t len) {
-    if (len + fota_write_offset > ota_zone_size) {
-        LLOGD("write %p %d -> %08X %08X", data, len, fota_write_offset, upgrade_img_addr + fota_write_offset);
-        LLOGE("OTA区域写满, 无法继续写入");
+    if (fota_state != FOTA_ONGO) {
         return -1;
     }
-    int ret = tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, data, len);
-    fota_write_offset += len;
-    LLOGD("write %p %d -> %08X %08X", data, len, fota_write_offset, upgrade_img_addr + fota_write_offset);
-    if (ret) {
-        LLOGD("tls_fls_write_without_erase ret %d", ret);
-        return ret;
+    if (fota_buffer == NULL) {
+        return -1;
     }
-    if (fota_head_check == 0 && fota_write_offset >= sizeof(IMAGE_HEADER_PARAM_ST)) {
-        // 检查头部magic_no
+    
+    uint32_t offset = 0;
+    while (offset < len) {
+        uint32_t can_copy = FOTA_BUFFER_SIZE - fota_buffer_len;
+        uint32_t remaining = len - offset;
+        uint32_t copy_len = (can_copy < remaining) ? can_copy : remaining;
+        
+        memcpy(fota_buffer + fota_buffer_len, data + offset, copy_len);
+        fota_buffer_len += copy_len;
+        offset += copy_len;
+        
+        // 缓冲区满时写入Flash
+        if (fota_buffer_len >= FOTA_BUFFER_SIZE) {
+            if (fota_write_offset + fota_buffer_len > ota_zone_size) {
+                LLOGE("OTA区域写满");
+                return -1;
+            }
+            
+            tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+            fota_write_offset += fota_buffer_len;
+            fota_buffer_len = 0;
+        }
+    }
+    
+    // 头部检查
+    if (fota_head_check == 0 && fota_write_offset + fota_buffer_len >= sizeof(IMAGE_HEADER_PARAM_ST)) {
+        // 先刷新缓冲区
+        if (fota_buffer_len > 0) {
+            tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+            fota_write_offset += fota_buffer_len;
+            fota_buffer_len = 0;
+        }
+        
         IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
         if (imghead->magic_no != MAGIC_NO) {
-            LLOGD("fota包的magic_no错误, 0x%08X", imghead->magic_no);
+            LLOGE("magic_no错误: %08X", imghead->magic_no);
             return -2;
         }
-        // 检查头部校验和
-        // 计算一下header的checksum
         uint32_t cm = img_checksum((const char*)imghead, sizeof(IMAGE_HEADER_PARAM_ST) - 4);
         if (cm != imghead->hd_checksum) {
-            LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->hd_checksum, cm);
+            LLOGE("头部CRC错误");
             return -3;
         }
         fota_head_check = 1;
+        LLOGI("固件头部校验通过");
     }
+    
     return 0;
 }
 
 int luat_fota_done(void) {
+    // 刷新剩余数据
+    if (fota_buffer_len > 0) {
+        if (fota_write_offset + fota_buffer_len > ota_zone_size) {
+            LLOGE("OTA区域写满");
+            return -1;
+        }
+        tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+        fota_write_offset += fota_buffer_len;
+        fota_buffer_len = 0;
+    }
+    
     if (fota_write_offset == 0) {
-        LLOGE("未写入任何数据, 无法完成OTA");
+        LLOGE("未写入数据");
         return -1;
     }
+    
     if (fota_write_offset < sizeof(IMAGE_HEADER_PARAM_ST)) {
-        LLOGI("写入数据小于最小长度, 还不能判断");
         return -2;
     }
-    // 写入长度已经超过最小长度, 判断是否是合法的镜像
-    if (fota_write_offset < sizeof(IMAGE_HEADER_PARAM_ST)) {
-        LLOGI("fota头部尚未接收完成");
-        return -3;
-    }
+    
     IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
-    if (imghead->img_len > fota_write_offset + sizeof(IMAGE_HEADER_PARAM_ST)) {
-        LLOGI("fota数据还不够, 继续等数据");
+    if (imghead->img_len + sizeof(IMAGE_HEADER_PARAM_ST) > fota_write_offset) {
         return -4;
     }
 
-    // 写入长度足够, 判断是否是合法的镜像, 开始计算check sum
     uint32_t cm = img_checksum((const char*)upgrade_img_addr + sizeof(IMAGE_HEADER_PARAM_ST), imghead->img_len);
     if (cm != imghead->org_checksum) {
-        LLOGD("foto包的头部校验和不正确 expect %08X but %08X", imghead->org_checksum, cm);
+        LLOGE("CRC校验失败");
         return -3;
     }
-    LLOGD("FOTA数据校验通过, 写入长度 %d", fota_write_offset);
+    
+    LLOGI("FOTA数据校验通过, 写入长度 %d", fota_write_offset);
     fota_state = FOTA_DONE;
+    luat_fota_boot_check();
     return 0;
 }
 
@@ -125,25 +171,24 @@ int luat_fota_end(uint8_t is_ok) {
         IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
         if (imghead->img_attr.b.img_type == 1) {
 #if defined(AIR6208)
-            // AIR6208 使用 4MB Flash
-            // Bootloader 可能使用默认的 2MB Flash 地址 (0x81FF000) 或正确的 4MB 地址 (0x83FF000)
-            // 为确保兼容，在两个地址都写入 OTA 标志
+            // AIR6208: 8MB Flash
+            // Bootloader读取Flash ID后动态计算OTA标志地址
+            // OTA标志地址 = Flash基址 + Flash大小 - 4KB = 0x08000000 + 0x800000 - 0x1000 = 0x87FF000
             
-            // 写入到 4MB Flash 的正确地址
-            uint32_t ota_flag_addr_4mb = 0x083FF000;
-            LLOGI("整包升级,写入升级标志(4MB) addr %08X checksum %08X", ota_flag_addr_4mb, imghead->org_checksum);
-            ret = tls_fls_write(ota_flag_addr_4mb, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
+            uint32_t ota_flag_addr = 0x087FF000;  // 8MB Flash末尾-4K
+            LLOGI("整包升级,写入升级标志 addr %08X checksum %08X", ota_flag_addr, imghead->org_checksum);
+            ret = tls_fls_write(ota_flag_addr, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
             if (ret) {
-                LLOGE("写入升级标志位(4MB)失败, ret %d", ret);
+                LLOGE("写入升级标志位失败, ret %d", ret);
             }
             
-            // 同时写入到默认的 2MB Flash 地址，以防 Bootloader 使用硬编码地址
-            uint32_t ota_flag_addr_2mb = 0x081FF000;
-            LLOGI("整包升级,写入升级标志(2MB兼容) addr %08X checksum %08X", ota_flag_addr_2mb, imghead->org_checksum);
-            ret = tls_fls_write(ota_flag_addr_2mb, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
-            if (ret) {
-                LLOGE("写入升级标志位(2MB兼容)失败, ret %d", ret);
-            }
+            // 验证写入结果
+            uint32_t verify_checksum = 0;
+            tls_fls_read(ota_flag_addr, (u8 *)&verify_checksum, sizeof(verify_checksum));
+            LLOGI("验证写入: 期望 %08X, 实际读取 %08X", imghead->org_checksum, verify_checksum);
+            
+            // 调试信息
+            LLOGI("OTA区域地址: 0x%08X, 大小: %d KB", upgrade_img_addr, ota_zone_size/1024);
 #else
             // 2MB Flash (AIR101/AIR690) 使用动态地址
             LLOGI("整包升级,写入升级标志 addr %08X checksum %08X", TLS_FLASH_OTA_FLAG_ADDR, imghead->org_checksum);
@@ -246,13 +291,16 @@ void luat_fota_boot_check(void) {
     // 计算出OTA区域大小, 运行区镜像的大小
 
 #if defined(AIR6208)
-    // AIR6208: FOTA 区域在 0x280000, 大小 1536K
-    // 完整的 Flash 地址 = 0x08000000 + 0x280000 = 0x08280000
-    upgrade_img_addr = 0x08280000;
-    ota_zone_size = 1536 * 1024;  // 1536K
-    // 强制修正 TLS_FLASH_OTA_FLAG_ADDR 为 4MB Flash 的地址
-    // 因为 tls_fls_sys_param_postion_init 可能检测到错误的 Flash 大小
-    TLS_FLASH_OTA_FLAG_ADDR = 0x083FF000;  // 4MB Flash: 0x08000000 + 0x400000 - 0x1000
+    // AIR6208: 使用 8M Flash
+    // 分区表配置 (新顺序: secboot -> fota -> app -> kv -> script -> fs):
+    // secboot: 0x08000000 - 0x08010000 (64K)
+    // fota:    0x08010000 - 0x08210000 (2048K)
+    // app:     0x08210000 - 0x08420000 (2112K)
+    // kv:      0x08420000 - 0x08430000 (64K)
+    // script:  0x08430000 - 0x084B0000 (512K)
+    // fs:      0x084B0000 - 0x08800000 (3392K)
+    upgrade_img_addr = 0x08010000;  // fota分区起始
+    ota_zone_size = 2048 * 1024;    // 2048K
 #else
     // 2MB Flash (AIR101/AIR690)
     upgrade_img_addr = secimg->upgrade_img_addr;
@@ -263,6 +311,21 @@ void luat_fota_boot_check(void) {
     LLOGI("OTA区域地址: 0x%08X, 大小: %d KB", upgrade_img_addr, ota_zone_size/1024);
     LLOGI("运行区地址: 0x%08X", (uint32_t)runimg);
     LLOGI("secimg->upgrade_img_addr: 0x%08X", secimg->upgrade_img_addr);
+
+#if defined(AIR6208)
+    // 调试: 检查OTA标志地址的内容
+    LLOGI("========================================");
+    LLOGI("OTA标志状态检查:");
+    uint32_t flag_8mb = 0, flag_2mb = 0;
+    tls_fls_read(0x087FF000, (u8 *)&flag_8mb, sizeof(flag_8mb));
+    tls_fls_read(0x081FF000, (u8 *)&flag_2mb, sizeof(flag_2mb));
+    LLOGI("  0x87FF000 (8MB): %08X %s", flag_8mb, 
+          (flag_8mb != 0xFFFFFFFF) ? "<- 有OTA标志!" : "(空)");
+    LLOGI("  0x81FF000 (2MB): %08X %s", flag_2mb,
+          (flag_2mb != 0xFFFFFFFF) ? "<- 有OTA标志!" : "(空)");
+    LLOGI("  TLS_FLASH_OTA_FLAG_ADDR: %08X", TLS_FLASH_OTA_FLAG_ADDR);
+    LLOGI("========================================");
+#endif
 
     // 检查OTA区域的数据
     check_ota_zone();
@@ -300,30 +363,37 @@ static void check_ota_zone(void) {
     LLOGI("========================================");
     LLOGI("关键地址比较:");
     IMAGE_HEADER_PARAM_ST* secimg = (IMAGE_HEADER_PARAM_ST*)0x8002000;
-    IMAGE_HEADER_PARAM_ST* runimg = (secimg->next);
+    IMAGE_HEADER_PARAM_ST* runimg_header = (secimg->next);
+    
+    // 获取当前运行镜像的 img_addr（代码运行地址）
+    uint32_t run_img_addr = runimg_header->img_addr;
     
     // 提取地址的低24位用于比较（去除Flash base）
-    uint32_t runimg_low = (uint32_t)runimg & 0x00FFFFFF;
+    uint32_t run_img_addr_low = run_img_addr & 0x00FFFFFF;
     uint32_t upgrade_low = upgrade_img_addr & 0x00FFFFFF;
     uint32_t ota_img_addr = imghead->img_addr & 0x00FFFFFF;
     uint32_t ota_upgrade_addr = imghead->upgrade_img_addr & 0x00FFFFFF;
     
-    LLOGI("  OTA包中的 img_addr:        0x%08X (低24位: 0x%06X)", imghead->img_addr, ota_img_addr);
-    LLOGI("  当前运行区地址 (runimg):    0x%08X (低24位: 0x%06X)", (uint32_t)runimg, runimg_low);
-    LLOGI("  OTA包中的 upgrade_img_addr: 0x%08X (低24位: 0x%06X)", imghead->upgrade_img_addr, ota_upgrade_addr);
-    LLOGI("  实际OTA区域地址:            0x%08X (低24位: 0x%06X)", upgrade_img_addr, upgrade_low);
-    LLOGI("  secimg->upgrade_img_addr:   0x%08X", secimg->upgrade_img_addr);
+    LLOGI("  当前运行镜像:");
+    LLOGI("    Image Header 地址:          0x%08X", (uint32_t)runimg_header);
+    LLOGI("    img_addr (代码运行地址):    0x%08X (低24位: 0x%06X)", run_img_addr, run_img_addr_low);
+    LLOGI("  OTA包:");
+    LLOGI("    img_addr (代码运行地址):    0x%08X (低24位: 0x%06X)", imghead->img_addr, ota_img_addr);
+    LLOGI("    upgrade_img_addr (OTA区):   0x%08X (低24位: 0x%06X)", imghead->upgrade_img_addr, ota_upgrade_addr);
+    LLOGI("  系统配置:");
+    LLOGI("    实际OTA区域地址:            0x%08X (低24位: 0x%06X)", upgrade_img_addr, upgrade_low);
+    LLOGI("    secimg->upgrade_img_addr:   0x%08X", secimg->upgrade_img_addr);
     
     // 判断地址是否匹配（比较低24位）
-    if (ota_img_addr != runimg_low) {
-        LLOGI("警告: OTA包的img_addr低24位(0x%06X) 与运行区地址低24位(0x%06X)不匹配!", 
-              ota_img_addr, runimg_low);
+    if (ota_img_addr != run_img_addr_low) {
+        LLOGI("警告: OTA包的img_addr(0x%08X) 与当前运行镜像的img_addr(0x%08X)不匹配!", 
+              imghead->img_addr, run_img_addr);
     } else {
-        LLOGI("  ✓ img_addr 匹配");
+        LLOGI("  ✓ img_addr 匹配 (代码运行地址)");
     }
     if (ota_upgrade_addr != upgrade_low) {
-        LLOGI("警告: OTA包的upgrade_img_addr低24位(0x%06X) 与实际OTA区低24位(0x%06X)不匹配!", 
-              ota_upgrade_addr, upgrade_low);
+        LLOGI("警告: OTA包的upgrade_img_addr(0x%08X) 与实际OTA区(0x%08X)不匹配!", 
+              imghead->upgrade_img_addr, upgrade_img_addr);
     } else {
         LLOGI("  ✓ upgrade_img_addr 匹配");
     }

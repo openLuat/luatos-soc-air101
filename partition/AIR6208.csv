@@ -1,12 +1,12 @@
-# Partition Table: AIR6208 (4MB Flash)
+# Partition Table: AIR6208 (8MB Flash)
 # flash_base = 0x08000000
-# flash_size = 4096K
+# flash_size = 8192K
 # ram_end = 0x20028000
 #
 # Name,        Type,       Offset,       Size
 secboot,       boot,       0x000000,     64K
-app,           app,        0x010000,     2112K
-kv,            data,       0x220000,     64K
-script,        script,     0x230000,     256K
-fs,            fs,         0x270000,     48K
-fota,          ota,        0x280000,     1536K
+fota,          ota,        0x010000,     2048K
+app,           app,        0x210000,     2112K
+kv,            data,       0x420000,     64K
+script,        script,     0x430000,     512K
+fs,            fs,         0x4B0000,     3392K

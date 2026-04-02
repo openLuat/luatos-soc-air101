@@ -22,7 +22,21 @@ static struct tls_inside_fls *inside_fls = NULL;
 // read/write use the same cache, protect by inside_fls->fls_lock
 static u8 tls_fls_cache[INSIDE_FLS_SECTOR_SIZE];
 
-/**System parameter, default for 2M flash*/
+/**System parameter, default for 2M flash
+ * For AIR6208 with 8M external flash, these will be re-initialized at runtime
+ * by tls_fls_sys_param_postion_init() based on actual flash density.
+ */
+#ifdef AIR6208
+/* Default addresses for 8M Flash - will be adjusted at runtime */
+unsigned int  TLS_FLASH_MESH_PARAM_ADDR      =        (0x87FA000UL);
+unsigned int  TLS_FLASH_PARAM_DEFAULT        =		  (0x87FB000UL);
+unsigned int  TLS_FLASH_PARAM1_ADDR          =		  (0x87FC000UL);
+unsigned int  TLS_FLASH_PARAM2_ADDR          =		  (0x87FD000UL);
+unsigned int  TLS_FLASH_PARAM_RESTORE_ADDR   =	      (0x87FE000UL);
+unsigned int  TLS_FLASH_OTA_FLAG_ADDR        =	      (0x87FF000UL);
+unsigned int  TLS_FLASH_END_ADDR             =		  (0x87FFFFFUL);
+#else
+/* Default addresses for 2M Flash */
 unsigned int  TLS_FLASH_MESH_PARAM_ADDR      =        (0x81FA000UL);
 unsigned int  TLS_FLASH_PARAM_DEFAULT        =		  (0x81FB000UL);
 unsigned int  TLS_FLASH_PARAM1_ADDR          =		  (0x81FC000UL);
@@ -30,6 +44,7 @@ unsigned int  TLS_FLASH_PARAM2_ADDR          =		  (0x81FD000UL);
 unsigned int  TLS_FLASH_PARAM_RESTORE_ADDR   =	      (0x81FE000UL);
 unsigned int  TLS_FLASH_OTA_FLAG_ADDR        =	      (0x81FF000UL);
 unsigned int  TLS_FLASH_END_ADDR             =		  (0x81FFFFFUL);
+#endif
 
 
 static vu32 read_first_value(void)

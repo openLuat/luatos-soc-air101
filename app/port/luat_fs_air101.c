@@ -42,10 +42,12 @@ void lv_split_jpeg_init(void);
 
 void luat_fs_update_addr(void) {
 #if defined(AIR6208)
-    // 4MB Flash - 从分区表计算地址
-    // script: 0x230000 (256K), fs: 0x270000 (48K)
-    luadb_addr = 0x230000;
-    lfs_addr = 0x270000 - (LUAT_FS_SIZE*1024);
+    // AIR6208 8MB Flash - 分区表配置:
+    // kv:      0x420000 (64K)
+    // script:  0x430000 (512K)
+    // fs:      0x4B0000 (3392K)
+    luadb_addr = 0x430000;
+    lfs_addr = 0x4B0000;
     lfs_size_kb = LUAT_FS_SIZE;
 #elif (defined(AIR103) || defined(AIR601))
     // 1MB Flash

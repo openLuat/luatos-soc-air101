@@ -759,10 +759,12 @@ target("air10x")
                     local script_offset = chip.partitions.script and chip.partitions.script.offset or 0
                     local fota_offset = chip.partitions.fota and chip.partitions.fota.offset or 0
                     
-                    -- 更新 app_addr (运行地址，app分区起始)
+                    -- 更新 app_addr (app分区起始 = header地址)
                     if app_offset > 0 then
                         data.download.app_addr = string.format("0x%08X", chip.flash_base + app_offset)
-                        print("分区表布局", "App运行地址", data.download.app_addr)
+                        -- 添加 run_addr (代码实际运行地址 = app_addr + 0x400)
+                        data.download.run_addr = string.format("0x%08X", chip.flash_base + app_offset + 1024)
+                        print("分区表布局", "App header地址", data.download.app_addr, "代码运行地址", data.download.run_addr)
                     end
                     
                     -- 更新 core_addr (secboot地址)

@@ -22,7 +22,13 @@
 #define CODE_RUN_START_ADDR                 (0x80D0000UL)
 
 /**Area can be used by User*/
+#ifdef AIR6208
+/* AIR6208 uses 8M external Flash, user area starts at 8M - 128KB = 0x87E0000 */
+#define USER_ADDR_START						(0x87E0000UL)
+#else
+/* Default for 2M Flash, user area starts at 2M - 128KB = 0x81E0000 */
 #define USER_ADDR_START						(0x81E0000UL)
+#endif
 
 
 /**System parameter defined in wm_internal_fls.c*/
