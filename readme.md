@@ -1,7 +1,3 @@
-***本仓库自2024年8月15日起封存不再进行更新与维护！***
-
-
-
 # Air101/Air103/Air601 固件源码库
 
 Air101/Air103/Air601是基于平头哥XT804内核设计的soc
@@ -15,7 +11,9 @@ Air101/Air103/Air601是基于平头哥XT804内核设计的soc
 ## 编译说明
 见wiki编译教程[Air101 / Air103 - LuatOS 文档](https://wiki.luatos.com/develop/compile/Air101.html)
 
-关于Air601编译, luat_conf_bsp.h 中设置为AIR601,编译出来就是AIR601固件.
+关于Air601编译, luat_conf_bsp.h 中设置为AIR601,编译出来就是AIR601固件
+
+Github上的AI工具使用这个链接下载GCC: https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz
 
 ## Air101/Air103 相关资料
 
