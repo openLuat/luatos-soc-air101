@@ -622,6 +622,9 @@ static int is_mac_ok(u8 mac_addr[6]) {
             return 0;
         }
     }
+    if (mac_addr[0] != 0xC8 || mac_addr[1] != 0xC2) {
+        return 0;
+    }
 	return 1;
 }
 
@@ -629,89 +632,59 @@ void sys_mac_init() {
 	u8 tmp_mac[6] = {0};
     u8 mac_addr[6] = {0};
 	u8 ap_mac[6] = {0};
+	u8 ble_mac[6] = {0};
+
     unsigned  char unique_id [20] = {0};
     tls_fls_read_unique_id(unique_id);
 	int ret = 0;
 
-#ifdef LUAT_USE_NIMBLE
-	// 读蓝牙mac, 如果是默认值,就根据unique_id读取
-	uint8_t bt_mac[6];
-	// 缺省mac C0:25:08:09:01:10
-	tls_get_bt_mac_addr(bt_mac);
-	if (!memcmp(bt_mac, default_mac, 6)) { // 看来是默认MAC, 那就改一下吧
-		if (unique_id[1] == 0x10){
-			memcpy(bt_mac, unique_id + 10, 6);
-		}
-		else {
-			memcpy(bt_mac, unique_id + 2, 6);
-		}
-		tls_set_bt_mac_addr(bt_mac);
-	}
-	LLOGD("BLE_4.2 %02X:%02X:%02X:%02X:%02X:%02X", bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4], bt_mac[5]);
-#endif
-
-#ifdef LUAT_USE_WLAN
-    luat_wlan_get_mac(0, mac_addr);
-	luat_wlan_get_mac(1, ap_mac);
-	//printf("CMD_WIFI_MAC ret %d %02X%02X%02X%02X%02X%02X\n", ret, mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-	int sta_mac_ok = is_mac_ok(mac_addr);
-	int ap_mac_ok = is_mac_ok(ap_mac);
-
-	// 其中一个合法呢?
-	if (sta_mac_ok && !ap_mac_ok) {
-		printf("sta地址合法, ap地址不合法\n");
-		memcpy(ap_mac, mac_addr, 6);
-	}
-	else if (!sta_mac_ok && ap_mac_ok) {
-		printf("sta地址不合法, ap地址合法\n");
-		memcpy(mac_addr, ap_mac, 6);
-	}
-	else if (!sta_mac_ok && !ap_mac_ok){ // 均不合法, 那就用uniqid
-		printf("sta地址不合法, ap地址不合法\n");
-		if (unique_id[1] == 0x10){
-			memcpy(mac_addr, unique_id + 12, 6);
-		}
-		else {
-			memcpy(mac_addr, unique_id + 4, 6);
-		}
-        mac_addr[0] = 0x0C;
-        for (size_t i = 1; i < 6; i++)
+    // 重写MAC检查逻辑
+    // STA是基础地址, AP在STA的基础上+1, BLE在AP的基础上+1
+    // 先检查MAC地址是否合法, 不合法才进行修正
+    // MAC地址的合法性检查规则: C8C2开头
+    // 0. 如果不是C8C2开头, 那就是不合法,打印日志, 提示用户设置正确的MAC地址
+    // 1. 如果是C8C2开头, 但是后面有0x00或者0xFF, 那就是不合法, 打印日志, 提示用户设置正确的MAC地址
+    tls_ft_param_get(CMD_WIFI_MAC, mac_addr, 6);
+    if (!is_mac_ok(mac_addr)) {
+        LLOGW("Invalid MAC address, please set a correct MAC address in flash using AT+SETMAC command");
+        // 生成一个随机的MAC地址, C8C2开头, 后面4位随机
+        tmp_mac[0] = 0xC8;
+        tmp_mac[1] = 0xC2;
+        for (size_t i = 2; i < 6; i++)
         {
-            if (mac_addr[i] == 0 || mac_addr[i] == 0xFF) {
-                mac_addr[i] = 0x01;
-            }
+            tmp_mac[i] = unique_id[i-2];
         }
-		memcpy(ap_mac, mac_addr, 6);
-	}
+        // 设置STA的MAC地址
+        ret = tls_ft_param_set(CMD_WIFI_MAC, (void*)tmp_mac, 6);
+        if (ret) {
+            LLOGE("Failed to set MAC address");
+            return;
+        }
+        memcpy(mac_addr, tmp_mac, 6);
+    }
+    // 2. 检查AP和BLE的地址是否合法, 不合法就生成一个合法的地址, 设置进去
+    // AP的MAC地址应该是STA的MAC地址+1
+    tls_ft_param_get(CMD_WIFI_MACAP, ap_mac, 6);
+    if (!is_mac_ok(ap_mac)) {
+        memcpy(tmp_mac, mac_addr, 5);
+        tmp_mac[5] = mac_addr[5] + 1;
+        ret = tls_ft_param_set(CMD_WIFI_MACAP, (void*)tmp_mac, 6);
+        if (ret) {
+            LLOGE("Failed to set AP MAC address");
+            return;
+        }
+    }
+    // BLE的MAC地址应该是AP的MAC地址+1
+    tls_ft_param_get(CMD_BT_MAC, ble_mac, 6);
+    if (!is_mac_ok(ble_mac)) {
+        memcpy(tmp_mac, ap_mac, 5);
+        tmp_mac[5] = ap_mac[5] + 1;
+        ret = tls_ft_param_set(CMD_BT_MAC, (void*)tmp_mac, 6);
+        if (ret) {
+            LLOGE("Failed to set BLE MAC address");
+            return;
+        }
+    }
 
-	if (!memcmp(mac_addr, ap_mac, 6)) {
-		printf("sta与ap地址相同, 调整ap地址\n");
-		// 完全相同, 那就改一下ap的地址
-		if (ap_mac[5] == 0x01 || ap_mac[5] == 0xFE) {
-			ap_mac[5] = 0x02;
-		}
-		else {
-			ap_mac[5] += 1;
-		}
-	}
-
-	// 全部mac都得到了, 然后重新读一下mac, 不相同的就重新写入
-	
-	// 先判断sta的mac
-    luat_wlan_get_mac(0, tmp_mac);
-	if (memcmp(tmp_mac, mac_addr, 6)) {
-		// 不一致, 写入
-		tls_ft_param_set(CMD_WIFI_MAC, mac_addr, 6);
-		printf("更新STA mac %02X%02X%02X%02X%02X%02X\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-	}
-
-	// 再判断ap的mac
-    luat_wlan_get_mac(1, tmp_mac);
-	if (memcmp(tmp_mac, ap_mac, 6)) {
-		// 不一致, 写入
-		tls_ft_param_set(CMD_WIFI_MACAP, ap_mac, 6);
-		printf("更新AP mac %02X%02X%02X%02X%02X%02X\n", ap_mac[0], ap_mac[1], ap_mac[2], ap_mac[3], ap_mac[4], ap_mac[5]);
-	}
-#endif
 }
 
