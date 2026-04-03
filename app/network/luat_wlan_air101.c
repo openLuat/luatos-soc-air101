@@ -13,6 +13,7 @@
 #include "wm_wifi.h"
 #include "wm_netif.h"
 #include "wm_debug.h"
+#include "wm_crypto_hard.h"
 #include "wm_internal_flash.h"
 
 #define LUAT_LOG_TAG "wlan"
@@ -609,6 +610,42 @@ int luat_wlan_set_station_ip(luat_wlan_station_info_t *info) {
 
 extern const u8 default_mac[];
 
+static int is_unique_id_ok_for_mac(const unsigned char unique_id[20]) {
+    if (unique_id[1] < 4) {
+        return 0;
+    }
+    for (size_t i = 2; i < 6; i++)
+    {
+        if (unique_id[i] == 0 || unique_id[i] == 0xFF) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void fill_mac_suffix_with_random(u8 mac_suffix[4]) {
+    for (size_t retry = 0; retry < 4; retry++)
+    {
+        tls_crypto_trng(mac_suffix, 4);
+        if (mac_suffix[0] != 0 && mac_suffix[0] != 0xFF &&
+            mac_suffix[1] != 0 && mac_suffix[1] != 0xFF &&
+            mac_suffix[2] != 0 && mac_suffix[2] != 0xFF &&
+            mac_suffix[3] != 0 && mac_suffix[3] != 0xFF) {
+            return;
+        }
+    }
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        if (mac_suffix[i] == 0) {
+            mac_suffix[i] = 0x01 + i;
+        }
+        else if (mac_suffix[i] == 0xFF) {
+            mac_suffix[i] = 0xFE - i;
+        }
+    }
+}
+
 static int is_mac_ok(u8 mac_addr[6]) {
 
 	// 如果是默认值, 那就是不合法
@@ -635,7 +672,7 @@ void sys_mac_init() {
 	u8 ble_mac[6] = {0};
 
     unsigned  char unique_id [20] = {0};
-    tls_fls_read_unique_id(unique_id);
+    int unique_id_ok = (tls_fls_read_unique_id(unique_id) == 0) && is_unique_id_ok_for_mac(unique_id);
 	int ret = 0;
 
     // 重写MAC检查逻辑
@@ -650,9 +687,12 @@ void sys_mac_init() {
         // 生成一个随机的MAC地址, C8C2开头, 后面4位随机
         tmp_mac[0] = 0xC8;
         tmp_mac[1] = 0xC2;
-        for (size_t i = 2; i < 6; i++)
-        {
-            tmp_mac[i] = unique_id[i-2];
+        if (unique_id_ok) {
+            memcpy(&tmp_mac[2], &unique_id[2], 4);
+        }
+        else {
+            LLOGW("Unique ID contains invalid bytes, fallback to random MAC suffix");
+            fill_mac_suffix_with_random(&tmp_mac[2]);
         }
         // 设置STA的MAC地址
         ret = tls_ft_param_set(CMD_WIFI_MAC, (void*)tmp_mac, 6);
@@ -673,6 +713,7 @@ void sys_mac_init() {
             LLOGE("Failed to set AP MAC address");
             return;
         }
+        memcpy(ap_mac, tmp_mac, 6);
     }
     // BLE的MAC地址应该是AP的MAC地址+1
     tls_ft_param_get(CMD_BT_MAC, ble_mac, 6);
