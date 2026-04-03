@@ -95,7 +95,7 @@ int luat_fota_write(uint8_t *data, uint32_t len) {
                 return -1;
             }
             
-            tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+            tls_fls_write(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
             fota_write_offset += fota_buffer_len;
             fota_buffer_len = 0;
         }
@@ -105,7 +105,7 @@ int luat_fota_write(uint8_t *data, uint32_t len) {
     if (fota_head_check == 0 && fota_write_offset + fota_buffer_len >= sizeof(IMAGE_HEADER_PARAM_ST)) {
         // 先刷新缓冲区
         if (fota_buffer_len > 0) {
-            tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+            tls_fls_write(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
             fota_write_offset += fota_buffer_len;
             fota_buffer_len = 0;
         }
@@ -134,7 +134,8 @@ int luat_fota_done(void) {
             LLOGE("OTA区域写满");
             return -1;
         }
-        tls_fls_write_without_erase(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+        tls_fls_write(upgrade_img_addr + fota_write_offset, fota_buffer, fota_buffer_len);
+        LLOGI("写入数据: %08X, 大小: %d", upgrade_img_addr + fota_write_offset, fota_buffer_len);
         fota_write_offset += fota_buffer_len;
         fota_buffer_len = 0;
     }
@@ -170,33 +171,17 @@ int luat_fota_end(uint8_t is_ok) {
         int ret = 0;
         IMAGE_HEADER_PARAM_ST* imghead = (IMAGE_HEADER_PARAM_ST*)upgrade_img_addr;
         if (imghead->img_attr.b.img_type == 1) {
-#if defined(AIR6208)
-            // AIR6208: 8MB Flash
-            // Bootloader读取Flash ID后动态计算OTA标志地址
-            // OTA标志地址 = Flash基址 + Flash大小 - 4KB = 0x08000000 + 0x800000 - 0x1000 = 0x87FF000
-            
-            uint32_t ota_flag_addr = 0x087FF000;  // 8MB Flash末尾-4K
-            LLOGI("整包升级,写入升级标志 addr %08X checksum %08X", ota_flag_addr, imghead->org_checksum);
-            ret = tls_fls_write(ota_flag_addr, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
-            if (ret) {
-                LLOGE("写入升级标志位失败, ret %d", ret);
-            }
-            
-            // 验证写入结果
-            uint32_t verify_checksum = 0;
-            tls_fls_read(ota_flag_addr, (u8 *)&verify_checksum, sizeof(verify_checksum));
-            LLOGI("验证写入: 期望 %08X, 实际读取 %08X", imghead->org_checksum, verify_checksum);
-            
-            // 调试信息
-            LLOGI("OTA区域地址: 0x%08X, 大小: %d KB", upgrade_img_addr, ota_zone_size/1024);
-#else
             // 2MB Flash (AIR101/AIR690) 使用动态地址
             LLOGI("整包升级,写入升级标志 addr %08X checksum %08X", TLS_FLASH_OTA_FLAG_ADDR, imghead->org_checksum);
             ret = tls_fls_write(TLS_FLASH_OTA_FLAG_ADDR, (u8 *)&imghead->org_checksum, sizeof(imghead->org_checksum));
             if (ret) {
                 LLOGE("写入升级标志位失败, ret %d", ret);
             }
-#endif
+            
+            // 验证写入结果
+            uint32_t verify_checksum = 0;
+            tls_fls_read(TLS_FLASH_OTA_FLAG_ADDR, (u8 *)&verify_checksum, sizeof(verify_checksum));
+            LLOGI("验证写入: 期望 %08X, 实际读取 %08X", imghead->org_checksum, verify_checksum);
         }
         else {
             LLOGI("仅脚本升级, 重启后自动更新");
@@ -316,14 +301,10 @@ void luat_fota_boot_check(void) {
     // 调试: 检查OTA标志地址的内容
     LLOGI("========================================");
     LLOGI("OTA标志状态检查:");
-    uint32_t flag_8mb = 0, flag_2mb = 0;
-    tls_fls_read(0x087FF000, (u8 *)&flag_8mb, sizeof(flag_8mb));
-    tls_fls_read(0x081FF000, (u8 *)&flag_2mb, sizeof(flag_2mb));
-    LLOGI("  0x87FF000 (8MB): %08X %s", flag_8mb, 
+    uint32_t flag_8mb = 0;
+    tls_fls_read(TLS_FLASH_OTA_FLAG_ADDR, (u8 *)&flag_8mb, sizeof(flag_8mb));
+    LLOGI(" %08X: %08X %s", TLS_FLASH_OTA_FLAG_ADDR, flag_8mb, 
           (flag_8mb != 0xFFFFFFFF) ? "<- 有OTA标志!" : "(空)");
-    LLOGI("  0x81FF000 (2MB): %08X %s", flag_2mb,
-          (flag_2mb != 0xFFFFFFFF) ? "<- 有OTA标志!" : "(空)");
-    LLOGI("  TLS_FLASH_OTA_FLAG_ADDR: %08X", TLS_FLASH_OTA_FLAG_ADDR);
     LLOGI("========================================");
 #endif
 
@@ -398,9 +379,8 @@ static void check_ota_zone(void) {
         LLOGI("  ✓ upgrade_img_addr 匹配");
     }
     LLOGI("========================================");
-    
+    return;
 clean:
-    // 注意: 这里不要清除OTA区域，保留数据供 Bootloader 使用
-    ;
+    tls_fls_erase((upgrade_img_addr) / INSIDE_FLS_SECTOR_SIZE);
 }
 

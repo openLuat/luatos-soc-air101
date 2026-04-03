@@ -29,7 +29,12 @@
 #define LWIP_UDP                        (TLS_CONFIG_SOCKET_RAW || TLS_CONFIG_SOCKET_STD)
 #define LWIP_ARP                        (TLS_CONFIG_SOCKET_RAW || TLS_CONFIG_SOCKET_STD)
 
+#if defined(AIR6208)
+#define MEM_SIZE                        (32 * 1024)
+#else
 #define MEM_SIZE                        (8 * 1024)
+#endif
+
 #define MEMP_NUM_SYS_TIMEOUT            (16)
 #define MEMP_NUM_UDP_PCB                6
 
@@ -64,7 +69,12 @@
 
 #define TCP_MSL 2000UL /* The maximum segment lifetime in milliseconds */
 
+#if defined(AIR6208)
+#define MEMP_NUM_TCP_SEG                64
+#else
 #define MEMP_NUM_TCP_SEG                32
+#endif
+
 
 /**
  * TCPIP_MBOX_SIZE: The mailbox size for the tcpip thread messages
