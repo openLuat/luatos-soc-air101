@@ -105,6 +105,30 @@ local function parse_csv(filepath)
         end
     end
 
+    -- 校验: flash 尾部 24K 为系统保留区, 其中最后 8K 必须是 sysparam 分区
+    local reserved_tail_size = 24 * 1024
+    local sysparam_size = 8 * 1024
+    local reserved_start = meta.flash_size - reserved_tail_size
+    local sysparam_offset = meta.flash_size - sysparam_size
+    local sysparam = partitions.sysparam
+
+    if not sysparam then
+        raise(filepath .. ": 缺少 sysparam 分区, flash 最后8K必须保留给 sysparam")
+    end
+
+    if sysparam.offset ~= sysparam_offset or sysparam.size ~= sysparam_size then
+        raise(string.format("%s: sysparam 分区必须位于 flash 最后8K (offset=0x%06X, size=0x%X), 当前为 offset=0x%06X, size=0x%X",
+            filepath, sysparam_offset, sysparam_size, sysparam.offset, sysparam.size))
+    end
+
+    for _, p in ipairs(partition_list) do
+        local part_end = p.offset + p.size
+        if p.name ~= "sysparam" and part_end > reserved_start then
+            raise(string.format("%s: 分区 %s 占用了 flash 尾部保留区, 结束地址 0x%06X 超过保留区起始 0x%06X",
+                filepath, p.name, part_end, reserved_start))
+        end
+    end
+
     return {meta = meta, partitions = partitions, partition_list = partition_list}
 end
 

@@ -9,4 +9,5 @@ fota,          ota,        0x010000,     4K
 app,           app,        0x011000,     764K
 kv,            data,       0x0D0000,     64K
 script,        script,     0x0E0000,     64K
-fs,            fs,         0x0F0000,     48K
+fs,            fs,         0x0F0000,     40K
+sysparam,      sysparam,   0x0FE000,     8K
