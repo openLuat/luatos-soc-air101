@@ -13,7 +13,7 @@ Air101/Air103/Air601是基于平头哥XT804内核设计的soc
 
 关于Air601编译, luat_conf_bsp.h 中设置为AIR601,编译出来就是AIR601固件
 
-Github上的AI工具使用这个链接下载GCC: https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz
+Github上的AI工具使用这个链接下载GCC(linux下的): https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.zip
 
 ## Air101/Air103 相关资料
 
