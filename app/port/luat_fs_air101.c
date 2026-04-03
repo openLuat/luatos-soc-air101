@@ -15,11 +15,8 @@ extern lfs_t lfs;
 
 // 分区信息
 
-// KV -- 64k
-// luadb -- N k
-// lfs - (112 + 64 - N)k
 uint32_t kv_addr;
-uint32_t kv_size_kb = 64;
+uint32_t kv_size_kb;
 uint32_t luadb_addr;
 uint32_t luadb_size_kb;
 uint32_t lfs_addr;
@@ -41,29 +38,15 @@ void lv_split_jpeg_init(void);
 #endif
 
 void luat_fs_update_addr(void) {
-#if defined(AIR6208)
-    // AIR6208 8MB Flash - 分区表配置:
-    // kv:      0x420000 (64K)
-    // script:  0x430000 (512K)
-    // fs:      0x4B0000 (3392K)
-    luadb_addr = 0x430000;
-    lfs_addr = 0x4B0000;
-    lfs_size_kb = LUAT_FS_SIZE;
-#elif (defined(AIR103) || defined(AIR601))
-    // 1MB Flash
-    luadb_addr =  0x0E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
-    lfs_addr = 0x0FC000 - (LUAT_FS_SIZE*1024);
-    lfs_size_kb = LUAT_FS_SIZE;
-#else
-    // 2MB Flash (AIR101/AIR690)
-    luadb_addr =  0x1E0000 - (LUAT_FS_SIZE + LUAT_SCRIPT_SIZE - 112) * 1024U;
-    lfs_addr = 0x1FC000 - (LUAT_FS_SIZE*1024);
-    lfs_size_kb = LUAT_FS_SIZE;
-#endif
-    kv_addr = luadb_addr - kv_size_kb*1024U;
+	kv_addr = LUAT_PARTITION_KV_ADDR;
+	kv_size_kb = LUAT_PARTITION_KV_SIZE / 1024U;
+	luadb_addr = LUAT_PARTITION_SCRIPT_ADDR;
+	luadb_size_kb = LUAT_PARTITION_SCRIPT_SIZE / 1024U;
+	lfs_addr = LUAT_PARTITION_FS_ADDR;
+	lfs_size_kb = LUAT_PARTITION_FS_SIZE / 1024U;
     
-    if (LUAT_FS_SIZE != 48)
-        LLOGD("可读写文件系统大小 %dkb flash偏移量 %08X", LUAT_FS_SIZE, lfs_addr);
+	if (lfs_size_kb != 48)
+		LLOGD("可读写文件系统大小 %dkb flash偏移量 %08X", lfs_size_kb, lfs_addr);
 }
 
 int luat_fs_init(void) {
@@ -95,7 +78,7 @@ int luat_fs_init(void) {
 		.mount_point = "/luadb/",
 	};
 	luat_fs_mount(&conf2);
-    luat_luadb_act_size = LUAT_SCRIPT_SIZE;
+	luat_luadb_act_size = luadb_size_kb;
 
 	#ifdef LUAT_USE_LVGL
 	luat_lv_fs_init();

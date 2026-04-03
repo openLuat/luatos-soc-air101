@@ -49,3 +49,4 @@ releases/
 *.lua
 doc/*
 build2/
+app/port/partition_mem_*.h

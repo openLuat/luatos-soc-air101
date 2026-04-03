@@ -721,6 +721,13 @@ target("air10x")
         local img = io.readfile("$(builddir)/out/"..TARGET_NAME..".img", {encoding = "binary"})
         local fls = io.open("$(builddir)/out/"..TARGET_NAME..".fls", "a+")
         if fls then fls:write(img) fls:close() end
+
+        -- 统计刷机文件的大小, 
+        -- 文件1 ./tools/xt804/"..TARGET_NAME.."_secboot.img"
+        -- 文件2 $(builddir)/out/"..TARGET_NAME..".bin
+        local secboot_size = io.readfile("./tools/xt804/"..TARGET_NAME.."_secboot.img", {encoding = "binary"}):len()
+        local app_size = io.readfile("$(builddir)/out/"..TARGET_NAME..".img", {encoding = "binary"}):len()
+
         -- if is_mode("debug") then
         --     os.cd("./mklfs")
         --     os.exec("./luac_536_32bits.exe -s -o ./disk/main.luac ../main.lua")
@@ -822,6 +829,8 @@ target("air10x")
                 os.rm("./soc_tools/"..TARGET_NAME..".fls")
                 return
             end
+            
+            print("刷机文件大小统计:", "secboot区", secboot_size, "app区", app_size, "总大小", secboot_size + app_size)
     end)
 target_end()
 
