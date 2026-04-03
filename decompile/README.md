@@ -36,6 +36,9 @@ This directory contains the reverse-engineered analysis of the Air101/Air103 sec
 | `secboot_image.c` | Decompiled image validation (pseudo-C) |
 | `secboot_crypto.c` | Decompiled CRC/crypto operations (pseudo-C) |
 | `secboot_memory.c` | Decompiled memory allocator (pseudo-C) |
+| `secboot_stdlib.c` | Decompiled standard library functions (pseudo-C) |
+| `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem (pseudo-C) |
+| `secboot_boot.c` | Decompiled boot parameter and app boot sequence (pseudo-C) |
 
 ## Memory Map / 内存映射
 
@@ -150,7 +153,7 @@ csky-elfabiv2-objdump -D -b binary -m csky --adjust-vma=0x08002400 tools/xt804/x
 python3 decompile/analyze_secboot.py
 ```
 
-## Function Map / 函数映射 (108 functions identified)
+## Function Map / 函数映射 (116 functions identified, 80 decompiled)
 
 See `secboot_annotated.S` for complete annotated disassembly.
 
