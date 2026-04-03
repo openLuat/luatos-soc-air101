@@ -234,16 +234,19 @@ function chip()
     table.insert(header_lines, string.format("#endif /* LUAT_PARTITION_MEM_%s_H */", TARGET_NAME))
 
     local header_content = table.concat(header_lines, "\n") .. "\n"
-    
     local header_path = "$(projectdir)/app/port/partition_mem_" .. TARGET_NAME .. ".h"
-    -- 读取文件, 内容不同才写入, 避免不必要的文件修改时间更新
-    local existing_content = io.readfile(header_path)
+    
+    existing_content = nil
+    if os.exists(header_path) then
+        -- 读取文件, 内容不同才写入, 避免不必要的文件修改时间更新
+        existing_content = io.readfile(header_path)
+    end
     if existing_content == header_content then
         print("分区内存头文件未改变: " .. header_path)
-        return result
+    else
+        io.writefile(header_path, header_content)
+        print("生成分区内存头文件: " .. header_path)
     end
-    io.writefile(header_path, header_content)
-    print("生成分区内存头文件: " .. header_path)
 
     return result
 end

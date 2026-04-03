@@ -19,9 +19,8 @@
 #define LUAT_CONF_VM_64bit
 
 // 根据型号加载对应的分区内存头文件
-// 注意：LUAT_FS_SIZE 和 LUAT_SCRIPT_SIZE 由分区表自动生成
-// 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
-// 若需要增加脚本区的大小, 那么大小必须是64的整数倍, 例如变成 128,192,256
+// 注意：分区偏移与大小均由 partition/*.csv 自动生成
+// LUAT_FS_SIZE 和 LUAT_SCRIPT_SIZE 为兼容旧代码保留的 KB 宏
 #if defined(AIR101)
 #include "partition_mem_AIR101.h"
 #elif defined(AIR103)
