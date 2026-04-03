@@ -18,14 +18,20 @@
 // 启用64位虚拟机
 #define LUAT_CONF_VM_64bit
 
+// 根据型号加载对应的分区内存头文件
+// 注意：LUAT_FS_SIZE 和 LUAT_SCRIPT_SIZE 由分区表自动生成
 // 其中文件系统区固定48k, 脚本区默认64k, 两者加起来就是默认值 64+48=112
 // 若需要增加脚本区的大小, 那么大小必须是64的整数倍, 例如变成 128,192,256
-#if defined AIR6208
-#define LUAT_FS_SIZE                3392      //文件系统大小 (AIR6208 8MB Flash)
-#define LUAT_SCRIPT_SIZE            512     //脚本大小 (AIR6208 8MB Flash)
-#else
-#define LUAT_FS_SIZE                48      //文件系统大小
-#define LUAT_SCRIPT_SIZE            64      //脚本大小
+#if defined(AIR101)
+#include "partition_mem_AIR101.h"
+#elif defined(AIR103)
+#include "partition_mem_AIR103.h"
+#elif defined(AIR601)
+#include "partition_mem_AIR601.h"
+#elif defined(AIR690)
+#include "partition_mem_AIR690.h"
+#elif defined(AIR6208)
+#include "partition_mem_AIR6208.h"
 #endif
 
 
