@@ -65,6 +65,7 @@
 #define LUAT_USE_HTTPSRV 1
 #define LUAT_USE_FTP 1
 #define LUAT_USE_ERRDUMP 1
+#define LUAT_USE_ICMP 1
 
 // 开启TLS
 #define LUAT_USE_TLS 1
