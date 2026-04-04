@@ -143,10 +143,10 @@ Return codes (r5):
 To reproduce the disassembly:
 
 ```bash
-# Download C-SKY GCC toolchain
-wget https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz
-mkdir csky-tools && tar xzf csky-elfabiv2-tools-*.tar.gz -C csky-tools --no-same-owner
-export PATH=$PWD/csky-tools/bin:$PATH
+# Download C-SKY GCC toolchain (zip format, from project releases)
+wget https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.zip
+unzip csky-elfabiv2-tools-x86_64-minilibc-20230301.zip -d csky-tools
+export PATH=$PWD/csky-tools/gcc/bin:$PATH
 
 # Disassemble
 csky-elfabiv2-objdump -D -b binary -m csky --adjust-vma=0x08002400 tools/xt804/xt804_secboot.bin
@@ -185,7 +185,7 @@ python3 decompile/compare_secboot.py
 | secboot_memory.c | ✅ | Memory allocator compiles |
 | secboot_stdlib.c | ✅ | Standard library functions compile |
 | secboot_uart.c | ✅ | UART driver functions compile |
-| secboot_vectors.S | ❌ | Uses C-SKY specific `mtcr`/`mfcr` instructions |
+| secboot_vectors.S | ✅ | Startup code and vector table, C-SKY assembly |
 
 ### Comparison Highlights / 对比要点
 
@@ -196,9 +196,12 @@ Several functions show near-perfect instruction match when compiled:
 - `flash_read` — 87% mnemonic similarity
 - `calloc` — 64% similarity with matched instruction count
 
-## Function Map / 函数映射 (116 functions identified, 80 decompiled)
+## Function Map / 函数映射 (116 functions identified, 113 decompiled)
 
 See `secboot_annotated.S` for complete annotated disassembly.
+
+Remaining 3 undecompiled functions are `image_decrypt_init`, `image_decrypt_block`,
+`image_decrypt_process` — all crypto-dependent and deferred.
 
 ### Key Functions / 核心函数
 
@@ -212,6 +215,7 @@ See `secboot_annotated.S` for complete annotated disassembly.
 | 0x080029A0 | malloc | Heap allocator (first-fit, heap at 0x20011430-0x20028000) |
 | 0x08002A3C | free | Heap deallocator |
 | 0x08002B54 | memcpy | Standard memcpy |
+| 0x08002BD4 | memcmp | Optimized memory compare (word-aligned fast path) |
 | 0x08002D20 | memset | Standard memset |
 | 0x08005338 | flash_init | Flash controller init (SPI flash at 0xC0002000) |
 | 0x080051E8 | flash_read_page | Read one flash page (256 bytes) |
@@ -220,7 +224,7 @@ See `secboot_annotated.S` for complete annotated disassembly.
 | 0x0800588C | uart_rx_ready | Check UART0 RX FIFO non-empty |
 | 0x080058A0 | uart_getchar | Blocking UART0 read one byte |
 | 0x080058B8 | uart_init | UART0 baud rate config (default 115200) |
-| 0x080058EC | uart_verify_data | Verify received data block |
+| 0x080058EC | image_copy_update | Read image data from flash and verify CRC32 checksum |
 | 0x08005988 | validate_image | Validate IMAGE_HEADER (magic, addr, len, CRC) |
 | 0x08005CFC | crc_verify_image | CRC32 verification of image data |
 | 0x080070C4 | signature_verify | Optional 128-byte signature verification |

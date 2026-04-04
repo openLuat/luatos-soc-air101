@@ -96,7 +96,7 @@ __Vectors:
     .align 2
 pre_reset_hook:
     /* 0x08002500 */
-    lrw     r2, =pre_reset_hook_ptr     /* 0x200113E8 */
+    lrw     r2, 0x200113E8              /* pre_reset_hook_ptr */
     ld.w    r3, (r2, 0x0)
     jsr     r3                          /* Call hook if pointer is set */
 
@@ -185,17 +185,17 @@ Default_Handler:
     addi    sp, 4
 
     /* Load save area pointer */
-    lrw     r13, =trap_save_sp          /* 0x200113D8 */
+    lrw     r13, 0x200113D8             /* trap_save_sp */
     st.w    sp, (r13, 0x0)              /* Save original SP */
 
-    lrw     sp, =trap_save_sp           /* 0x200113D8 */
+    lrw     sp, 0x200113D8              /* trap_save_sp */
     subi    sp, 72                      /* Allocate save frame */
 
     /* Save r0-r12 */
     stm     r0-r12, (sp)               /* 13 regs × 4 = 52 bytes */
 
     /* Restore and save original SP */
-    lrw     r0, =trap_save_sp
+    lrw     r0, 0x200113D8              /* trap_save_sp */
     ld.w    r0, (r0, 0x0)
     st.w    r0, (sp, 0x38)             /* offset 56: original SP */
 
@@ -236,10 +236,10 @@ tspend_handler:
     subi    sp, 56
     stm     r18-r31, (sp)
     subi    sp, 32
-    fstms   fr16-fr19, (sp)
+    fstms   vr0-vr3, (sp)
 
     /* Read VIC status to acknowledge interrupt */
-    lrw     r2, =tspend_counter        /* 0x200113E4 */
+    lrw     r2, 0x200113E4              /* tspend_counter */
     lrw     r3, 0xE000E000             /* VIC_BASE */
     ld.w    r3, (r3, 0x10)             /* Read VIC status (acknowledge) */
 
@@ -249,7 +249,7 @@ tspend_handler:
     st.w    r3, (r2, 0x0)
 
     /* Restore FPU and high registers */
-    fldms   fr16-fr19, (sp)
+    fldms   vr0-vr3, (sp)
     addi    sp, 32
     ldm     r18-r31, (sp)
     addi    sp, 56

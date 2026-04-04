@@ -39,9 +39,11 @@ CSKY_GCC = os.environ.get("CSKY_GCC", "csky-elfabiv2-gcc")
 CSKY_OBJDUMP = os.environ.get("CSKY_OBJDUMP", "csky-elfabiv2-objdump")
 CSKY_OBJCOPY = os.environ.get("CSKY_OBJCOPY", "csky-elfabiv2-objcopy")
 
-# Find toolchain sysroot
+# Find toolchain sysroot (supports both zip and tar.gz extraction layouts)
 CSKY_SYSROOT = None
-for candidate in ["/tmp/csky-tools/csky-elfabiv2/sys-include",
+for candidate in ["/tmp/csky-tools/gcc/csky-elfabiv2/sys-include",
+                   "/tmp/csky-tools/gcc/csky-elfabiv2/include",
+                   "/tmp/csky-tools/csky-elfabiv2/sys-include",
                    "/tmp/csky-tools/csky-elfabiv2/include"]:
     if os.path.isdir(candidate):
         CSKY_SYSROOT = candidate
@@ -77,7 +79,7 @@ FUNCTIONS = {
     0x08002A3C: ("free", 0x78, "secboot_memory.c"),
     0x08002AB4: ("memcmp_or_recv", 0xA0, "secboot_stdlib.c"),
     0x08002B54: ("memcpy", 0x180, "secboot_stdlib.c"),
-    0x08002BD4: ("memmove", 0x14C, "secboot_stdlib.c"),
+    0x08002BD4: ("memcmp", 0x14C, "secboot_memory.c"),
     0x08002D20: ("memset", 0x5C, "secboot_stdlib.c"),
     0x08002D7C: ("strlen", 0x130, "secboot_stdlib.c"),
     0x08002EAC: ("strcmp_or_strncpy", 0x11C, "secboot_stdlib.c"),
@@ -153,7 +155,7 @@ FUNCTIONS = {
     0x0800588C: ("uart_rx_ready", 0x14, "secboot_uart.c"),
     0x080058A0: ("uart_getchar", 0x18, "secboot_uart.c"),
     0x080058B8: ("uart_init", 0x34, "secboot_uart.c"),
-    0x080058EC: ("uart_verify_data", 0x9C, "secboot_uart.c"),
+    0x080058EC: ("image_copy_update", 0x9C, "secboot_image.c"),
     0x08005988: ("validate_image", 0xD4, "secboot_image.c"),
     0x08005A5C: ("xmodem_recv_init", 0x78, "secboot_fwup.c"),
     0x08005AD4: ("xmodem_recv_block", 0xB4, "secboot_fwup.c"),
