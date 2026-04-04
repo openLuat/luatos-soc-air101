@@ -1,10 +1,13 @@
 /**
- * secboot_image.c - Decompiled image validation
+ * secboot_image.c - Decompiled image validation and RSA decryption
  *
  * Pseudo-C reconstruction from C-SKY XT804 disassembly of secboot.bin
  * Cross-referenced with: include/platform/wm_fwup.h, include/driver/wm_flash_map.h
  *
  * Functions:
+ *   image_decrypt_init()   - 0x08004D98  (RSA encrypt/decrypt core)
+ *   image_decrypt_block()  - 0x08004E98  (block-level RSA + PKCS unpad)
+ *   image_decrypt_process()- 0x08004F20  (PKCS#1 DigestInfo parse + hash extract)
  *   validate_image()       - 0x08005988  (header + CRC check)
  *   find_valid_image()     - 0x08007278  (scan flash for valid image)
  *   image_header_verify()  - 0x080071F4  (CRC + data integrity)
@@ -61,6 +64,414 @@
 
 /* Global pointer: boot parameter block */
 /* *(uint32_t *)0x2001007C -> param block, field at offset 0x0C = total flash size */
+
+/* ============================================================
+ * mp_int bignum structure (libtommath compatible, DIGIT_BIT=28)
+ * Also used as hstm_int in the firmware crypto engine.
+ * ============================================================ */
+typedef struct {
+    int16_t  used;
+    int16_t  alloc;
+    int16_t  sign;
+    int16_t  _pad;      /* alignment padding */
+    uint32_t *dp;
+} mp_int;
+
+/* ============================================================
+ * RSA Key Structure (104 bytes total)
+ *
+ * Parsed by signature_check_final() at 0x08004BEC.
+ * Contains two mp_int bignums (exponent and modulus) plus
+ * additional fields. key_size at offset 0x60 holds the
+ * RSA key size in bytes (e.g., 128 for 1024-bit RSA).
+ *
+ * Offset  Size  Field
+ * 0x00    12    e       (mp_int: public/private exponent)
+ * 0x0C    12    d       (mp_int: other exponent, if present)
+ * 0x18    12    n       (mp_int: modulus)
+ * 0x24    ...           (additional CRT parameters)
+ * 0x60    4     key_size (RSA key size in bytes, e.g. 128)
+ * 0x64    4     _pad
+ * ============================================================ */
+typedef struct {
+    uint8_t  data[0x60];    /* e(12) + d(12) + n(12) + CRT params */
+    uint32_t key_size;      /* offset 0x60: key size in bytes */
+    uint32_t _pad;
+} rsa_key_t;
+
+/* External functions (from secboot_crypto.c and secboot_memory.c) */
+extern void *malloc(uint32_t size);                                /* 0x080029A0 */
+extern void  free(void *ptr);                                      /* 0x08002A3C */
+extern void *memset(void *s, int c, uint32_t n);                  /* 0x08002AB4 */
+extern void *memcpy(void *dst, const void *src, uint32_t n);      /* 0x08002B54 */
+
+extern int   mp_cmp(mp_int *a, mp_int *b);                        /* 0x08003298 */
+extern int   mp_read_unsigned_bin(mp_int *a,
+                 const uint8_t *b, int len);                       /* 0x08003690 */
+extern int   mp_unsigned_bin_size(mp_int *a);                      /* 0x080031DC */
+extern void  mp_clear(mp_int *a);                                  /* 0x080031A8 */
+extern int   rsa_step(mp_int *bn, uint8_t *out);                  /* 0x08003A14 */
+extern int   sha_init(mp_int *a, uint32_t size);                   /* 0x08003CDC */
+extern int   sha1_full(mp_int *a, mp_int *e,
+                 mp_int *n, mp_int *res);                          /* 0x0800472C */
+extern int   cert_parse(uint8_t *data, uint32_t total_len,
+                 uint8_t *out, uint32_t len, uint32_t marker);    /* 0x08004C78 */
+extern int   pkey_setup(uint8_t **pos, uint32_t remaining,
+                 uint32_t *out_len);                               /* 0x080049CC */
+extern int   pkey_verify(uint8_t **pos, uint32_t remaining,
+                 mp_int *out);                                     /* 0x08004AB4 */
+extern int   signature_check_data(uint8_t **pos, uint32_t remaining,
+                 uint32_t *out1, uint32_t *out2);                  /* 0x08004BB0 */
+
+
+/* ============================================================
+ * image_decrypt_init (0x08004D98)
+ *
+ * Core RSA public-key operation: computes result = input^exp mod n,
+ * then writes the result to output buffer with PKCS#1 v1.5 padding.
+ *
+ * Parameters:
+ *   r0 = unused (caller context pointer, not dereferenced here)
+ *   r1 = input_data (plaintext/ciphertext bytes)
+ *   r2 = input_len  (length in bytes)
+ *   r3 = output_buf (destination for result)
+ *   sp[0] = out_len_ptr (uint32_t *: in=available size, out=written size)
+ *   sp[1] = rsa_key (pointer to rsa_key_t structure)
+ *   sp[2] = mode (1=public key op using e, 2=private key op using d)
+ *
+ * Returns:
+ *   0 on success, -1 on error (bad args, RSA failure, output too small)
+ *
+ * Algorithm:
+ *   1. Initialize stack-local mp_int bignum
+ *   2. Read input_data into bignum via mp_read_unsigned_bin
+ *   3. Verify input < modulus n (mp_cmp)
+ *   4. Mode 1: compute input^e mod n (sha1_full)
+ *      Mode 2: compute input^d mod n (sha1_full)  [d at offset 0x18 vs e at 0]
+ *   5. Determine output size = mp_unsigned_bin_size(n)
+ *   6. Check output buffer is large enough
+ *   7. Zero-pad output to key_size, write result via rsa_step
+ *   8. Update *out_len_ptr with bytes written
+ *
+ * Disassembly (0x08004D98 - 0x08004E98, 256 bytes):
+ *   8004d98: push  r4-r10, r15
+ *   8004d9a: subi  sp, 12            ; mp_int on stack
+ *   8004d9c: mov   r5, r1            ; input_data
+ *   8004d9e: mov   r9, r2            ; input_len
+ *   8004da0: mov   r4, r3            ; output_buf
+ *   8004da2: ld.w  r8, (sp, 0x2c)   ; out_len_ptr
+ *   8004da6: ld.w  r6, (sp, 0x30)   ; rsa_key
+ *   8004da8: ld.w  r10, (sp, 0x34)  ; mode
+ *   8004dac: bez   r1, err_arg       ; NULL check input_data
+ *   8004db0: bez   r3, err_arg       ; NULL check output_buf
+ *   8004db4: bez   r8, err_arg       ; NULL check out_len_ptr
+ *   8004db8: bez   r6, err_arg       ; NULL check rsa_key
+ *   ...
+ *   8004de2: bsr   sha_init          ; 0x08003CDC
+ *   8004df0: bsr   mp_read_unsigned_bin ; 0x08003690
+ *   8004e00: bsr   mp_cmp            ; 0x08003298
+ *   8004e20: bsr   sha1_full         ; 0x0800472C
+ *   8004e2a: bsr   mp_unsigned_bin_size ; 0x080031DC
+ *   8004e5a: bsr   memset            ; 0x08002AB4
+ *   8004e60: bsr   mp_unsigned_bin_size ; 0x080031DC
+ *   8004e6a: bsr   rsa_step          ; 0x08003A14
+ *   8004e7a: bsr   mp_clear          ; 0x080031A8
+ * ============================================================ */
+int image_decrypt_init(void *ctx, const uint8_t *input_data,
+                       uint32_t input_len, uint8_t *output_buf,
+                       uint32_t *out_len_ptr, rsa_key_t *rsa_key,
+                       uint32_t mode)
+{
+    mp_int tmp;
+    mp_int *key_n;
+    mp_int *key_exp;
+    int ret;
+    int bin_size;
+    uint32_t key_size;
+
+    /* NULL pointer checks */
+    if (input_data == NULL || output_buf == NULL ||
+        out_len_ptr == NULL || rsa_key == NULL)
+        return -1;
+
+    /* Initialize bignum with capacity for input_len + 4 bytes */
+    ret = sha_init(&tmp, input_len + 4);
+    if (ret != 0)
+        return ret;
+
+    /* Read input bytes into bignum */
+    ret = mp_read_unsigned_bin(&tmp, input_data, (int)input_len);
+    if (ret != 0) {
+        mp_clear(&tmp);
+        return ret;
+    }
+
+    /* Pointer to modulus n (at offset 24 in rsa_key) */
+    key_n = (mp_int *)((uint8_t *)rsa_key + 24);
+
+    /* Verify input < n (required for RSA) */
+    if (mp_cmp(key_n, &tmp) != -1) {
+        /* input >= n: invalid */
+        mp_clear(&tmp);
+        return -1;
+    }
+
+    /* Select exponent based on mode */
+    if (mode == 2) {
+        /* Private key operation: use exponent at offset 12 (d) */
+        key_exp = (mp_int *)((uint8_t *)rsa_key + 12);
+    } else if (mode == 1) {
+        /* Public key operation: use exponent at offset 0 (e) */
+        key_exp = (mp_int *)rsa_key;
+    } else {
+        /* Invalid mode */
+        mp_clear(&tmp);
+        return -1;
+    }
+
+    /* Compute tmp = tmp^exp mod n */
+    ret = sha1_full(&tmp, key_exp, key_n, &tmp);
+    if (ret != 0) {
+        mp_clear(&tmp);
+        return ret;
+    }
+
+    /* Get the required output size = mp_unsigned_bin_size(n) */
+    bin_size = mp_unsigned_bin_size(key_n);
+
+    /* Check output buffer has enough space */
+    if (*out_len_ptr < (uint32_t)bin_size) {
+        mp_clear(&tmp);
+        return -1;
+    }
+
+    /* Get key_size from rsa_key structure (offset 0x60) */
+    key_size = rsa_key->key_size;
+
+    if ((uint32_t)bin_size >= key_size) {
+        /* Result already fills key_size, write directly */
+        *out_len_ptr = (uint32_t)bin_size;
+        memset(output_buf, 0, (uint32_t)bin_size);
+
+        /* Get actual bignum binary size for offset calculation */
+        int actual_size = mp_unsigned_bin_size(&tmp);
+        int offset = (int)bin_size - actual_size;
+        ret = rsa_step(&tmp, output_buf + offset);
+    } else {
+        /* Zero-pad output buffer to key_size */
+        uint8_t *p = output_buf;
+        uint32_t pad_len = key_size - (uint32_t)bin_size;
+        uint32_t i;
+        for (i = 0; i < pad_len; i++) {
+            *p++ = 0;
+        }
+
+        /* Write total size and zero remaining buffer */
+        *out_len_ptr = key_size;
+        memset(p, 0, key_size - pad_len);
+
+        /* Write bignum result at correct offset */
+        int actual_size = mp_unsigned_bin_size(&tmp);
+        int offset = (int)key_size - actual_size;
+        ret = rsa_step(&tmp, output_buf + offset);
+    }
+
+    int result = (ret != 0) ? -1 : 0;
+    mp_clear(&tmp);
+    return result;
+}
+
+
+/* ============================================================
+ * image_decrypt_block (0x08004E98)
+ *
+ * Perform RSA decryption on a single block and then strip
+ * PKCS#1 v1.5 padding via cert_parse.
+ *
+ * Parameters:
+ *   r0 = ctx (unused context pointer)
+ *   r1 = rsa_key (pointer to rsa_key_t)
+ *   r2 = input_data (encrypted block, also used as output buffer)
+ *   r3 = input_len
+ *   sp[0] = out_buf (output for unpadded data)
+ *   sp[1] = out_len_ptr (pointer to output length)
+ *   sp[2] = mode (passed through to image_decrypt_init)
+ *
+ * Returns:
+ *   0 on success, negative on error:
+ *   -6 if input_len != key_size
+ *   -1 if decrypted size != key_size or other error
+ *
+ * Disassembly (0x08004E98 - 0x08004F20, 136 bytes):
+ *   8004e98: subi  sp, 28            ; manual save frame
+ *   ...
+ *   8004ed6: bsr   image_decrypt_init ; 0x08004D98
+ *   8004eee: bsr   cert_parse        ; 0x08004C78
+ * ============================================================ */
+int image_decrypt_block(void *ctx, rsa_key_t *rsa_key,
+                        uint8_t *input_data, uint32_t input_len,
+                        uint8_t *out_buf, uint32_t *out_len_ptr,
+                        uint32_t mode)
+{
+    uint32_t key_size;
+    uint32_t local_len;
+    int ret;
+
+    key_size = rsa_key->key_size;
+
+    /* Input length must match key size */
+    if (key_size != input_len)
+        return -6;
+
+    /* Decrypt in-place: output overwrites input buffer */
+    local_len = key_size;
+    ret = image_decrypt_init(ctx, input_data, input_len, input_data,
+                             &local_len, rsa_key, 1);
+    if (ret < 0)
+        return ret;
+
+    /* Verify decrypted size matches key size */
+    if (key_size != local_len)
+        return -1;
+
+    /* Strip PKCS#1 v1.5 padding via cert_parse */
+    ret = cert_parse(input_data, key_size, out_buf, *out_len_ptr, 1);
+
+    /* Clamp return value to <= 0 (cert_parse returns positive on success) */
+    if (ret > 0)
+        ret = 0;
+    return ret;
+}
+
+
+/* ============================================================
+ * image_decrypt_process (0x08004F20)
+ *
+ * RSA signature verification with PKCS#1 v1.5 DigestInfo parsing.
+ * Decrypts the signature block, parses the ASN.1 DigestInfo
+ * structure, and extracts the hash value.
+ *
+ * Parameters:
+ *   r0 = ctx (context pointer passed through to decrypt_block)
+ *   r1 = rsa_key_ptr (pointer to pointer to rsa_key_t)
+ *   r2 = sig_data (signature bytes)
+ *   r3 = sig_len
+ *   sp[0] = hash_out (output buffer for extracted hash)
+ *   sp[1] = hash_size (expected hash size: 20=SHA1, 32=SHA256, 48=SHA384)
+ *   sp[2] = extra_param (passed through)
+ *
+ * Returns:
+ *   hash_size on success (positive), negative on error:
+ *   -1 for unsupported hash size, parse error, or verification failure
+ *   -8 for allocation failure
+ *
+ * Algorithm:
+ *   1. Determine buffer size from hash_size:
+ *      SHA-1(20)→35, SHA-256(32)→51, SHA-384(48)→67
+ *   2. malloc(buf_size) for decrypted DigestInfo
+ *   3. Call image_decrypt_block to RSA-decrypt signature
+ *   4. Parse ASN.1 SEQUENCE wrapper (pkey_verify)
+ *   5. Parse AlgorithmIdentifier (signature_check_data)
+ *   6. Verify OCTET STRING tag (0x04)
+ *   7. Parse hash length (pkey_setup)
+ *   8. memcpy hash data to output
+ *   9. free buffer, return hash_size
+ *
+ * Disassembly (0x08004F20 - 0x08004C04, 228 bytes):
+ *   8004f20: push  r4-r11, r15, r16
+ *   8004f24: subi  sp, 28
+ *   8004f26: ld.w  r4, (sp, 0x48)   ; hash_size
+ *   ...
+ *   8004f6c: bsr   image_decrypt_block ; 0x08004E98
+ *   8004f80: bsr   pkey_verify       ; 0x08004AB4
+ *   8004f92: bsr   signature_check_data ; 0x08004BB0
+ *   8004fac: bsr   pkey_setup        ; 0x080049CC
+ *   8004fbc: bsr   memcpy            ; 0x08002B54
+ *   8004fc2: bsr   free              ; 0x08002A3C
+ * ============================================================ */
+int image_decrypt_process(void *ctx, rsa_key_t **rsa_key_ptr,
+                          uint8_t *sig_data, uint32_t sig_len,
+                          uint8_t *hash_out, uint32_t hash_size,
+                          uint32_t extra_param)
+{
+    uint32_t buf_size;
+    uint8_t *buf;
+    uint8_t *pos;
+    uint8_t *end;
+    uint32_t seq_len;
+    uint32_t oid_out1, oid_out2;
+    uint32_t octet_len;
+    int ret;
+
+    /* Determine DigestInfo buffer size from hash algorithm */
+    switch (hash_size) {
+    case 20:  /* SHA-1 */
+        buf_size = 35;   /* 0x23: 15 bytes OID + 20 bytes hash */
+        break;
+    case 32:  /* SHA-256 */
+        buf_size = 51;   /* 0x33: 19 bytes OID + 32 bytes hash */
+        break;
+    case 48:  /* SHA-384 */
+        buf_size = 67;   /* 0x43: 19 bytes OID + 48 bytes hash */
+        break;
+    default:
+        return -1;       /* Unsupported hash size */
+    }
+
+    /* Allocate buffer for decrypted DigestInfo */
+    buf = (uint8_t *)malloc(buf_size);
+    if (buf == NULL)
+        return -8;
+
+    /* RSA decrypt the signature block into buf */
+    ret = image_decrypt_block(ctx, *rsa_key_ptr, sig_data, sig_len,
+                              buf, &buf_size, extra_param);
+    if (ret < 0) {
+        free(buf);
+        return ret;
+    }
+
+    /* Parse the DigestInfo ASN.1 structure:
+     *   SEQUENCE {
+     *     SEQUENCE { AlgorithmIdentifier }  -- OID + params
+     *     OCTET STRING { hash_value }
+     *   }
+     */
+    pos = buf;
+    end = buf + buf_size;
+
+    /* Parse outer SEQUENCE */
+    ret = pkey_verify(&pos, buf_size, (mp_int *)&seq_len);
+    if (ret < 0)
+        goto fail;
+
+    /* Parse AlgorithmIdentifier SEQUENCE (OID + parameters) */
+    ret = signature_check_data(&pos, (uint32_t)(end - pos),
+                               &oid_out1, &oid_out2);
+    if (ret < 0)
+        goto fail;
+
+    /* Expect OCTET STRING tag (0x04) */
+    if (*pos != 0x04)
+        goto fail;
+    pos++;  /* skip tag byte */
+
+    /* Parse OCTET STRING length */
+    ret = pkey_setup(&pos, (uint32_t)(end - pos), &octet_len);
+    if (ret < 0)
+        goto fail;
+
+    /* Copy the hash value to output */
+    memcpy(hash_out, pos, hash_size);
+
+    /* Success: free buffer and return hash_size */
+    free(buf);
+    return (int)hash_size;
+
+fail:
+    free(buf);
+    return -1;
+}
 
 
 /* ============================================================

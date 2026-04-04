@@ -8,8 +8,8 @@ Generated from `xt804_secboot.bin` (21468 bytes)
 | Metric | Value |
 |--------|-------|
 | Total functions identified / 已识别函数总数 | 116 |
-| Functions with decompiled C / 已反编译函数数 | 113 |
-| Decompilation coverage / 反编译覆盖率 | 97% |
+| Functions with decompiled C / 已反编译函数数 | 116 |
+| Decompilation coverage / 反编译覆盖率 | 100% |
 | Total binary code size / 二进制代码总大小 | 21468 bytes |
 
 ## Per-File Coverage / 各文件覆盖率
@@ -21,7 +21,7 @@ Generated from `xt804_secboot.bin` (21468 bytes)
 | `secboot_flash.c` | 26 | 26 | 100% |
 | `secboot_fwup.c` | 11 | 11 | 100% |
 | `secboot_hw_init.c` | 5 | 5 | 100% |
-| `secboot_image.c` | 7 | 4 | 57% |
+| `secboot_image.c` | 7 | 7 | 100% |
 | `secboot_main.c` | 4 | 4 | 100% |
 | `secboot_memory.c` | 4 | 4 | 100% |
 | `secboot_stdlib.c` | 14 | 14 | 100% |
@@ -130,9 +130,9 @@ with instruction statistics and decompilation status.
 | `0x08004CFC` | `crc_ctx_alloc` | 48 | 19 | 6 | 0/1 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004D2C` | `crc_ctx_destroy` | 36 | 14 | 6 | 2/0 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004D50` | `crc_ctx_reset` | 72 | 21 | 9 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
-| `0x08004D98` | `image_decrypt_init` | 256 | 100 | 30 | 6/2 | `secboot_image.c` | ⬜ Identified |
-| `0x08004E98` | `image_decrypt_block` | 136 | 58 | 7 | 12/13 | `secboot_image.c` | ⬜ Identified |
-| `0x08004F20` | `image_decrypt_process` | 228 | 90 | 18 | 9/5 | `secboot_image.c` | ⬜ Identified |
+| `0x08004D98` | `image_decrypt_init` | 256 | 100 | 30 | 6/2 | `secboot_image.c` | ✅ Decompiled |
+| `0x08004E98` | `image_decrypt_block` | 136 | 58 | 7 | 12/13 | `secboot_image.c` | ✅ Decompiled |
+| `0x08004F20` | `image_decrypt_process` | 228 | 90 | 18 | 9/5 | `secboot_image.c` | ✅ Decompiled |
 | `0x08005004` | `firmware_update_init` | 152 | 58 | 4 | 16/9 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x0800509C` | `firmware_update_process` | 332 | 124 | 10 | 36/22 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x080051E8` | `flash_read_page` | 336 | 118 | 18 | 17/10 | `secboot_flash.c` | ✅ Decompiled |
@@ -247,6 +247,9 @@ with the original binary. A higher match indicates better decompilation.
 | `crc_ctx_alloc` | 19 | 18 | 0.95x | 🟢 97% |
 | `crc_ctx_destroy` | 14 | 14 | 1.00x | 🟢 86% |
 | `crc_ctx_reset` | 21 | 21 | 1.00x | 🟢 100% |
+| `image_decrypt_init` | 100 | 104 | 1.04x | 🟡 75% |
+| `image_decrypt_block` | 58 | 55 | 0.95x | 🟢 96% |
+| `image_decrypt_process` | 90 | 96 | 1.07x | 🟢 81% |
 | `firmware_update_init` | 58 | 46 | 0.79x | 🔴 19% |
 | `firmware_update_process` | 124 | 77 | 0.62x | 🔴 24% |
 | `flash_init` | 12 | 11 | 0.92x | 🟢 87% |
@@ -292,7 +295,7 @@ with the original binary. A higher match indicates better decompilation.
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
 | `main` | 528 | 141 | 0.27x | 🔴 33% |
 
-**Average mnemonic similarity: 47.1%** (across 105 compared functions)
+**Average mnemonic similarity: 48.2%** (across 108 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 
@@ -1157,7 +1160,7 @@ sizes, and decompilation status.
 
 - Code region: `0x08002506` — `0x080077DC`
 - Total function code: 21206 bytes
-- Decompiled code: 20586 bytes (97%)
+- Decompiled code: 21206 bytes (100%)
 
 ## Constant Data / 常量数据
 

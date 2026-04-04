@@ -196,12 +196,11 @@ Several functions show near-perfect instruction match when compiled:
 - `flash_read` — 87% mnemonic similarity
 - `calloc` — 64% similarity with matched instruction count
 
-## Function Map / 函数映射 (116 functions identified, 113 decompiled)
+## Function Map / 函数映射 (116 functions identified, 116 decompiled — 100%)
 
 See `secboot_annotated.S` for complete annotated disassembly.
 
-Remaining 3 undecompiled functions are `image_decrypt_init`, `image_decrypt_block`,
-`image_decrypt_process` — all crypto-dependent and deferred.
+All 116 identified functions have been decompiled across 11 source files.
 
 ### Key Functions / 核心函数
 
