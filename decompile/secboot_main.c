@@ -51,7 +51,7 @@
  *   6. boot_uart_check() → UART mode or normal boot
  *   7. Normal: re-read header, find_valid_image() for primary & secondary
  *   8. Choose image:
- *      - Both valid: compare next/hd_checksum + fota_update_no
+ *      - Both valid: compare org_checksum/hd_checksum + fota_update_no
  *      - Only secondary valid: use secondary
  *      - Only primary valid: use primary
  *      - Neither: error_exit with primary's status
@@ -299,7 +299,8 @@ fota_counter_check:
 
     /* ---- 0x080073C2: Verify image header CRC ---- */
     /*
-     * 80073c2: ld.w  r1, (r14, 0x68)   ; r1 = primary_hdr.img_addr (offset 0x08)
+     * 80073c2: ld.w  r1, (r14, 0x68)   ; r1 = primary_hdr.img_addr
+     *          (sp+0x68 = primary_hdr(sp+0x60) + struct offset 0x08)
      * 80073c4: addi  r0, r14, 96       ; r0 = &primary_hdr
      * 80073c6: bsr   0x80071f4         ; image_header_verify()
      * 80073ca: cmpnei r0, 67           ; == 'C'?
@@ -313,21 +314,29 @@ fota_counter_check:
 
     /* ---- 0x080073D2: boot_app - Build boot params and jump to app ---- */
     /*
+     * Stack offsets → struct field mapping:
+     *   sp+0x64 = primary_hdr(sp+0x60)+0x04 → img_attr.w
+     *   sp+0x68 = primary_hdr(sp+0x60)+0x08 → img_addr
+     *   sp+0x6c = primary_hdr(sp+0x60)+0x0C → img_len
+     *   sp+0xa4 = image_hdr_raw(sp+0xA0)+0x04 → img_attr.w
+     *   sp+0xa8 = image_hdr_raw(sp+0xA0)+0x08 → img_addr
+     *   sp+0xac = image_hdr_raw(sp+0xA0)+0x0C → img_len
+     *
      * 80073d2: ld.w  r3, (r6, 0x0)     ; *PARAM_BLOCK_PTR
      * 80073d4: addi  r0, r14, 4        ; r0 = &boot_params
      * 80073d6: ld.w  r3, (r3, 0xc)     ; param_block[3] (total_size)
      * 80073d8: st.w  r3, (r14, 0x4)    ; boot_params[0] = total_size
-     * 80073da: ld.w  r3, (r14, 0x68)   ; primary_hdr + 0x08 = img_addr
-     * 80073dc: st.w  r3, (r14, 0xc)    ; boot_params[2] = img_addr
-     * 80073de: ld.w  r3, (r14, 0x64)   ; primary_hdr + 0x04 = img_attr.w
-     * 80073e0: st.w  r3, (r14, 0x8)    ; boot_params[1] = img_attr.w
-     * 80073e2: ld.w  r3, (r14, 0x6c)   ; primary_hdr + 0x0C = img_len
-     * 80073e4: st.w  r3, (r14, 0x10)   ; boot_params[3] = img_len
-     * 80073e6: ld.w  r3, (r14, 0xa4)   ; image_hdr_raw + 0x04 = img_attr.w
+     * 80073da: ld.w  r3, (r14, 0x68)   ; primary_hdr.img_addr
+     * 80073dc: st.w  r3, (r14, 0xc)    ; boot_params[2]
+     * 80073de: ld.w  r3, (r14, 0x64)   ; primary_hdr.img_attr.w
+     * 80073e0: st.w  r3, (r14, 0x8)    ; boot_params[1]
+     * 80073e2: ld.w  r3, (r14, 0x6c)   ; primary_hdr.img_len
+     * 80073e4: st.w  r3, (r14, 0x10)   ; boot_params[3]
+     * 80073e6: ld.w  r3, (r14, 0xa4)   ; image_hdr_raw.img_attr.w
      * 80073e8: st.w  r3, (r14, 0x14)   ; boot_params[4]
-     * 80073ea: ld.w  r3, (r14, 0xa8)   ; image_hdr_raw + 0x08 = img_addr
+     * 80073ea: ld.w  r3, (r14, 0xa8)   ; image_hdr_raw.img_addr
      * 80073ec: st.w  r3, (r14, 0x18)   ; boot_params[5]
-     * 80073ee: ld.w  r3, (r14, 0xac)   ; image_hdr_raw + 0x0C = img_len
+     * 80073ee: ld.w  r3, (r14, 0xac)   ; image_hdr_raw.img_len
      * 80073f0: st.w  r3, (r14, 0x1c)   ; boot_params[6]
      */
 boot_app:

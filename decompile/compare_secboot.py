@@ -284,7 +284,8 @@ def try_compile_function(func_name, source_file, tmpdir):
 def compute_function_sizes(binary_data):
     """Compute function sizes using size hints from FUNCTIONS dict.
 
-    Uses the size_hint field (FUNCTIONS[addr][1]) when available and non-zero.
+    FUNCTIONS[addr] = (name, size_hint, source_file).
+    Uses size_hint (index [1]) when available and non-zero.
     Falls back to address-gap method when no hint is provided.
     This avoids over-counting the last function (which would otherwise extend
     to end-of-binary, including literal pool and data tables).
