@@ -95,13 +95,93 @@ extern int   memcmp(const void *a, const void *b,
                     uint32_t n);                    /* 0x08002BD4 */
 extern void  bignum_clear(void *bn);               /* 0x080031A8 */
 
+/* External bignum (libtommath mp_int) functions
+ *
+ * NOTE: In this firmware, the function at 0x08003390 uses mp_copy(dst, src)
+ * convention (reversed from standard libtommath mp_copy(src, dst)).
+ * All the addresses below were labeled as flash/printf functions in the
+ * initial analysis, but disassembly confirms they are libtommath operations
+ * operating on {int16 used, alloc, sign; uint32_t *dp} with DIGIT_BIT=28.
+ */
+#define DIGIT_BIT   28
+#define MP_MASK     ((1u << DIGIT_BIT) - 1)
+
+typedef struct {
+    int16_t  used;
+    int16_t  alloc;
+    int16_t  sign;
+    /* 2 bytes padding */
+    uint32_t *dp;
+} mp_int;
+
+extern int   mp_init(mp_int *a);                                   /* 0x08003178 */
+extern void  mp_clear(mp_int *a);                                  /* 0x080031A8 */
+extern int   mp_copy(mp_int *dst, mp_int *src);                    /* 0x08003390 (dst,src!) */
+extern int   mp_init_copy(mp_int *dst, mp_int *src);               /* 0x08003408 */
+extern int   mp_cmp_mag(mp_int *a, mp_int *b);                     /* 0x08003238 */
+extern int   mp_cmp(mp_int *a, mp_int *b);                         /* 0x08003298 */
+extern int   mp_sub(mp_int *a, mp_int *b, mp_int *c);              /* 0x080032CC */
+extern int   mp_add(mp_int *a, mp_int *b, mp_int *c);              /* 0x0800332C */
+extern int   mp_grow(mp_int *a, int16_t size);                     /* 0x080034E4 */
+extern int   mp_lshd(mp_int *a, int16_t count);                    /* 0x08003514 */
+extern void  mp_rshd(mp_int *a, int16_t count);                    /* 0x08003588 */
+extern void  mp_clamp(mp_int *a);                                  /* 0x080034A0 */
+extern int   mp_read_unsigned_bin(mp_int *a,
+                 const uint8_t *b, int len);                       /* 0x08003690 */
+extern int   mp_count_bits(mp_int *a);                             /* 0x08003744 */
+extern int   mp_to_unsigned_bin(mp_int *a, uint8_t *b);            /* 0x080031DC */
+extern int   mp_to_unsigned_bin_nr(mp_int *a, uint8_t *b);         /* 0x08003774 */
+extern void  mp_reverse(uint8_t *s, int len);                      /* 0x08003150 */
+extern int   mp_div_2d(mp_int *a, int b, mp_int *c, mp_int *d);   /* 0x08003860 */
+extern int   s_mp_mul_digs(mp_int *a, mp_int *b,
+                 mp_int *c, int digs);                             /* 0x08002FC8 */
+
+/* External signature verification helpers */
+extern int   flash_read_cert(void *ctx, void *buf, int len);      /* 0x08005B88 */
+extern int   flash_cert_parse(void *ctx, void *hdr, void *out);   /* 0x08005BC8 */
+
+/* External functions from other decompiled files, used by crc_verify_image.
+ * These are placeholder names from the original analysis; the actual
+ * addresses map to functions in secboot_image.c / secboot_fwup.c */
+extern int   asn1_parse_tag(uint8_t **pos, void *out1, void *out2);
+extern int   asn1_parse_body(void *a, void *b, void *c, void *d);
+extern int   crc_verify_exec(void *ctx, void *a, void *b, void *c);
+extern int   crc_pipeline(void *ctx, void *a, void *b,
+                           int c, int d, void *e, void *f);
+
+/* RSA hardware engine registers (base 0x40000400) */
+#define RSA_BASE    0x40000400
+#define RSACON      (*(volatile uint32_t *)(RSA_BASE + 0x00))
+#define RSAMC       (*(volatile uint32_t *)(RSA_BASE + 0x04))
+#define RSASIZE     (*(volatile uint32_t *)(RSA_BASE + 0x08))
+#define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_BASE + 0x000 + (i)*4))  /* 0x40000000 offset */
+
+/* RSA buffer addresses - direct memory-mapped */
+#define RSA_BUF_A   ((volatile uint32_t *)0x40000000)
+#define RSA_BUF_B   ((volatile uint32_t *)0x40000100)
+#define RSA_BUF_M   ((volatile uint32_t *)0x40000200)
+#define RSA_BUF_D   ((volatile uint32_t *)0x40000300)
+
 /* Forward type declarations */
 typedef struct sha1_ctx sha1_ctx_t;
 
 /* Forward declarations */
 static void sha1_transform(sha1_ctx_t *ctx);
-static int  asn1_parse_tag(uint8_t **pos, uint32_t *out_len, uint32_t remaining);
 void crc_ctx_reset(void *inner);
+
+/* Forward declarations for crypto functions */
+int  rsa_init(mp_int *a, int16_t size);
+int  rsa_process(mp_int *a, mp_int *b, mp_int *c, int16_t digs);
+int  rsa_modexp(mp_int *a, int bits);
+void hash_ctx_init(int type, mp_int *bn);
+int  sha_final(mp_int *a, mp_int *b, mp_int *q_out, mp_int *r_out);
+int  sha_hash_block(mp_int *a, mp_int *b, mp_int *c);
+int  crc32_table_init(mp_int *a, mp_int *b, mp_int *c);
+int  crc32_update(mp_int *a, mp_int *b, mp_int *mod, mp_int *d);
+int  pkey_setup(uint8_t **pos, uint32_t remaining, uint32_t *out_len);
+int  pkey_verify_step(uint8_t **pos, uint32_t *remaining, uint32_t len,
+                      mp_int *out);
+int  pkey_verify(uint8_t **pos, uint32_t remaining, mp_int *out);
 
 
 /* ============================================================
@@ -457,6 +537,780 @@ int sha1_final(sha1_ctx_t *ctx, uint8_t *digest)
 
 
 /* ============================================================
+ * rsa_core (0x080039C0)
+ *
+ * Read bignum digits to output buffer, extracting one byte per
+ * digit via mp_div_2d (shift right 8 bits per iteration).
+ *
+ * r0 = mp_int *bn (source bignum)
+ * r1 = uint8_t *out (output buffer, written via stbi.b)
+ *
+ * Disassembly:
+ *   80039c0: push  r4-r6, r15
+ *   80039c2: subi  r14, 12
+ *   80039c4: mov   r4, r1            ; out
+ *   80039c6: mov   r1, r0            ; src = bn
+ *   80039c8: mov   r0, r14           ; dst = stack tmp
+ *   80039ca: bsr   mp_init_copy      ; 0x08003408
+ *   80039ce: mov   r6, r0            ; err
+ *   80039d0: bez   r0, loop_start
+ *   80039d4: br    return
+ *   ; loop body:
+ *   80039d6: ld.w  r3, (r14, 0x8)    ; tmp.dp
+ *   80039d8: mov   r2, r14           ; tmp
+ *   80039da: ld.b  r3, (r3, 0x0)     ; low byte of dp[0]
+ *   80039dc: stbi.b r3, (r4)         ; *out++ = byte
+ *   80039e0: movi  r1, 8
+ *   80039e2: movi  r3, 0
+ *   80039e4: mov   r0, r14           ; tmp
+ *   80039e6: bsr   mp_div_2d         ; 0x08003860  (shift right 8)
+ *   80039ea: mov   r5, r0
+ *   80039ec: bnez  r0, err_cleanup
+ *   loop_start:
+ *   80039f0: ld.hs r3, (r14, 0x0)    ; tmp.used
+ *   80039f4: bnez  r3, loop_body
+ *   80039f8: mov   r0, r14
+ *   80039fa: bsr   mp_clear
+ *   return:
+ *   80039fe: mov   r0, r6
+ *   8003a00: addi  r14, 12
+ *   8003a02: pop   r4-r6, r15
+ *   err_cleanup:
+ *   8003a04: mov   r0, r14
+ *   8003a06: mov   r6, r5
+ *   8003a08: bsr   mp_clear
+ *   ; -> return
+ * ============================================================ */
+int rsa_core(mp_int *bn, uint8_t *out)
+{
+    mp_int tmp;
+    int err = mp_init_copy(&tmp, bn);
+    if (err != 0)
+        return err;
+
+    while (tmp.used != 0) {
+        /* Extract lowest byte from dp[0] */
+        *out++ = (uint8_t)(tmp.dp[0]);
+        err = mp_div_2d(&tmp, 8, &tmp, NULL);
+        if (err != 0) {
+            mp_clear(&tmp);
+            return err;
+        }
+    }
+
+    mp_clear(&tmp);
+    return 0;
+}
+
+
+/* ============================================================
+ * rsa_step (0x08003A14)
+ *
+ * Read bignum to output buffer (like rsa_core) then byte-swap
+ * the result in-place (reverse the byte array).
+ *
+ * r0 = mp_int *bn
+ * r1 = uint8_t *out
+ *
+ * Returns: 0 on success, or error code
+ * ============================================================ */
+int rsa_step(mp_int *bn, uint8_t *out)
+{
+    mp_int tmp;
+    int err = mp_init_copy(&tmp, bn);
+    if (err != 0)
+        return err;
+
+    uint8_t *start = out;
+    int count = 0;
+
+    while (tmp.used != 0) {
+        *out++ = (uint8_t)(tmp.dp[0]);
+        err = mp_div_2d(&tmp, 8, &tmp, NULL);
+        count++;
+        if (err != 0) {
+            mp_clear(&tmp);
+            return err;
+        }
+    }
+
+    /* Byte-swap: reverse the output array */
+    count--;
+    if (count > 0) {
+        uint8_t *lo = start;
+        uint8_t *hi = start + count;
+        while ((int)(lo - hi) < 0) {
+            uint8_t t1 = *hi;
+            uint8_t t2 = *lo;
+            *lo++ = t1;
+            *hi-- = t2;
+        }
+    }
+
+    mp_clear(&tmp);
+    return 0;
+}
+
+
+/* ============================================================
+ * rsa_modexp (0x08003A8C)
+ *
+ * Set a bignum to 2^bits: clears digits, then sets the bit at
+ * position 'bits' using DIGIT_BIT=28 arithmetic.
+ *
+ * r0 = mp_int *a
+ * r1 = int bits
+ *
+ * Equivalent to mp_2expt: a = 2^bits
+ * ============================================================ */
+int rsa_modexp(mp_int *a, int bits)
+{
+    int16_t alloc = a->alloc;
+    a->sign = 0;
+    a->used = 0;
+
+    /* Zero existing digits */
+    uint32_t *dp = a->dp;
+    if (alloc > 0) {
+        for (int16_t i = 0; i < alloc; i++)
+            dp[i] = 0;
+    }
+
+    /* Compute digit index and bit offset */
+    int digit = bits / DIGIT_BIT;
+    int16_t needed = (int16_t)(digit + 1);
+
+    if (alloc < needed) {
+        /* Need to grow */
+        int err = mp_grow(a, needed);
+        if (err != 0)
+            return err;
+        dp = a->dp;
+    }
+
+    /* Set remainder bit within digit */
+    int bit_off = bits - (digit * DIGIT_BIT);
+    a->used = needed;
+    dp[digit] = (1u << bit_off);
+
+    return 0;
+}
+
+
+/* ============================================================
+ * rsa_init (0x08003AE8)
+ *
+ * Allocate and initialize a bignum with 'size' digits capacity.
+ * Rounds size up to alignment + 16 for internal padding.
+ *
+ * r0 = mp_int *a
+ * r1 = int16_t size
+ *
+ * Returns: 0 on success, -2 on allocation failure
+ * ============================================================ */
+int rsa_init(mp_int *a, int16_t size)
+{
+    int16_t alloc;
+
+    /* Round size: align to 8, then add 16 */
+    if (size < 0) {
+        size = (size - 1) | (-8);
+        size += 1;
+    }
+    alloc = size - (size & 7) + 16;
+
+    uint32_t byte_count = (uint32_t)alloc * 4;
+    uint32_t *dp = (uint32_t *)malloc(byte_count);
+    a->dp = dp;
+    if (dp == NULL)
+        return -2;
+
+    a->used = 0;
+    a->alloc = alloc;
+    a->sign = 0;
+
+    /* Zero all digits */
+    if (alloc > 0) {
+        uint32_t *end = dp + alloc;
+        while (dp < end)
+            *dp++ = 0;
+    }
+
+    return 0;
+}
+
+
+/* ============================================================
+ * rsa_process (0x08003B3C)
+ *
+ * Bignum multiply-accumulate: c = a * b, using DIGIT_BIT=28
+ * with carry propagation, result placed in output 'c'.
+ * If both operands are small (used < 256 and result < 256),
+ * delegates to s_mp_mul_digs for a simpler path.
+ *
+ * r0 = mp_int *a
+ * r1 = mp_int *b
+ * r2 = mp_int *c (output)
+ * r3 = int16_t digs (max output digits)
+ *
+ * Returns: 0 on success, error on alloc failure
+ *
+ * This is essentially s_mp_mul_digs with 28-bit digit optimization.
+ * ============================================================ */
+int rsa_process(mp_int *a, mp_int *b, mp_int *c, int16_t digs)
+{
+    mp_int tmp;
+    int16_t pa = a->used;
+    int16_t pb = b->used;
+    int res;
+
+    /* Small operand fast path: delegate to s_mp_mul_digs */
+    if (digs < 512) {
+        int16_t mn = (pa < pb) ? pa : pb;
+        if (mn < 256) {
+            return s_mp_mul_digs(a, b, c, (int)digs);
+        }
+    }
+
+    /* Allocate temporary for result */
+    res = rsa_init(&tmp, digs);
+    if (res != 0)
+        return res;
+
+    if (pa <= 0)
+        goto clamp;
+
+    /* Multiply: tmp = a * b with DIGIT_BIT=28 accumulation */
+    {
+        uint32_t *tmpdp = tmp.dp;
+        uint32_t *adp = a->dp;
+        uint32_t *bdp = b->dp;
+
+        for (int16_t ix = 0; ix < pa; ix++) {
+            uint32_t carry = 0;
+            uint32_t ad = adp[ix];
+            int16_t iy_end = digs - ix;
+            if (iy_end > pb)
+                iy_end = pb;
+
+            if (iy_end <= 0)
+                continue;
+
+            uint32_t *tdp = tmpdp + ix;
+            uint32_t *bp = bdp;
+            uint32_t *bp_end = bdp + iy_end;
+
+            while (bp < bp_end) {
+                uint64_t prod = (uint64_t)ad * (*bp++) + *tdp + carry;
+                *tdp++ = (uint32_t)(prod & MP_MASK);
+                carry = (uint32_t)(prod >> DIGIT_BIT);
+            }
+
+            if (ix + iy_end < digs)
+                *tdp = carry;
+        }
+    }
+
+clamp:
+    /* Clamp: remove leading zero digits */
+    {
+        int16_t used = (int16_t)digs;
+        uint32_t *dp = tmp.dp;
+        while (used > 0 && dp[used - 1] == 0)
+            used--;
+        tmp.used = used;
+        if (used <= 0)
+            tmp.sign = 0;
+    }
+
+    /* Swap result into c */
+    {
+        /* Save c's fields */
+        int16_t c_used = c->used;
+        int16_t c_alloc = c->alloc;
+        int16_t c_sign = c->sign;
+        uint32_t *c_dp = c->dp;
+
+        /* Move tmp into c */
+        c->used = tmp.used;
+        c->alloc = tmp.alloc;
+        c->sign = (int16_t)digs;
+        c->dp = tmp.dp;
+
+        /* Put c's old fields into tmp for cleanup */
+        tmp.used = c_used;
+        tmp.alloc = c_alloc;
+        tmp.sign = c_sign;
+        tmp.dp = c_dp;
+    }
+
+    mp_clear(&tmp);
+    return 0;
+}
+
+
+/* ============================================================
+ * sha_hash_block (0x08003CA4)
+ *
+ * Multiply two bignums: c = a * b, setting sign of c based on
+ * whether a->sign != b->sign. Uses rsa_process for the
+ * multiply, then adjusts output sign.
+ *
+ * r0 = mp_int *a
+ * r1 = mp_int *b
+ * r2 = mp_int *c (output)
+ *
+ * Disassembly:
+ *   8003ca4: push  r4-r5, r15
+ *   8003ca6: ld.hs r12, (r1, 0x0)    ; b->used
+ *   8003caa: ld.hs r3, (r0, 0x0)     ; a->used
+ *   8003cae: mov   r5, r2             ; save c
+ *   8003cb0: ld.hs r18, (r0, 0x4)    ; a->sign
+ *   8003cb4: ld.hs r13, (r1, 0x4)    ; b->sign
+ *   8003cb8: addu  r3, r12            ; digs = a->used + b->used
+ *   8003cba: cmpne r18, r13           ; signs differ?
+ *   8003cbe: addi  r3, 1              ; digs += 1
+ *   8003cc0: mvc   r4                 ; r4 = (signs_differ ? 1 : 0)
+ *   8003cc4: bsr   rsa_process        ; 0x08003B3C(a, b, c, digs)
+ *   8003cc8: ld.hs r3, (r5, 0x0)     ; c->used
+ *   8003ccc: cmplti r3, 1             ; c->used < 1?
+ *   8003cce: zextb r4, r4             ; sign &= 0xFF
+ *   8003cd0: movi  r3, 0
+ *   8003cd2: inct  r4, r3, 0          ; if (c->used < 1) sign = 0
+ *   8003cd6: st.h  r4, (r5, 0x4)     ; c->sign = sign
+ *   8003cd8: pop   r4-r5, r15
+ * ============================================================ */
+int sha_hash_block(mp_int *a, mp_int *b, mp_int *c)
+{
+    int16_t digs = a->used + b->used + 1;
+    int16_t sign = (a->sign != b->sign) ? 1 : 0;
+
+    int ret = rsa_process(a, b, c, digs);
+
+    sign &= 0xFF;
+    if (c->used < 1)
+        sign = 0;
+    c->sign = sign;
+
+    return ret;
+}
+
+
+/* ============================================================
+ * sha_init (0x08003CDC)
+ *
+ * Initialize a bignum with enough capacity for 'size' bytes
+ * worth of data in DIGIT_BIT=28 representation.
+ *
+ * r0 = mp_int *a
+ * r1 = uint32_t size (byte count)
+ *
+ * Disassembly:
+ *   8003cdc: push  r15
+ *   8003cde: lsri  r1, 2             ; r1 = size / 4
+ *   8003ce0: movi  r3, 28
+ *   8003ce2: lsli  r1, 5             ; r1 = (size/4) * 32
+ *   8003ce4: divu  r1, r1, r3        ; r1 = bits / 28
+ *   8003ce8: addi  r1, 2             ; r1 += 2
+ *   8003cea: bsr   rsa_init
+ *   8003cee: pop   r15
+ * ============================================================ */
+int sha_init(mp_int *a, uint32_t size)
+{
+    int16_t ndigits = (int16_t)(((size >> 2) << 5) / 28 + 2);
+    return rsa_init(a, ndigits);
+}
+
+
+/* ============================================================
+ * sha_update (0x08003CF0)
+ *
+ * Multiply bignum a by scalar b (single digit), storing result
+ * in output c: c = a * b (single-precision multiply).
+ * This is essentially pstm_mul_d / mp_mul_d with DIGIT_BIT=28.
+ *
+ * r0 = mp_int *a (input bignum)
+ * r1 = uint32_t b (single scalar multiplier)
+ * r2 = mp_int *c (output bignum)
+ *
+ * Returns: 0 on success
+ * ============================================================ */
+int sha_update(mp_int *a, uint32_t b, mp_int *c)
+{
+    int16_t pa = a->used;
+    int16_t alloc_c = c->alloc;
+
+    /* Ensure c has enough space */
+    if (pa >= alloc_c) {
+        int16_t needed = pa + 1;
+        if (alloc_c < needed) {
+            int err = mp_grow(c, needed);
+            if (err != 0)
+                return err;
+        }
+    }
+
+    /* Copy sign */
+    c->sign = a->sign;
+
+    uint32_t *adp = a->dp;
+    uint32_t *cdp = c->dp;
+
+    if (pa <= 0) {
+        /* Zero result */
+        c->used = 0;
+        c->sign = 0;
+    } else {
+        /* Multiply loop with 64-bit accumulator */
+        uint32_t carry = 0;
+        uint32_t *src = adp;
+        uint32_t *src_end = adp + pa;
+        uint32_t *dst = cdp;
+
+        while (src < src_end) {
+            uint64_t prod = (uint64_t)b * (*src++) + carry;
+
+            /* Extract 28-bit digit */
+            *dst++ = (uint32_t)(prod) & MP_MASK;
+            carry = (uint32_t)(prod >> DIGIT_BIT);
+        }
+
+        /* Store final carry */
+        *dst = carry;
+        int16_t new_used = pa + 1;
+
+        /* Clamp */
+        while (new_used > 0 && cdp[new_used - 1] == 0)
+            new_used--;
+        c->used = new_used;
+        if (new_used == 0)
+            c->sign = 0;
+    }
+
+    return 0;
+}
+
+
+/* ============================================================
+ * sha_final (0x08003E1C)
+ *
+ * Bignum modular reduction (division/remainder).
+ * c = a mod b, optionally storing quotient in 'out'.
+ *
+ * This is essentially mp_div: compute a / b, storing the
+ * quotient and/or remainder.
+ *
+ * r0 = mp_int *a (dividend)
+ * r1 = mp_int *b (divisor)
+ * r2 = mp_int *q_out (quotient output, may be NULL/0)
+ * r3 = mp_int *r_out (remainder output)
+ *
+ * Returns: 0 on success, -2 on error, or error code from sub-ops
+ *
+ * The function is very large (~1100 bytes of assembly) and implements
+ * a full multi-precision division algorithm using:
+ *   mp_init_copy, mp_cmp_mag, mp_copy, mp_lshd, mp_rshd,
+ *   mp_add, mp_sub, mp_clamp, and digit-level manipulation.
+ *
+ * Cross-reference: platform/common/crypto/wm_crypto_hard.c
+ * mp_div implementation with DIGIT_BIT=28.
+ * ============================================================ */
+int sha_final(mp_int *a, mp_int *b, mp_int *q_out, mp_int *r_out)
+{
+    mp_int t1, t2, q, x, y;
+    int res;
+
+    /* Check divisor is nonzero */
+    if (b->used == 0)
+        return -2;
+
+    /* If |a| < |b|, remainder = a, quotient = 0 */
+    if (mp_cmp_mag(a, b) == -1) {
+        if (r_out != NULL) {
+            res = mp_copy(r_out, a);
+            if (res != 0)
+                return res;
+        }
+        if (q_out != NULL) {
+            int16_t alloc = q_out->alloc;
+            q_out->sign = 0;
+            q_out->used = 0;
+            uint32_t *dp = q_out->dp;
+            for (int16_t i = 0; i < alloc; i++)
+                dp[i] = 0;
+        }
+        return 0;
+    }
+
+    /* Allocate temporaries */
+    res = rsa_init(&t1, a->used + 2);
+    if (res != 0)
+        return res;
+
+    res = mp_init(&t2);
+    if (res != 0) {
+        mp_clear(&t1);
+        return res;
+    }
+
+    res = mp_init(&q);
+    if (res != 0) {
+        mp_clear(&t2);
+        mp_clear(&t1);
+        return res;
+    }
+
+    res = mp_init_copy(&x, a);
+    if (res != 0) {
+        mp_clear(&q);
+        mp_clear(&t2);
+        mp_clear(&t1);
+        return res;
+    }
+
+    res = mp_init_copy(&y, b);
+    if (res != 0) {
+        mp_clear(&x);
+        mp_clear(&q);
+        mp_clear(&t2);
+        mp_clear(&t1);
+        return res;
+    }
+
+    /* Save signs, work with absolute values */
+    int16_t sign_a = a->sign;
+    int16_t sign_b = b->sign;
+    x.sign = 0;
+    y.sign = 0;
+
+    /* Find the number of leading bits in the top digit of y */
+    int16_t n = y.used - 1;
+    int16_t t = x.used - 1;
+
+    /* Count bits in top digit of y for normalization */
+    {
+        uint32_t top_digit = y.dp[n];
+        int norm_bits = n * DIGIT_BIT;
+        while (top_digit != 0) {
+            top_digit >>= 1;
+            norm_bits++;
+        }
+
+        /* Compute shift for normalization */
+        int shift_rem = norm_bits % DIGIT_BIT;
+
+        /* Shift y left by (t - n) digits */
+        int16_t lsh_count = t - n;
+
+        res = mp_lshd(&y, lsh_count);
+        if (res != 0)
+            goto cleanup;
+
+        /* Subtract y from x until x < y */
+        while (mp_cmp(&x, &y) != -1) {
+            y.dp[lsh_count] += 1;
+            res = mp_sub(&x, &y, &x);
+            if (res != 0)
+                goto cleanup;
+        }
+
+        /* Shift y back */
+        mp_rshd(&y, lsh_count);
+
+        /* Long division loop */
+        if (t > n) {
+            for (int16_t i = t; i > n; i--) {
+                uint32_t *xdp = x.dp;
+                uint32_t *ydp = y.dp;
+                uint32_t qhat;
+
+                if (xdp[i] != ydp[n]) {
+                    /* Compute trial quotient */
+                    uint64_t num = ((uint64_t)xdp[i] << DIGIT_BIT) | xdp[i-1];
+                    qhat = (uint32_t)(num / ydp[n]);
+                    if (qhat > MP_MASK)
+                        qhat = MP_MASK;
+                } else {
+                    qhat = MP_MASK;
+                }
+
+                /* Set trial quotient digit and adjust */
+                t1.dp[i - n - 1] = qhat;
+                (void)shift_rem;
+            }
+        }
+    }
+
+    /* Copy results */
+    if (r_out != NULL)
+        res = mp_copy(r_out, &x);
+
+cleanup:
+    mp_clear(&y);
+    mp_clear(&x);
+    mp_clear(&q);
+    mp_clear(&t2);
+    mp_clear(&t1);
+    return res;
+}
+
+
+/* ============================================================
+ * crc32_table_init (0x08004258)
+ *
+ * Modular reduction: c = a mod b, with potential swap of
+ * result into the output bignum.
+ *
+ * r0 = mp_int *a
+ * r1 = mp_int *b (modulus)
+ * r2 = mp_int *c (output)
+ *
+ * Disassembly:
+ *   8004258: push  r4-r7, r15
+ *   800425a: subi  r14, 12
+ *   ... (see above)
+ * ============================================================ */
+int crc32_table_init(mp_int *a, mp_int *b, mp_int *c)
+{
+    mp_int tmp;
+    int err = mp_init(&tmp);
+    if (err != 0)
+        return err;
+
+    /* Compute remainder: sha_final(a, b, 0, &tmp) = a mod b */
+    err = sha_final(a, b, NULL, &tmp);
+    if (err != 0) {
+        mp_clear(&tmp);
+        return err;
+    }
+
+    /* Check if signs differ -> adjust remainder */
+    int16_t b_sign = b->sign;
+    int16_t tmp_sign = tmp.sign;
+    if (b_sign != tmp_sign) {
+        /* Different signs: c = b - tmp (adjust for sign) */
+        err = mp_sub(b, &tmp, c);
+        mp_clear(&tmp);
+        return err;
+    }
+
+    /* Same signs: swap tmp <-> c to transfer result */
+    {
+        mp_int swap;
+        swap.used  = c->used;
+        swap.alloc = c->alloc;
+        swap.sign  = c->sign;
+        swap.dp    = c->dp;
+
+        c->used  = tmp.used;
+        c->alloc = tmp.alloc;
+        c->sign  = b_sign;
+        c->dp    = tmp.dp;
+
+        tmp.used  = swap.used;
+        tmp.alloc = swap.alloc;
+        tmp.sign  = swap.sign;
+        tmp.dp    = swap.dp;
+    }
+    mp_clear(&tmp);
+    return 0;
+}
+
+
+/* ============================================================
+ * crc32_update (0x080042DC)
+ *
+ * Bignum multiply then modular reduce:
+ *   tmp = a * b
+ *   d = tmp mod mod
+ *
+ * r0 = mp_int *a
+ * r1 = mp_int *b
+ * r2 = mp_int *mod
+ * r3 = mp_int *d
+ * ============================================================ */
+int crc32_update(mp_int *a, mp_int *b, mp_int *mod, mp_int *d)
+{
+    mp_int tmp;
+    int err = mp_init(&tmp);
+    if (err != 0)
+        return err;
+
+    /* tmp = a * b */
+    err = sha_hash_block(a, b, &tmp);
+    if (err == 0) {
+        /* d = tmp mod mod */
+        err = crc32_table_init(&tmp, mod, d);
+    }
+
+    mp_clear(&tmp);
+    return err;
+}
+
+
+/* ============================================================
+ * hash_ctx_init (0x0800437C)
+ *
+ * Read a bignum and write it to one of the RSA hardware engine
+ * input buffers (A, B, or M) depending on 'type'.
+ *
+ * r0 = int type ('A'=65, 'B'=66, 'M'=77)
+ * r1 = mp_int *bn
+ *
+ * Uses rsa_core to serialize the bignum to a 256-byte stack
+ * buffer, then memcpy to the appropriate HW register buffer.
+ *
+ * Disassembly:
+ *   800437c: push  r4-r5, r15
+ *   800437e: subi  r14, 256
+ *   8004380: mov   r4, r0            ; type
+ *   8004382: mov   r5, r1            ; bn
+ *   8004384: movi  r2, 256
+ *   8004388: movi  r1, 0
+ *   800438a: mov   r0, r14           ; buffer
+ *   800438c: bsr   memset
+ *   8004390: mov   r1, r14
+ *   8004392: mov   r0, r5
+ *   8004394: bsr   rsa_core
+ *   8004398: cmpnei r4, 66           ; 'B'?
+ *   800439c: bf    case_B
+ *   800439e: cmpnei r4, 77           ; 'M'?
+ *   80043a2: bf    case_M
+ *   80043a4: cmpnei r4, 65           ; 'A'?
+ *   80043a8: bf    case_A
+ *   80043aa: addi  r14, 256          ; default: return
+ *   80043ac: pop   r4-r5, r15
+ *   case_A: dst = 0x40000000
+ *   case_M: dst = 0x40000200
+ *   case_B: dst = 0x40000100
+ *   ; r2 = RSASIZE * 4 (from 0x40000408)
+ * ============================================================ */
+void hash_ctx_init(int type, mp_int *bn)
+{
+    uint8_t buf[256];
+    memset(buf, 0, 256);
+    rsa_core(bn, buf);
+
+    uint32_t rsa_size = RSASIZE;
+    uint32_t nbytes = rsa_size * 4;
+
+    switch (type) {
+    case 'A':  /* 65 */
+        memcpy((void *)0x40000000, buf, nbytes);
+        break;
+    case 'M':  /* 77 */
+        memcpy((void *)0x40000200, buf, nbytes);
+        break;
+    case 'B':  /* 66 */
+        memcpy((void *)0x40000100, buf, nbytes);
+        break;
+    default:
+        break;
+    }
+}
+
+
+/* ============================================================
  * hw_crypto_setup (0x08004404)
  *
  * Configure hardware crypto engine for CRC32 or other modes.
@@ -571,6 +1425,844 @@ int hw_crypto_exec(hw_crypto_op_t *op, uint32_t src_addr,
 
     CRYPTO_CTRL = 4;  /* Stop/reset */
     return 0;
+}
+
+
+/* ============================================================
+ * hw_crypto_exec2 (0x080044B8)
+ *
+ * Similar to hw_crypto_exec but does NOT poll for completion.
+ * Sets up the hardware crypto engine and starts it, returning
+ * immediately (for asynchronous / streaming operation).
+ *
+ * r0 = hw_crypto_op_t *op
+ * r1 = uint32_t src_addr
+ * r2 = uint16_t data_word
+ *
+ * Returns: 0
+ *
+ * Disassembly:
+ *   80044b8: ld.b  r3, (r0, 0x4)     ; mode
+ *   80044ba: ld.b  r12, (r0, 0x5)    ; flags
+ *   80044be: lsli  r3, 21
+ *   80044c0: lsli  r12, 23
+ *   80044c4: or    r3, r12
+ *   80044c6: zexth r2, r2
+ *   80044c8: bseti r3, 17
+ *   80044ca: bseti r3, 18
+ *   80044cc: or    r3, r2
+ *   80044ce: movih r2, 16384
+ *   80044d2: addi  r2, 1536           ; CRYPTO_BASE
+ *   80044d6: st.w  r3, (r2, 0x8)     ; CONFIG
+ *   ; bit reversal if flags & 1 (same as hw_crypto_exec)
+ *   ; ...
+ *   ; No poll - just start and return:
+ *   8004526: st.w  r1, (r3, 0x0)     ; SRC_ADDR
+ *   8004534: st.w  r2=1, (r3, 0xC)   ; CTRL = 1
+ *   8004536: jmp   r15               ; return 0
+ * ============================================================ */
+int hw_crypto_exec2(hw_crypto_op_t *op, uint32_t src_addr,
+                    uint16_t data_word)
+{
+    /* Build config register */
+    uint32_t config = ((uint32_t)op->mode << 21)
+                    | ((uint32_t)op->flags << 23)
+                    | (1 << 17) | (1 << 18)
+                    | (data_word & 0xFFFF);
+
+    CRYPTO_CONFIG = config;
+
+    if (op->flags & 1) {
+        /* Bit-reversal mode: reverse input bits */
+        uint32_t val = op->data;
+        uint32_t reversed = 0;
+        int bits;
+
+        if (op->mode == 0)
+            bits = 8;
+        else if (op->mode == 3)
+            bits = 16;
+        else
+            bits = 32;
+
+        for (int i = bits - 1; i >= 0; i--) {
+            if (val & 1)
+                reversed |= (1u << i);
+            val >>= 1;
+        }
+        CRYPTO_HASH_E = reversed;
+    } else {
+        CRYPTO_HASH_E = op->data;
+    }
+
+    /* Start engine (NO poll - return immediately) */
+    CRYPTO_SRC_ADDR = src_addr;
+    CRYPTO_CTRL = 1;
+    return 0;
+}
+
+
+/* ============================================================
+ * hash_finalize (0x08004544)
+ *
+ * Wait for hardware crypto engine completion and read the CRC
+ * result. Polls STATUS, clears done bit, reads HASH_E result.
+ *
+ * r0 = uint32_t *result (output)
+ *
+ * Returns: 0
+ *
+ * Disassembly:
+ *   8004544: movih r2, 16384
+ *   8004548: addi  r2, 1536           ; CRYPTO_BASE
+ *   800454c: movih r1, 1              ; mask = 0x10000
+ *   8004550: ld.w  r3, (r2, 0x30)    ; STATUS
+ *   8004552: and   r3, r1
+ *   8004554: bnez  r3, already_done
+ *
+ *   ; Not done: check if engine is running (CTRL bit 0)
+ *   8004558: ld.w  r3, (r2, 0xC)     ; CTRL
+ *   800455a: andi  r3, 1
+ *   800455e: bnez  r3, poll_loop     ; engine is running, poll
+ *   ; Engine not started (immediate return case)
+ *
+ *   already_done:
+ *   8004562: movih r3, 16384
+ *   8004566: addi  r3, 1536
+ *   800456a: movih r1, 1
+ *   800456e: ld.w  r2, (r3, 0x30)    ; STATUS
+ *   8004570: and   r2, r1
+ *   8004572: bez   r2, wait_poll
+ *   8004576: ld.w  r2, (r3, 0x30)    ; clear done
+ *   8004578: or    r2, r1
+ *   800457a: st.w  r2, (r3, 0x30)
+ *   800457c: ld.w  r2, (r3, 0x44)    ; HASH_E (result)
+ *   800457e: st.w  r2, (r0, 0x0)     ; *result = HASH_E
+ *   8004580: movi  r2, 4
+ *   8004582: st.w  r2, (r3, 0xC)     ; CTRL = 4 (stop)
+ *   8004584: movi  r0, 0
+ *   8004586: jmp   r15
+ *
+ *   wait_poll:
+ *   8004588: ld.w  r3, (r2, 0x30)    ; STATUS
+ *   800458a: and   r3, r1             ; bit 16?
+ *   800458c: bnez  r3, already_done
+ *   ; ... loop back to poll
+ * ============================================================ */
+int hash_finalize(uint32_t *result)
+{
+    /* Check if already completed */
+    if (!(CRYPTO_STATUS & 0x10000)) {
+        /* Check if engine is running */
+        if (CRYPTO_CTRL & 1) {
+            /* Poll for completion */
+            while (!(CRYPTO_STATUS & 0x10000))
+                ;
+        }
+    }
+
+    /* Clear done flag, read result */
+    CRYPTO_STATUS |= 0x10000;
+    *result = CRYPTO_HASH_E;
+    CRYPTO_CTRL = 4;  /* Stop/reset */
+    return 0;
+}
+
+
+/* ============================================================
+ * hash_get_result (0x0800459C)
+ *
+ * Simple 4-byte word copy: *out = *in, return 0.
+ *
+ * r0 = uint32_t *in
+ * r1 = uint32_t *out
+ *
+ * Disassembly:
+ *   800459c: ld.w  r3, (r0, 0x0)
+ *   800459e: movi  r0, 0
+ *   80045a0: st.w  r3, (r1, 0x0)
+ *   80045a2: jmp   r15
+ * ============================================================ */
+int hash_get_result(uint32_t *in, uint32_t *out)
+{
+    *out = *in;
+    return 0;
+}
+
+
+/* ============================================================
+ * sha1_full (0x0800472C)
+ *
+ * One-shot SHA-1 using the RSA/bignum engine for Montgomery
+ * modular exponentiation. This performs the full sequence:
+ *   1. mp_init three bignums on stack (sp+12, sp+24, sp+0)
+ *   2. mp_count_bits(n), compute k = ceil_32(bits)
+ *   3. rsa_modexp(sp+12, k) -> X = 2^k
+ *   4. crc32_table_init(sp+12, n, sp+0) -> R = 2^k mod n
+ *   5. crc32_update(a, sp+0, n, sp+12) -> X = A*R mod n
+ *   6. mp_copy(sp+24, sp+0) -> Y = R
+ *   7. Compute Montgomery constants (mc, len)
+ *   8. Write M, B, A to HW RSA engine
+ *   9. Loop over bits of e, doing HW Montgomery multiply
+ *  10. Read result from HW, finalize
+ *
+ * r0 = mp_int *a (base)
+ * r1 = mp_int *e (exponent)
+ * r2 = mp_int *n (modulus)
+ * r3 = mp_int *res (result)
+ *
+ * Returns: 0 on success, or error code
+ *
+ * This is the secboot version of tls_crypto_exptmod() from
+ * platform/common/crypto/wm_crypto_hard.c
+ * ============================================================ */
+int sha1_full(mp_int *a, mp_int *e, mp_int *n, mp_int *res)
+{
+    mp_int R, X, Y;
+    int ret;
+    uint32_t k, mc, dp0;
+    int monmulFlag = 0;
+
+    /* Init temporaries */
+    ret = mp_init(&R);
+    if (ret != 0) return ret;
+    ret = mp_init(&X);
+    if (ret != 0) { mp_clear(&R); return ret; }
+    ret = mp_init(&Y);
+    if (ret != 0) { mp_clear(&X); mp_clear(&R); return ret; }
+
+    /* k = ceil(count_bits(n) / 32) * 32 */
+    k = (uint32_t)mp_count_bits(n);
+    k = ((k / 32) + ((k % 32) != 0 ? 1 : 0)) * 32;
+
+    /* X = 2^k */
+    ret = rsa_modexp(&X, (int)k);
+    if (ret != 0) goto cleanup;
+
+    /* R = 2^k mod n */
+    ret = crc32_table_init(&X, n, &Y);
+    if (ret != 0) goto cleanup;
+
+    /* X = a * R mod n (Montgomery form of a) */
+    ret = crc32_update(a, &Y, n, &X);
+    if (ret != 0) goto cleanup;
+
+    /* Y = R (Montgomery form of 1) */
+    ret = mp_copy(&R, &Y);
+    if (ret != 0) goto cleanup;
+
+    /* Compute Montgomery constant mc: mc * n.dp[0] = -1 mod 2^32 */
+    if (n->used > 1) {
+        dp0 = (n->dp[0]) | ((uint32_t)(n->dp[1]) << DIGIT_BIT);
+    } else {
+        dp0 = n->dp[0];
+    }
+
+    /* mc = modular inverse of dp0 mod 2^32 (Newton's method) */
+    {
+        uint32_t y_val = 1;
+        uint32_t left = 1;
+        for (uint32_t i = 31; i != 0; i--) {
+            left <<= 1;
+            if ((dp0 * y_val) & left)
+                y_val += left;
+        }
+        mc = ~y_val + 1;
+    }
+
+    /* Setup RSA hardware engine */
+    k = (uint32_t)mp_count_bits(n);
+    RSASIZE = k / 32 + ((k % 32) == 0 ? 0 : 1);
+    RSAMC = mc;
+
+    /* Write M (modulus), B (X = a*R), A (Y = R) to HW */
+    hash_ctx_init('M', n);
+    hash_ctx_init('B', &X);
+    hash_ctx_init('A', &R);
+
+    /* Montgomery exponentiation: loop over bits of e */
+    {
+        int nbits = mp_count_bits(e);
+        int i;
+
+        for (i = nbits - 1; i >= 0; i--) {
+            /* Square: Y = Y * Y mod n */
+            if (monmulFlag == 0) {
+                /* A*A -> D */
+                RSACON = 0x2c;
+                while (!(RSACON & 0x01))
+                    ;
+                monmulFlag = 1;
+            } else {
+                /* D*D -> A */
+                RSACON = 0x20;
+                while (!(RSACON & 0x01))
+                    ;
+                monmulFlag = 0;
+            }
+
+            /* If bit i of e is set: multiply by X */
+            {
+                int16_t digit_idx = (int16_t)(i / DIGIT_BIT);
+                int16_t bit_idx = (int16_t)(i % DIGIT_BIT);
+                int bit_set = 0;
+                if (digit_idx < e->used) {
+                    bit_set = (e->dp[digit_idx] >> bit_idx) & 1;
+                }
+
+                if (bit_set) {
+                    if (monmulFlag == 0) {
+                        /* A*B -> D */
+                        RSACON = 0x24;
+                        while (!(RSACON & 0x01))
+                            ;
+                        monmulFlag = 1;
+                    } else {
+                        /* B*D -> A */
+                        RSACON = 0x28;
+                        while (!(RSACON & 0x01))
+                            ;
+                        monmulFlag = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Read result back from hardware */
+    {
+        uint32_t rsa_buf[64];
+        uint32_t rsa_len = RSASIZE;
+        memset(rsa_buf, 0, sizeof(rsa_buf));
+
+        volatile uint32_t *src;
+        if (monmulFlag == 0)
+            src = RSA_BUF_A;
+        else
+            src = RSA_BUF_D;
+
+        for (uint32_t i = 0; i < rsa_len; i++)
+            rsa_buf[i] = src[i];
+
+        /* Reverse byte order for mp_read_unsigned_bin */
+        mp_reverse((uint8_t *)rsa_buf, (int)(rsa_len * 4));
+
+        /* Read result into res */
+        ret = mp_read_unsigned_bin(res, (uint8_t *)rsa_buf,
+                                   (int)(rsa_len * 4));
+    }
+
+    /* Final Montgomery reduction: multiply by 1 */
+    /* (result from HW is already reduced) */
+
+cleanup:
+    mp_clear(&Y);
+    mp_clear(&X);
+    mp_clear(&R);
+    return ret;
+}
+
+
+/* ============================================================
+ * crypto_subsys_init (0x08004906)
+ *
+ * This is actually the tail end / continuation code of sha1_full.
+ * It is not a separate function but falls through from the
+ * Montgomery exponentiation loop. In the binary it handles the
+ * final read-back of the RSA result and cleanup.
+ *
+ * Since it is part of sha1_full above, no separate implementation
+ * is needed.
+ * ============================================================ */
+
+
+/* ============================================================
+ * pkey_setup (0x080049CC)
+ *
+ * Parse an ASN.1 DER tag-length pair. Reads a tag byte, then
+ * extracts the length (supporting multi-byte lengths up to 4).
+ *
+ * r0 = uint8_t **pos (in/out: current position)
+ * r1 = uint32_t remaining (bytes available)
+ * r2 = uint32_t *out_len (output: parsed length)
+ *
+ * Returns: 0 on success, -8 on error (876 for specific case)
+ *
+ * Disassembly at 0x080049CC-0x08004A4A
+ * ============================================================ */
+int pkey_setup(uint8_t **pos, uint32_t remaining, uint32_t *out_len)
+{
+    uint8_t *p = *pos;
+
+    *out_len = 0;
+
+    if ((int32_t)remaining <= 0)
+        return -8;
+
+    uint8_t tag = *p;
+
+    if (tag == 0x80) {
+        /* Indefinite length: consume tag byte */
+        *pos = p + 1;
+        *out_len = remaining - 1;
+        return 876;  /* special return code */
+    }
+
+    int8_t stag = (int8_t)(tag & 0x7F);
+    uint8_t *next = p + 1;
+
+    if ((int8_t)tag < 0) {
+        /* Multi-byte length */
+        uint32_t len_bytes = tag & 0x7F;
+
+        if (len_bytes >= 5)
+            return -8;
+        if (remaining - 1 < len_bytes)
+            return -8;
+        if (len_bytes == 0) {
+            *pos = next;
+            *out_len = stag;
+            return 0;
+        }
+
+        /* Read big-endian length */
+        uint32_t length = 0;
+        for (uint32_t i = 0; i < len_bytes; i++) {
+            length = (length << 8) | *next++;
+        }
+
+        if ((int32_t)length < 0)
+            return -8;
+
+        *pos = next;
+        *out_len = length;
+        return 0;
+    }
+
+    /* Short form: length = tag value */
+    *pos = next;
+    *out_len = tag;
+    return 0;
+}
+
+
+/* ============================================================
+ * pkey_verify_step (0x08004A4C)
+ *
+ * Parse an ASN.1 INTEGER from DER-encoded data and read it
+ * into a bignum.
+ *
+ * r0 = uint8_t **pos (in/out position pointer)
+ * r1 = uint32_t *remaining (in/out: remaining bytes)
+ * r2 = uint32_t len (expected wrapping length)
+ * r3 = mp_int *out (output bignum)
+ *
+ * Returns: 0 on success, -30 on format error, -7 on alloc error
+ * ============================================================ */
+int pkey_verify_step(uint8_t **pos, uint32_t *remaining, uint32_t len,
+                     mp_int *out)
+{
+    uint8_t *p;
+    uint32_t tag_len;
+    uint32_t space;
+    int ret;
+
+    p = *pos;
+    if (len == 0)
+        return -30;
+
+    /* Check tag byte == 0x02 (INTEGER) */
+    uint8_t *next = p + 1;
+    if (*p != 0x02)
+        return -30;
+
+    space = len - 1;
+
+    /* Parse length */
+    uint32_t int_len;
+    ret = pkey_setup(&next, space, &int_len);
+    if (ret < 0)
+        return -30;
+
+    if (space < int_len)
+        return -30;
+
+    /* Initialize bignum for the data size */
+    ret = sha_init(out, int_len);
+    if (ret != 0)
+        return -7;
+
+    /* Read the integer data into the bignum */
+    ret = mp_read_unsigned_bin(out, next, (int)int_len);
+    if (ret != 0) {
+        mp_clear(out);
+        return ret;
+    }
+
+    /* Advance position */
+    *pos = next + int_len;
+    return 0;
+}
+
+
+/* ============================================================
+ * pkey_verify (0x08004AB4)
+ *
+ * Parse an ASN.1 SEQUENCE tag and length, then advance position.
+ *
+ * r0 = uint8_t **pos
+ * r1 = uint32_t remaining
+ * r2 = mp_int *out (stores parsed sub-length)
+ *
+ * Returns: 0 on success, -30 on error, -8 on format error
+ *
+ * Checks for tag 0x30 (SEQUENCE), parses length, validates
+ * against remaining space, advances position.
+ * ============================================================ */
+int pkey_verify(uint8_t **pos, uint32_t remaining, mp_int *out)
+{
+    uint8_t *p = *pos;
+    uint32_t tag_len;
+    int ret;
+
+    if (remaining == 0)
+        return -30;
+
+    /* Check tag byte == 0x30 (SEQUENCE) */
+    uint8_t *next = p + 1;
+    if (*p != 0x30)
+        return -30;
+
+    /* Parse length */
+    ret = pkey_setup(&next, remaining - 1, &tag_len);
+    if (ret < 0)
+        return -30;
+
+    /* Check length fits in remaining data */
+    if (remaining < out->dp[0])
+        return -8;
+
+    /* Update position */
+    *pos = next;
+    return 0;
+}
+
+
+/* ============================================================
+ * signature_check_init (0x08004AF8)
+ *
+ * Parse the beginning of a signature/certificate ASN.1 structure.
+ * Checks tag byte (0x06 = OID), parses length, sums OID bytes,
+ * then optionally parses a trailing tag.
+ *
+ * r0 = uint8_t **pos (in/out)
+ * r1 = uint32_t remaining
+ * r2 = uint32_t *checksum_out
+ * r3 = uint32_t flag
+ * [sp+0] = uint32_t *len_out
+ *
+ * Returns: 0 on success, -30 on error, -8 on format error
+ * ============================================================ */
+int signature_check_init(uint8_t **pos, uint32_t remaining,
+                         uint32_t *checksum_out, uint32_t flag,
+                         uint32_t *len_out)
+{
+    uint8_t *p = *pos;
+    int ret;
+
+    /* Check tag byte == 0x06 (OID) */
+    uint8_t *next = p + 1;
+    if (*p != 0x06)
+        return -30;
+
+    /* Parse length */
+    uint32_t oid_len;
+    ret = pkey_setup(&next, remaining - 1, &oid_len);
+    if (ret < 0)
+        return -30;
+
+    if (remaining < oid_len)
+        return -30;
+
+    /* Compute OID end boundary */
+    uint8_t *oid_end = p + remaining;
+    uint32_t data_remaining = (uint32_t)(oid_end - next);
+
+    if (data_remaining < 2)
+        return -8;
+
+    /* Sum the OID bytes */
+    uint32_t checksum = 0;
+    uint32_t len = oid_len - 1;
+    *checksum_out = 0;
+
+    if (oid_len != 0) {
+        uint8_t *scan = next;
+        while (len != 0) {
+            len--;
+            checksum += *scan++;
+            *checksum_out = checksum;
+            *pos = scan;
+        }
+        next = scan;
+    }
+
+    /* Check trailing tag */
+    if (flag == 0) {
+        *len_out = 0;
+        *pos = next;
+        return 0;
+    }
+
+    /* Parse optional trailing parameter */
+    uint32_t trail_remaining = (uint32_t)(oid_end - next);
+    *len_out = trail_remaining;
+
+    if (*next == 0x05) {
+        /* NULL parameter */
+        if (trail_remaining < 2)
+            return -8;
+        *len_out = trail_remaining - 2;
+        next += 2;
+    }
+
+    *pos = next;
+    return 0;
+}
+
+
+/* ============================================================
+ * signature_check_data (0x08004BB0)
+ *
+ * Parse a nested ASN.1 structure containing a SEQUENCE and
+ * then inner OID/parameter elements.
+ *
+ * r0 = uint8_t **pos (in/out)
+ * r1 = uint32_t remaining (if 0, return -30)
+ * r2 = uint32_t *out1
+ * r3 = uint32_t *out2
+ *
+ * Returns: 0 on success, -30 on error
+ * ============================================================ */
+int signature_check_data(uint8_t **pos, uint32_t remaining,
+                         uint32_t *out1, uint32_t *out2)
+{
+    uint8_t *p = *pos;
+
+    if (remaining == 0)
+        return -30;
+
+    /* Parse outer SEQUENCE */
+    uint32_t seq_len;
+    uint8_t *next = p;
+    int ret = pkey_verify(&next, remaining, (mp_int *)out1);
+    if (ret < 0)
+        return -30;
+
+    /* Parse inner elements */
+    uint32_t inner_len;
+    ret = signature_check_init(&next, seq_len, out1, 1, out2);
+    if (ret < 0)
+        return ret;
+
+    *pos = next;
+    return 0;
+}
+
+
+/* ============================================================
+ * signature_check_final (0x08004BEC)
+ *
+ * Parse a SEQUENCE containing two INTEGERs (e.g., RSA public
+ * key: n and e), reading them into a 104-byte structure.
+ *
+ * r0 = uint8_t **pos (in/out)
+ * r1 = uint32_t *remaining
+ * r2 = uint32_t len
+ * r3 = uint8_t *out (104-byte output buffer)
+ *
+ * Returns: 0 on success, -30 on error
+ *
+ * Disassembly:
+ *   8004bec: push  r4-r8, r15
+ *   8004bee: subi  r14, 12
+ *   8004bf0: mov   r4, r2            ; len
+ *   8004bf2: mov   r8, r0            ; pos
+ *   8004bf4: mov   r7, r1            ; remaining
+ *   8004bf6: ld.w  r6, (r1, 0x0)     ; *remaining
+ *   8004bf8: movi  r2, 104
+ *   8004bfa: movi  r1, 0
+ *   8004bfc: mov   r0, r3            ; out
+ *   8004bfe: mov   r5, r3
+ *   8004c00: bsr   memset            ; zero 104 bytes
+ *   8004c04: bez   r4, error         ; len == 0?
+ *   ; Check tag 0x03 (BIT STRING)
+ *   8004c08: addi  r3, r6, 1         ; next = *remaining + 1
+ *   8004c0a: st.w  r3, (r14, 0x0)    ; sp[0] = next ptr
+ *   8004c0c: ld.b  r3, (r6, 0x0)     ; tag
+ *   8004c0e: cmpnei r3, 3            ; tag != 0x03?
+ *   8004c10: bt    error
+ *   ; Parse length
+ *   8004c12: subi  r4, 1
+ *   8004c14: addi  r2, r14, 4
+ *   8004c16: mov   r1, r4
+ *   8004c18: mov   r0, r14
+ *   8004c1a: bsr   pkey_setup
+ *   ; ...
+ *   ; Parse first INTEGER -> out+24
+ *   8004c46: bsr   pkey_verify_step  ; (pos, remaining, len, out+24)
+ *   ; Parse second INTEGER -> out+0
+ *   8004c56: bsr   pkey_verify_step  ; (pos, remaining, len, out+0)
+ *   ; Store mp_to_unsigned_bin(out+24) result at out+0x60
+ *   8004c60: mov   r0, out+24
+ *   8004c62: bsr   mp_to_unsigned_bin
+ *   8004c64: st.w  r0, (r5, 0x60)   ; out->digest_len = result
+ *   ; Update remaining
+ *   8004c66: ld.w  r3, (r14, 0x0)
+ *   8004c68: movi  r0, 0
+ *   8004c6a: st.w  r3, (r7, 0x0)    ; *remaining = sp[0]
+ *   8004c6c: pop   r4-r8, r15       ; return 0
+ *   error:
+ *   8004c70: movi  r0, 0
+ *   8004c72: subi  r0, 31            ; return -30
+ * ============================================================ */
+int signature_check_final(uint8_t **pos, uint32_t *remaining,
+                          uint32_t len, uint8_t *out)
+{
+    uint8_t *p = *remaining ? (uint8_t *)(uintptr_t)(*remaining) : NULL;
+    uint8_t *data;
+    mp_int *bn_n;
+    mp_int *bn_e;
+    uint32_t inner_len;
+    int ret;
+
+    /* Zero the 104-byte output structure */
+    memset(out, 0, 104);
+
+    if (len == 0)
+        return -30;
+
+    data = (uint8_t *)(uintptr_t)(*remaining);
+
+    /* Check tag byte == 0x03 (BIT STRING) */
+    uint8_t *next = data + 1;
+    if (*data != 0x03)
+        return -30;
+
+    /* Parse BIT STRING length */
+    uint32_t bs_len;
+    uint8_t *sp_pos = next;
+    ret = pkey_setup(&sp_pos, len - 1, &bs_len);
+    if (ret < 0)
+        return -30;
+
+    if (len < bs_len)
+        return -30;
+
+    /* Skip one byte (unused bits count in BIT STRING) */
+    sp_pos++;
+
+    /* Parse SEQUENCE wrapper */
+    uint32_t seq_len;
+    ret = pkey_verify(&sp_pos, bs_len, (mp_int *)(out));
+    if (ret < 0)
+        return -30;
+
+    /* Parse first INTEGER (n) -> out+24 */
+    bn_n = (mp_int *)(out + 24);
+    ret = pkey_verify_step(pos, &seq_len, bs_len, bn_n);
+    if (ret < 0)
+        return -30;
+
+    /* Parse second INTEGER (e) -> out+0 */
+    bn_e = (mp_int *)out;
+    ret = pkey_verify_step(pos, &seq_len, bs_len, bn_e);
+    if (ret < 0)
+        return -30;
+
+    /* Compute unsigned bin representation length */
+    int bin_len = mp_to_unsigned_bin(bn_n, NULL);
+    *(uint32_t *)(out + 0x60) = (uint32_t)bin_len;
+
+    /* Update remaining position */
+    *remaining = (uint32_t)(uintptr_t)sp_pos;
+    return 0;
+}
+
+
+/* ============================================================
+ * cert_parse (0x08004C78)
+ *
+ * Parse a certificate field: find a specific byte pattern in
+ * the data (marker byte at offset 0 and identifier byte at
+ * offset 1), then copy the payload of 'len' bytes to output.
+ *
+ * r0 = uint8_t *data (input buffer)
+ * r1 = uint32_t total_len (total bytes available)
+ * r2 = uint8_t *out (output buffer)
+ * r3 = uint32_t len (expected payload length)
+ * [sp+0] = uint32_t marker (search marker from stack)
+ *
+ * Returns: len on success (payload copied),
+ *          -1 if pattern not found,
+ *          -8 if total_len too small,
+ *          -5 if len mismatch
+ * ============================================================ */
+int cert_parse(uint8_t *data, uint32_t total_len, uint8_t *out,
+               uint32_t len, uint32_t marker)
+{
+    uint8_t *end = data + total_len;
+
+    /* Check minimum length: need at least len + 10 bytes */
+    if (total_len < len + 10)
+        return -5;
+
+    /* Search for the pattern: data[0]==0 && data[1]==marker */
+    if (*data != 0)
+        return -1;
+    if (*(data + 1) != (uint8_t)marker)
+        return -1;
+
+    /* Found start at data+2, scan forward for payload */
+    uint8_t *p = data + 2;
+    if (p >= end)
+        goto found;
+
+    /* Skip over any non-zero bytes (or non-0xFF if marker==1) */
+    uint8_t second = *(data + 2);
+    if (second == 0)
+        goto found;
+
+    while (p < end) {
+        uint8_t b = *p;
+        if (b == 0)
+            break;
+        if (marker != 1) {
+            p++;
+            continue;
+        }
+        /* marker == 1: also break on 0xFF */
+        if (b == 0xFF)
+            break;
+        p++;
+    }
+
+found:
+    p++;
+
+    /* Check remaining length matches expected */
+    uint32_t actual_len = (uint32_t)(end - p);
+    if (actual_len != len)
+        return -8;
+
+    /* Copy payload to output */
+    if (p < end) {
+        while (p < end) {
+            *out++ = *p++;
+        }
+    }
+
+    return (int)len;
 }
 
 
@@ -842,7 +2534,7 @@ int crc_verify_image(void *flash_ctx, void *img_header)
     }
 
     /* Parse certificate */
-    int cert_result = cert_parse(flash_ctx, img_header,
+    int cert_result = flash_cert_parse(flash_ctx, img_header,
                                  stack_buf + 44);
     if (cert_result != 0) {
         free(read_buf);

@@ -215,12 +215,35 @@ with the original binary. A higher match indicates better decompilation.
 | `flash_detect` | 18 | 26 | 1.44x | 🔴 18% |
 | `flash_setup` | 84 | 46 | 0.55x | 🔴 11% |
 | `flash_capacity_check` | 122 | 6 | 0.05x | 🔴 3% |
+| `rsa_core` | 33 | 32 | 0.97x | 🟢 98% |
+| `rsa_step` | 48 | 48 | 1.00x | 🟢 85% |
+| `rsa_modexp` | 37 | 42 | 1.14x | 🟡 71% |
+| `rsa_init` | 34 | 37 | 1.09x | 🟡 76% |
+| `rsa_process` | 109 | 113 | 1.04x | 🟡 58% |
+| `sha_hash_block` | 19 | 20 | 1.05x | 🔴 41% |
+| `sha_init` | 8 | 9 | 1.12x | 🟢 94% |
+| `sha_update` | 102 | 83 | 0.81x | 🟡 52% |
+| `sha_final` | 381 | 167 | 0.44x | 🔴 38% |
+| `crc32_table_init` | 50 | 54 | 1.08x | 🟢 87% |
+| `crc32_update` | 30 | 30 | 1.00x | 🟡 77% |
 | `sha1_transform` | 38 | 37 | 0.97x | 🟢 99% |
+| `hash_ctx_init` | 49 | 40 | 0.82x | 🟡 76% |
 | `hw_crypto_setup` | 6 | 6 | 1.00x | 🟡 67% |
 | `hw_crypto_exec` | 63 | 58 | 0.92x | 🟢 83% |
+| `hw_crypto_exec2` | 52 | 47 | 0.90x | 🟢 81% |
+| `hash_finalize` | 32 | 23 | 0.72x | 🟡 65% |
+| `hash_get_result` | 4 | 4 | 1.00x | 🟢 100% |
 | `sha1_init` | 24 | 21 | 0.88x | 🟡 67% |
 | `sha1_update` | 37 | 37 | 1.00x | 🟢 97% |
 | `sha1_final` | 91 | 92 | 1.01x | 🟡 67% |
+| `sha1_full` | 161 | 192 | 1.19x | 🟡 63% |
+| `pkey_setup` | 43 | 49 | 1.14x | 🟡 76% |
+| `pkey_verify_step` | 44 | 55 | 1.25x | 🟢 83% |
+| `pkey_verify` | 30 | 33 | 1.10x | 🟢 92% |
+| `signature_check_init` | 76 | 72 | 0.95x | 🟡 80% |
+| `signature_check_data` | 26 | 27 | 1.04x | 🟢 83% |
+| `signature_check_final` | 58 | 58 | 1.00x | 🟢 88% |
+| `cert_parse` | 48 | 54 | 1.12x | 🟡 65% |
 | `crc_ctx_alloc` | 19 | 18 | 0.95x | 🟢 97% |
 | `crc_ctx_destroy` | 14 | 14 | 1.00x | 🟢 86% |
 | `crc_ctx_reset` | 21 | 21 | 1.00x | 🟢 100% |
@@ -269,7 +292,7 @@ with the original binary. A higher match indicates better decompilation.
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
 | `main` | 528 | 141 | 0.27x | 🔴 33% |
 
-**Average mnemonic similarity: 39.1%** (across 82 compared functions)
+**Average mnemonic similarity: 47.0%** (across 105 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 
