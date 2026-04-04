@@ -22,16 +22,7 @@
  *   printf()           - 0x080031DC  (formatted print to UART)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-#include <stdarg.h>
-
-/* Forward declarations (defined in other decompile units) */
-extern void *malloc(uint32_t size);                 /* secboot_memory.c 0x080029A0 */
-extern void *memcpy(void *dst, const void *src, uint32_t n); /* secboot_memory.c 0x08002B54 */
-extern void  uart_putchar(int ch);                  /* secboot_uart.c  0x0800717C */
+#include "secboot_common.h"
 
 
 /* ============================================================

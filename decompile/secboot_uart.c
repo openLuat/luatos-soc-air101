@@ -18,35 +18,7 @@
  *   puts()            - 0x080028F4
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-/* ============================================================
- * UART0 Register Definitions
- * Base: 0x40010600 (from wm_regs.h: HR_UART0_BASE_ADDR)
- * ============================================================ */
-
-#define UART0_BASE          0x40010600
-
-/* Register offsets (inferred from disassembly memory accesses) */
-#define UART_LINE_CTRL      0x00    /* Line control register */
-#define UART_DMA_CTRL       0x04    /* DMA control */
-#define UART_FLOW_CTRL      0x08    /* Flow control (auto CTS/RTS) */
-#define UART_INT_MASK       0x0C    /* Interrupt mask */
-#define UART_BAUD_RATE      0x10    /* Baud rate divisor + fractional */
-#define UART_FIFO_STATUS    0x1C    /* FIFO status register */
-#define UART_TX_DATA        0x20    /* TX data register (write) */
-#define UART_RX_DATA        0x30    /* RX data register (read) */
-
-/* FIFO status bits */
-#define UART_TX_FIFO_CNT_MASK   0x3F        /* Bits [5:0]: TX FIFO count */
-#define UART_RX_FIFO_CNT_MASK   0xFC0       /* Bits [11:6]: RX FIFO count */
-                                             /* 4032 = 0xFC0 */
-
-/* APB Clock frequency used for baud rate calculation */
-#define APB_CLK             40000000         /* 40 MHz (from wm_regs.h) */
+#include "secboot_common.h"
 
 
 /* ============================================================
