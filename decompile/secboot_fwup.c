@@ -19,57 +19,9 @@
  *   ota_apply()                 - 0x08006530  (apply OTA update to run area)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * Flash and Memory Map Constants
- * ============================================================ */
-
-#define FLASH_BASE_ADDR         0x08000000
-#define CODE_UPD_START_ADDR     0x08010000  /* Upgrade image area */
-#define CODE_RUN_START_ADDR     0x080D0000  /* Run-time image header area */
-#define SIGNATURE_WORD          0xA0FFFF9F
-#define INSIDE_FLS_SECTOR_SIZE  0x1000      /* 4KB */
-#define IMAGE_HEADER_SIZE       64          /* sizeof(IMAGE_HEADER_PARAM_ST) */
-#define SIGNATURE_SIZE          128         /* RSA signature appended to image */
-
-/* SRAM addresses for firmware update state */
-#define PARAM_BLOCK_PTR         (*(volatile uint32_t *)0x2001007C)
-
-/* Xmodem protocol constants (from tools/xt804/wm_tool.c) */
-#define XMODEM_SOH      0x01    /* Start of Header (128-byte payload) */
-#define XMODEM_STX      0x02    /* Start of 1K block (1024-byte payload) */
-#define XMODEM_EOT      0x04    /* End of Transmission */
-#define XMODEM_ACK      0x06    /* Acknowledge */
-#define XMODEM_NAK      0x15    /* Negative Acknowledge */
-#define XMODEM_CAN      0x18    /* Cancel */
-#define XMODEM_CRC_CHR  'C'     /* CRC mode request */
-
-/* External functions */
-extern int   flash_read(uint32_t addr, void *buf, uint32_t len);    /* 0x080054F8 */
-extern int   flash_write(uint32_t addr, void *buf, uint32_t len);   /* 0x0800553C */
-extern int   flash_erase_range(uint32_t addr, uint32_t len);        /* 0x08005670 */
-extern void  flash_copy_data(uint32_t dst, uint32_t src,
-                             uint32_t len);                          /* 0x0800582C */
-extern void *malloc(uint32_t size);                                  /* 0x080029A0 */
-extern void  free(void *ptr);                                        /* 0x08002A3C */
-extern void *memcpy(void *dst, const void *src, uint32_t n);        /* 0x08002B54 */
-extern void *memset(void *s, int c, uint32_t n);                    /* 0x08002D20 */
-extern int   memcmp(const void *a, const void *b, uint32_t n);      /* 0x08002BD4 */
-extern int   uart_rx_ready(void);                                    /* 0x0800588C */
-extern uint8_t uart_getchar(void);                                   /* 0x080058A0 */
-extern int   uart_putchar(int ch);                                   /* 0x0800717C */
-extern int   validate_image(const uint8_t *header);                  /* 0x08005988 */
-extern int   crc_verify_image(void *ctx, void *hdr);                 /* 0x08005CFC */
-
-/* CRC context functions */
-extern int   crc_init(void *ctx, int type, uint32_t init);           /* 0x08004404 */
-extern int   crc_update(void *ctx, const void *data, uint32_t len); /* 0x08004410 */
-extern int   crc_finalize(void *ctx);                                /* 0x08004544 */
-extern int   crc_final(void *ctx, uint32_t *result);                 /* 0x0800459C */
+/* Xmodem protocol constants (from tools/xt804/wm_tool.c) are in secboot_common.h */
 
 
 /* ============================================================

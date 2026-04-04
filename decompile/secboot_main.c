@@ -12,50 +12,10 @@
  *   tspend_handler()    - 0x08007148  (timer/software pending ISR #57)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * External functions (defined in other secboot_*.c modules)
- * ============================================================ */
-extern int  flash_init(void);                           /* 0x08005338 */
-extern int  flash_read(uint32_t addr, void *buf,
-                       uint32_t len);                   /* 0x080054F8 */
-extern int  flash_write(uint32_t addr, void *buf,
-                        uint32_t len);                  /* 0x0800553C */
-extern void flash_read_raw(uint32_t addr, void *buf,
-                           uint32_t len);               /* 0x0800582C */
-extern int  boot_uart_check(void);                      /* 0x08007220 */
-extern int  find_valid_image(uint32_t flash_addr,
-                             void *hdr_buf, int flags); /* 0x08007278 */
-extern int  image_header_verify(void *hdr_buf,
-                                uint32_t img_len);      /* 0x080071F4 */
-extern int  signature_verify(uint32_t sig_addr,
-                             uint32_t img_len,
-                             void *hdr_buf);            /* 0x080070C4 */
-extern int  image_copy_update(const void *header,
-                              uint32_t data_length);    /* 0x080058EC */
-extern int  puts(const char *s);                        /* 0x080028F4 */
-extern void *memcpy(void *dst, const void *src,
-                    uint32_t n);                        /* 0x08002B54 */
-
-/* ============================================================
- * Global / SRAM addresses
- * ============================================================ */
-#define PARAM_BLOCK_PTR     (*(volatile uint32_t *)0x2001007C)
-
-/* Watchdog registers */
-#define WDG_BASE            0x40000E00
-#define WDG_CTRL            (*(volatile uint32_t *)(WDG_BASE + 0x14))
-
-/* Boot result handler function pointers in SRAM */
-#define APP_ENTRY_PTR       (*(volatile uint32_t *)0x200101D0)
-#define ERROR_HANDLER_PTR   (*(volatile uint32_t *)0x200101D4)
-
-/* Boot mode flag */
-#define BOOT_MODE_FLAG      (*(volatile uint8_t *)0x200113EC)
+/* Local aliases for main-specific SRAM addresses */
+#define WDG_CTRL            WDG_CTRL_REG
 
 /* Flash addresses */
 #define FLASH_BASE_OTP      0x08000000
@@ -63,13 +23,7 @@ extern void *memcpy(void *dst, const void *src,
 #define FOTA_HEADER_ADDR    (0x080D0000)            /* movih(2049) = secondary partition */
 #define USER_IMAGE_ADDR     IMAGE_AREA_ADDR
 
-/* Return codes (ASCII characters used as status codes) */
-#define STATUS_OK           'C'     /* 67 = 0x43 */
-#define STATUS_FLASH_FAIL   'N'     /* 78 = 0x4E */
-#define STATUS_APP_FAIL     'Y'     /* 89 = 0x59 */
-#define STATUS_SIG_FAIL     'M'     /* 77 = 0x4D */
-
-/* Image header offsets */
+/* Image header offsets (byte offsets into header buffer, used in disassembly) */
 #define HDR_IMG_ATTR_OFF    0x04
 #define HDR_SIGNATURE_BIT   0x26    /* byte offset in header buf for signature flag */
 #define HDR_ENCRYPT_BIT     0x25    /* byte offset for encryption flag */
@@ -242,7 +196,7 @@ void tspend_handler(void)
  *   800721c: movi  r0, 77              ; return 'M'
  *   800721e: pop   r4-r5, r15
  * ============================================================ */
-int image_header_verify(void *hdr_buf, uint32_t img_len)
+int image_header_verify(const uint8_t *hdr_buf, uint32_t img_len)
 {
     int crc_result = crc_verify_image(hdr_buf, img_len);
 

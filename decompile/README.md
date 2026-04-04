@@ -26,6 +26,7 @@ This directory contains the reverse-engineered analysis of the Air101/Air103 sec
 | File | Description |
 |------|-------------|
 | `README.md` | This document |
+| `secboot_common.h` | Shared header: register addresses, structures, cross-file declarations |
 | `analyze_secboot.py` | Python analysis tool - parses binary, generates annotated disassembly |
 | `secboot_annotated.S` | Annotated disassembly with function labels and comments |
 | `secboot_vectors.S` | Reconstructed vector table and startup code |

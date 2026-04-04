@@ -12,52 +12,12 @@
  *   realloc() - 0x08002D20  (resize with copy)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * Heap layout (from analysis of malloc/free):
- *
- *   Heap start:  0x20011430  (after BSS)
- *   Heap end:    0x20028000  (top of 160KB SRAM)
- *
- * Free list is a singly-linked list of blocks.
- * Each block has an 8-byte header:
- *   [0] next_free  (pointer to next free block, or NULL)
- *   [4] size       (usable size in bytes, not including header)
- *
- * Global state at 0x20010060:
- *   [0] initialized   (0 = not yet, 1 = initialized)
- *   [4] free_list     (pointer to first free block)
- *
- * Lock variable at 0x2001142C (used with lock_acquire/lock_release)
- * ============================================================ */
-
-#define HEAP_START      0x20011430
-#define HEAP_END        0x20028000
-#define HEAP_STATE      0x20010060  /* { initialized, free_list } */
-#define HEAP_LOCK       0x2001142C
-
-#define BLOCK_HEADER_SIZE   8
-#define MIN_SPLIT_SIZE      15  /* Don't split if remainder < 15 bytes */
-#define ALIGNMENT           8   /* All allocations aligned to 8 bytes */
-
-/* Forward declarations */
-extern void lock_acquire(uint32_t *lock);
-extern void lock_release(uint32_t *lock);
-extern void *realloc_internal(void *ptr, uint32_t size);
-
-typedef struct free_block {
-    struct free_block *next;    /* Next free block in list */
-    uint32_t size;              /* Usable size (excluding 8-byte header) */
-} free_block_t;
-
-typedef struct {
-    uint32_t    initialized;    /* 0 = not initialized */
-    free_block_t *free_list;    /* Head of free list */
-} heap_state_t;
+/* Local aliases for heap address macros */
+#define HEAP_STATE      HEAP_STATE_ADDR   /* { initialized, free_list } */
+#define HEAP_LOCK       HEAP_LOCK_ADDR
+#define ALIGNMENT       HEAP_ALIGNMENT
 
 
 /* ============================================================

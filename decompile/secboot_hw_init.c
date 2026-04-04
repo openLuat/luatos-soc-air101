@@ -12,36 +12,11 @@
  *   lock_release()- 0x080071B0
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * Register Definitions (from include/wm_regs.h)
- * ============================================================ */
-
-/* C-SKY Control Registers */
-#define CR_PSR      0   /* cr<0,0> - Processor Status Register */
-#define CR_VBR      1   /* cr<1,0> - Vector Base Register */
-#define CR_EPSR     4   /* cr<4,0> - Exception PSR */
-#define CR_EPC      2   /* cr<2,0> - Exception PC */
-#define CR_HINT     31  /* cr<31,0> - Cache hint/control */
-
-/* VIC (Vectored Interrupt Controller) - E000E000 */
-#define VIC_BASE            0xE000E000
-#define VIC_INT_EN_BASE     0xE000E100
-#define VIC_INT_PEND_OFFSET 0x200   /* Offset from VIC_INT_EN_BASE */
-#define VIC_INT_CLR_OFFSET  0x180   /* Offset from VIC_INT_EN_BASE */
-
-/* Clock / PMU Registers */
-#define CLK_BASE            0x40011400
-#define CLK_CTRL_OFFSET     0x0C
-
-/* SRAM addresses */
-#define INITIAL_SP          0x200111D8
-#define TRAP_SAVE_SP        0x200113D8
-#define TSPEND_COUNTER      0x200113E4
+/* SRAM address aliases used locally */
+#define TRAP_SAVE_SP        TRAP_SAVE_SP_ADDR
+#define TSPEND_COUNTER      TSPEND_COUNTER_ADDR
 
 /* ============================================================
  * SystemInit (0x080071B4)

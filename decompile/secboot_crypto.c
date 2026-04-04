@@ -52,120 +52,19 @@
  *   crc_verify_image()   - 0x08005CFC  (full CRC32 image verification)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * Hardware Crypto Engine Registers
- *
- * Base: 0x40000600 (movih 16384 + addi 1536)
- *
- * Offset  Name           Description
- * 0x00    SRC_ADDR       Source data address
- * 0x08    CONFIG         Operation config (mode, key, etc.)
- * 0x0C    CTRL           Start/status control (write 1 to start)
- * 0x30    STATUS         Completion status (bit 16 = done)
- * 0x34    HASH_A         SHA-1 state A / CRC result
- * 0x38    HASH_B         SHA-1 state B
- * 0x3C    HASH_C         SHA-1 state C
- * 0x40    HASH_D         SHA-1 state D
- * 0x44    HASH_E / CRC   SHA-1 state E / CRC32 result
- * ============================================================ */
-#define CRYPTO_BASE         0x40000600
-#define CRYPTO_SRC_ADDR     (*(volatile uint32_t *)(CRYPTO_BASE + 0x00))
-#define CRYPTO_CONFIG       (*(volatile uint32_t *)(CRYPTO_BASE + 0x08))
-#define CRYPTO_CTRL         (*(volatile uint32_t *)(CRYPTO_BASE + 0x0C))
-#define CRYPTO_STATUS       (*(volatile uint32_t *)(CRYPTO_BASE + 0x30))
-#define CRYPTO_HASH_A       (*(volatile uint32_t *)(CRYPTO_BASE + 0x34))
-#define CRYPTO_HASH_B       (*(volatile uint32_t *)(CRYPTO_BASE + 0x38))
-#define CRYPTO_HASH_C       (*(volatile uint32_t *)(CRYPTO_BASE + 0x3C))
-#define CRYPTO_HASH_D       (*(volatile uint32_t *)(CRYPTO_BASE + 0x40))
-#define CRYPTO_HASH_E       (*(volatile uint32_t *)(CRYPTO_BASE + 0x44))
-
-/* External functions */
-extern void *malloc(uint32_t size);                /* 0x080029A0 */
-extern void *calloc(uint32_t nmemb, uint32_t sz);  /* 0x08002980 */
-extern void  free(void *ptr);                       /* 0x08002A3C */
-extern void *memcpy(void *dst, const void *src,
-                    uint32_t n);                    /* 0x08002B54 */
-extern void *memset(void *s, int c, uint32_t n);   /* 0x08002AB4 */
-extern int   memcmp(const void *a, const void *b,
-                    uint32_t n);                    /* 0x08002BD4 */
-extern void  bignum_clear(void *bn);               /* 0x080031A8 */
-
-/* External bignum (libtommath mp_int) functions
- *
- * NOTE: In this firmware, the function at 0x08003390 uses mp_copy(dst, src)
- * convention (reversed from standard libtommath mp_copy(src, dst)).
- * All the addresses below were labeled as flash/printf functions in the
- * initial analysis, but disassembly confirms they are libtommath operations
- * operating on {int16 used, alloc, sign; uint32_t *dp} with DIGIT_BIT=28.
- */
-#define DIGIT_BIT   28
-#define MP_MASK     ((1u << DIGIT_BIT) - 1)
-
-typedef struct {
-    int16_t  used;
-    int16_t  alloc;
-    int16_t  sign;
-    /* 2 bytes padding */
-    uint32_t *dp;
-} mp_int;
-
-extern int   mp_init(mp_int *a);                                   /* 0x08003178 */
-extern void  mp_clear(mp_int *a);                                  /* 0x080031A8 */
-extern int   mp_copy(mp_int *dst, mp_int *src);                    /* 0x08003390 (dst,src!) */
-extern int   mp_init_copy(mp_int *dst, mp_int *src);               /* 0x08003408 */
-extern int   mp_cmp_mag(mp_int *a, mp_int *b);                     /* 0x08003238 */
-extern int   mp_cmp(mp_int *a, mp_int *b);                         /* 0x08003298 */
-extern int   mp_sub(mp_int *a, mp_int *b, mp_int *c);              /* 0x080032CC */
-extern int   mp_add(mp_int *a, mp_int *b, mp_int *c);              /* 0x0800332C */
-extern int   mp_grow(mp_int *a, int16_t size);                     /* 0x080034E4 */
-extern int   mp_lshd(mp_int *a, int16_t count);                    /* 0x08003514 */
-extern void  mp_rshd(mp_int *a, int16_t count);                    /* 0x08003588 */
-extern void  mp_clamp(mp_int *a);                                  /* 0x080034A0 */
-extern int   mp_read_unsigned_bin(mp_int *a,
-                 const uint8_t *b, int len);                       /* 0x08003690 */
-extern int   mp_count_bits(mp_int *a);                             /* 0x08003744 */
-extern int   mp_to_unsigned_bin(mp_int *a, uint8_t *b);            /* 0x080031DC */
-extern int   mp_to_unsigned_bin_nr(mp_int *a, uint8_t *b);         /* 0x08003774 */
-extern void  mp_reverse(uint8_t *s, int len);                      /* 0x08003150 */
-extern int   mp_div_2d(mp_int *a, int b, mp_int *c, mp_int *d);   /* 0x08003860 */
-extern int   s_mp_mul_digs(mp_int *a, mp_int *b,
-                 mp_int *c, int digs);                             /* 0x08002FC8 */
-
-/* External signature verification helpers */
-extern int   flash_read_cert(void *ctx, void *buf, int len);      /* 0x08005B88 */
-extern int   flash_cert_parse(void *ctx, void *hdr, void *out);   /* 0x08005BC8 */
-
-/* External functions from other decompiled files, used by crc_verify_image.
- * These are placeholder names from the original analysis; the actual
- * addresses map to functions in secboot_image.c / secboot_fwup.c */
+/* External functions not in secboot_common.h (placeholder names from analysis) */
 extern int   asn1_parse_tag(uint8_t **pos, void *out1, void *out2);
 extern int   asn1_parse_body(void *a, void *b, void *c, void *d);
 extern int   crc_verify_exec(void *ctx, void *a, void *b, void *c);
 extern int   crc_pipeline(void *ctx, void *a, void *b,
                            int c, int d, void *e, void *f);
 
-/* RSA hardware engine registers (base 0x40000400) */
-#define RSA_BASE    0x40000400
-#define RSACON      (*(volatile uint32_t *)(RSA_BASE + 0x00))
-#define RSAMC       (*(volatile uint32_t *)(RSA_BASE + 0x04))
-#define RSASIZE     (*(volatile uint32_t *)(RSA_BASE + 0x08))
-#define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_BASE + 0x000 + (i)*4))
+/* RSAXBUF macro: index-based access into RSA buffer space */
+#define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_CTRL_BASE + 0x000 + (i)*4))
 
-/* RSA buffer addresses - direct memory-mapped */
-#define RSA_BUF_A   ((volatile uint32_t *)0x40000000)
-#define RSA_BUF_B   ((volatile uint32_t *)0x40000100)
-#define RSA_BUF_M   ((volatile uint32_t *)0x40000200)
-#define RSA_BUF_D   ((volatile uint32_t *)0x40000300)
-
-/* Forward type declarations */
-typedef struct sha1_ctx sha1_ctx_t;
-
-/* Forward declarations */
+/* Forward declarations for static/local functions */
 static void sha1_transform(sha1_ctx_t *ctx);
 void crc_ctx_reset(void *inner);
 
@@ -184,8 +83,7 @@ int  pkey_verify_step(uint8_t **pos, uint32_t *remaining, uint32_t len,
 int  pkey_verify(uint8_t **pos, uint32_t remaining, mp_int *out);
 
 
-/* ============================================================
- * SHA-1 Context Structure
+/* SHA-1 Context Structure is defined in secboot_common.h.
  *
  * Layout (from register usage analysis):
  *   Offset  Size  Field
@@ -200,21 +98,7 @@ int  pkey_verify(uint8_t **pos, uint32_t remaining, mp_int *out);
  *   0x20    64    buffer[64]   (partial block buffer)
  *
  * Total size: 96 bytes
- * ============================================================ */
-typedef struct sha1_ctx {
-    uint32_t total_hi;
-    uint32_t total_lo;
-    uint32_t state[5];
-    uint32_t buf_used;
-    uint8_t  buffer[64];
-} sha1_ctx_t;
-
-/* SHA-1 initial hash values (from literal pool at 0x080045C4) */
-#define SHA1_H0  0x67452301
-#define SHA1_H1  0xEFCDAB89
-#define SHA1_H2  0x98BADCFE
-#define SHA1_H3  0x10325476
-#define SHA1_H4  0xC3D2E1F0
+ */
 
 
 /* ============================================================
@@ -1366,11 +1250,6 @@ void hash_ctx_init(int type, mp_int *bn)
  *   80044a8: st.w  r3, (r2, 0x0C)      ; CTRL = 4 (stop/reset)
  *   80044aa: jmp   r15
  * ============================================================ */
-typedef struct {
-    uint32_t data;
-    uint8_t  mode;       /* 0=CRC8, 3=CRC16, others=CRC32 */
-    uint8_t  flags;      /* bit0: reverse input bits */
-} hw_crypto_op_t;
 
 int hw_crypto_setup(hw_crypto_op_t *op, uint32_t length,
                     uint16_t param)
@@ -2278,11 +2157,6 @@ found:
  * Inner context (104 bytes) contains SHA-1 state and ASN.1 DER
  * parsing workspace.
  * ============================================================ */
-typedef struct {
-    void     *inner_ctx;
-    uint32_t  digest_len;
-    uint32_t  flags;
-} crc_ctx_t;
 
 
 /* ============================================================

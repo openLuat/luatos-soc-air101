@@ -276,12 +276,12 @@ with the original binary. A higher match indicates better decompilation.
 | `firmware_apply_ext` | 394 | 61 | 0.15x | 🔴 11% |
 | `ota_process` | 182 | 85 | 0.47x | 🔴 16% |
 | `ota_validate` | 65 | 38 | 0.58x | 🔴 19% |
-| `ota_apply` | 328 | 57 | 0.17x | 🔴 15% |
+| `ota_apply` | 328 | 57 | 0.17x | 🔴 14% |
 | `boot_param_setup` | 97 | 41 | 0.42x | 🔴 23% |
 | `boot_param_read` | 447 | 77 | 0.17x | 🔴 15% |
 | `boot_prepare` | 160 | 38 | 0.24x | 🔴 11% |
 | `boot_execute_prep` | 82 | 31 | 0.38x | 🔴 23% |
-| `app_boot_sequence` | 48 | 35 | 0.73x | 🔴 34% |
+| `app_boot_sequence` | 48 | 37 | 0.77x | 🔴 33% |
 | `signature_verify` | 48 | 29 | 0.60x | 🟡 55% |
 | `board_init` | 12 | 11 | 0.92x | 🟡 78% |
 | `tspend_handler` | 21 | 14 | 0.67x | 🔴 46% |

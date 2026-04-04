@@ -15,113 +15,15 @@
  *   signature_verify()     - 0x080070C4  (RSA signature check - stub note)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * Image Header Structure (from include/platform/wm_fwup.h)
- *
- * Offset  Size  Field
- * 0x00    4     magic_no        (must be 0xA0FFFF9F)
- * 0x04    4     img_attr        (bitfield: type[3:0], encrypt[4],
- *                                prikey_sel[7:5], signature[8],
- *                                zip_type[16], ...)
- * 0x08    4     img_addr        (image start address in flash)
- * 0x0C    4     img_len         (image data length)
- * 0x10    4     img_header_addr (header location in flash)
- * 0x14    4     upgrade_img_addr
- * 0x18    4     org_checksum    (original hash/checksum)
- * 0x1C    4     upd_no          (update sequence number)
- * 0x20    16    ver[16]         (version string)
- * 0x30    4     _reserved0
- * 0x34    4     _reserved1
- * 0x38    4     next            (pointer to next header)
- * 0x3C    4     hd_checksum     (header CRC32)
- * ============================================================ */
-
-#define SIGNATURE_WORD      0xA0FFFF9F
-#define IMG_TYPE_SECBOOT    0x0
-#define IMG_TYPE_FLASHBIN0  0x1
-#define IMG_TYPE_CPFT       0xE
-
-/* Return codes (ASCII characters used as status codes) */
-#define STATUS_OK           'C'     /* 67 = 0x43 - Check passed */
-#define STATUS_BAD_MAGIC    'L'     /* 76 = 0x4C - Bad magic number */
-#define STATUS_BAD_ALIGN    'K'     /* 75 = 0x4B - Bad alignment */
-#define STATUS_BAD_RANGE    'J'     /* 74 = 0x4A - Address out of range */
-#define STATUS_BAD_LEN      'I'     /* 73 = 0x49 - Invalid length */
+/* Additional local status aliases */
 #define STATUS_NOT_FOUND    'J'     /* 74 = 0x4A - No valid image found */
 #define STATUS_BAD_TYPE     'L'     /* 76 = 0x4C - Wrong image type */
 #define STATUS_CRC_OK       'C'     /* 67 = 0x43 - CRC verified */
-#define STATUS_CRC_BAD      'Z'     /* 90 = 0x5A - CRC mismatch */
-#define STATUS_COPY_FAIL    'M'     /* 77 = 0x4D - Copy/verify failed */
-
-/* Flash geometry */
-#define FLASH_MAX_ADDR_MASK 0x07FFFFFF  /* bmaski(27) = 128MB */
-#define FLASH_2MB_OFFSET    0x00800000  /* movih(2048) = 2MB << 16 */
 
 /* Global pointer: boot parameter block */
 /* *(uint32_t *)0x2001007C -> param block, field at offset 0x0C = total flash size */
-
-/* ============================================================
- * mp_int bignum structure (libtommath compatible, DIGIT_BIT=28)
- * Also used as hstm_int in the firmware crypto engine.
- * ============================================================ */
-typedef struct {
-    int16_t  used;
-    int16_t  alloc;
-    int16_t  sign;
-    int16_t  _pad;      /* alignment padding */
-    uint32_t *dp;
-} mp_int;
-
-/* ============================================================
- * RSA Key Structure (104 bytes total)
- *
- * Parsed by signature_check_final() at 0x08004BEC.
- * Contains two mp_int bignums (exponent and modulus) plus
- * additional fields. key_size at offset 0x60 holds the
- * RSA key size in bytes (e.g., 128 for 1024-bit RSA).
- *
- * Offset  Size  Field
- * 0x00    12    e       (mp_int: public/private exponent)
- * 0x0C    12    d       (mp_int: other exponent, if present)
- * 0x18    12    n       (mp_int: modulus)
- * 0x24    ...           (additional CRT parameters)
- * 0x60    4     key_size (RSA key size in bytes, e.g. 128)
- * 0x64    4     _pad
- * ============================================================ */
-typedef struct {
-    uint8_t  data[0x60];    /* e(12) + d(12) + n(12) + CRT params */
-    uint32_t key_size;      /* offset 0x60: key size in bytes */
-    uint32_t _pad;
-} rsa_key_t;
-
-/* External functions (from secboot_crypto.c and secboot_memory.c) */
-extern void *malloc(uint32_t size);                                /* 0x080029A0 */
-extern void  free(void *ptr);                                      /* 0x08002A3C */
-extern void *memset(void *s, int c, uint32_t n);                  /* 0x08002AB4 */
-extern void *memcpy(void *dst, const void *src, uint32_t n);      /* 0x08002B54 */
-
-extern int   mp_cmp(mp_int *a, mp_int *b);                        /* 0x08003298 */
-extern int   mp_read_unsigned_bin(mp_int *a,
-                 const uint8_t *b, int len);                       /* 0x08003690 */
-extern int   mp_unsigned_bin_size(mp_int *a);                      /* 0x080031DC */
-extern void  mp_clear(mp_int *a);                                  /* 0x080031A8 */
-extern int   rsa_step(mp_int *bn, uint8_t *out);                  /* 0x08003A14 */
-extern int   sha_init(mp_int *a, uint32_t size);                   /* 0x08003CDC */
-extern int   sha1_full(mp_int *a, mp_int *e,
-                 mp_int *n, mp_int *res);                          /* 0x0800472C */
-extern int   cert_parse(uint8_t *data, uint32_t total_len,
-                 uint8_t *out, uint32_t len, uint32_t marker);    /* 0x08004C78 */
-extern int   pkey_setup(uint8_t **pos, uint32_t remaining,
-                 uint32_t *out_len);                               /* 0x080049CC */
-extern int   pkey_verify(uint8_t **pos, uint32_t remaining,
-                 mp_int *out);                                     /* 0x08004AB4 */
-extern int   signature_check_data(uint8_t **pos, uint32_t remaining,
-                 uint32_t *out1, uint32_t *out2);                  /* 0x08004BB0 */
 
 
 /* ============================================================

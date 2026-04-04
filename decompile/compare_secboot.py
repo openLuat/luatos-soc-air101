@@ -61,6 +61,7 @@ CFLAGS = [
     "-Wno-unused-variable",
     "-Wno-unused-function",
     "-fno-builtin",
+    "-I", str(SCRIPT_DIR),
 ]
 if CSKY_SYSROOT:
     CFLAGS += ["-isystem", CSKY_SYSROOT]
