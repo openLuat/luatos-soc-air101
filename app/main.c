@@ -252,6 +252,11 @@ void UserMain(void){
 	tls_os_timer_start(os_timer);
 #endif
 	#define VM_SIZE (12*1024)
+
+	extern void luat_netdrv_register_xt804(void);
+	luat_netdrv_register_xt804();
+	LLOGD("netdrv registered (early init)");
+
 	char *vm_task_stack = luat_heap_opt_zalloc(LUAT_HEAP_SRAM, VM_SIZE);
 	tls_os_task_create(NULL, "luatos",
 				luat_start,

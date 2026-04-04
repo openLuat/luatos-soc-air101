@@ -24,6 +24,7 @@
 #include "luat_timer.h"
 #include "net_lwip2.h"
 #include "lwip/tcp.h"
+#include "luat_netdrv.h"
 
 void net_lwip2_set_link_state(uint8_t adapter_index, uint8_t updown);
 int luat_wlan_raw_in(const u8 *bssid, u8 *buf, u32 buf_len);
@@ -48,6 +49,7 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     u8 ssid[33]= {0};
     u8 pwd[65] = {0};
     char sta_ip[16] = {0};
+    struct tls_curr_bss_t bss = {0};
     rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
     // 然后再发出IP事件, 如果启用wlan的话
     lua_getglobal(L, "sys_pub");
@@ -67,8 +69,13 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
     case NETIF_WIFI_DISCONNECTED:
         #ifdef LUAT_USE_NETWORK
         net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 0);
+        lua_pushstring(L, "WLAN_STA_INC");
+        lua_pushstring(L, "DISCONNECTED");
+        lua_pushinteger(L, 0); // reason: xt804 SDK 不提供具体原因
+        lua_call(L, 3, 0);
+        lua_getglobal(L, "sys_pub");
         lua_pushstring(L, "IP_LOSE");
-        lua_call(L, 1, 0); // 暂时只发个IP_LOSE
+        lua_call(L, 1, 0);
         #endif
         break;
     case SCAN_DONE :
@@ -86,14 +93,54 @@ static int l_wlan_cb(lua_State*L, void* ptr) {
         #endif
         break;
     case NETIF_WIFI_JOIN_FAILED:
+        lua_pushstring(L, "WLAN_STA_INC");
+        lua_pushstring(L, "DISCONNECTED");
+        lua_pushinteger(L, -1); // reason: 连接失败
+        lua_call(L, 3, 0);
+        break;
     case NETIF_WIFI_JOIN_SUCCESS:
-        lua_pushstring(L, "WLAN_STATUS");
-        lua_pushinteger(L, wlan_state);
-        lua_call(L, 2, 0);
+        tls_wifi_get_current_bss(&bss);
+        lua_pushstring(L, "WLAN_STA_INC");
+        lua_pushstring(L, "CONNECTED");
+        lua_pushstring(L, (const char*)bss.ssid);
+        lua_pushlstring(L, (const char*)bss.bssid, 6);
+        lua_call(L, 4, 0);
         break;
     }
     return 0;
 }
+
+static int l_ap_cb(lua_State* L, void* ptr) {
+    rtos_msg_t* msg = (rtos_msg_t*)lua_topointer(L, -1);
+    lua_getglobal(L, "sys_pub");
+    u8 *mac = (u8*)msg->ptr;
+    lua_pushstring(L, "WLAN_AP_INC");
+    lua_pushstring(L, msg->arg2 == 1 ? "CONNECTED" : "DISCONNECTED");
+    lua_pushlstring(L, (const char*)mac, 6);
+    lua_call(L, 3, 0);
+    luat_heap_free(msg->ptr);
+    return 0;
+}
+
+#if TLS_CONFIG_AP
+static void softap_client_event_cb(u8 *mac, enum tls_wifi_client_event_type event) {
+    rtos_msg_t msg = {0};
+    msg.handler = l_ap_cb;
+
+    if (event == WM_WIFI_CLIENT_EVENT_ONLINE) {
+        msg.arg2 = 1;  // CONNECTED
+        LLOGD("AP client connected %02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    } else {
+        msg.arg2 = 0;  // DISCONNECTED
+        LLOGD("AP client disconnected %02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    }
+    msg.ptr = luat_heap_malloc(6);
+    if (msg.ptr) {
+        memcpy(msg.ptr, mac, 6);
+        luat_msgbus_put(&msg, 0);
+    }
+}
+#endif
 
 static void netif_event_cb(u8 status) {
     rtos_msg_t msg = {0};
@@ -128,6 +175,10 @@ static void netif_event_cb(u8 status) {
         tls_param_get(TLS_PARAM_ID_IP, (void *)&ip_param, false);
         if (!ip_param.dhcp_enable) {
             LLOGI("dhcp is disable, so 'join success' as 'IP_READY'");
+            net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_STA, 1);
+        } else {
+            extern void luat_netdrv_sta_start_dhcp(void);
+            luat_netdrv_sta_start_dhcp();
         }
         #endif
         luat_msgbus_put(&msg, 0);
@@ -143,6 +194,8 @@ static void netif_event_cb(u8 status) {
     case NETIF_WIFI_SOFTAP_SUCCESS :
         LLOGI("softap create success");
         #ifdef LUAT_USE_NETWORK
+        extern void luat_netdrv_ap_init(void);
+        luat_netdrv_ap_init();
         net_lwip2_set_link_state(NW_ADAPTER_INDEX_LWIP_WIFI_AP, 1);
         #endif
         break;
@@ -219,10 +272,6 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         luat_wlan_get_hostname(0); // 调用一下就行
         wlan_init = 1;
 
-        #ifdef LUAT_USE_ZLINK_WLAN
-        extern void luat_zlink_wlan_init(void);
-        luat_zlink_wlan_init();
-        #else
         #ifdef LUAT_USE_NETWORK
         tls_ethernet_init();
         tls_sys_init();
@@ -233,21 +282,25 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         tls_ethernet_data_rx_callback(luat_wlan_raw_in);
         #endif
         #endif
-        tls_wifi_scan_result_cb_register(NULL);
+        #if TLS_CONFIG_AP
+        tls_wifi_softap_client_event_register(softap_client_event_cb);
         #endif
+        tls_wifi_scan_result_cb_register(NULL);
 
         //-----------------------------------
         #ifdef LUAT_USE_NETWORK
-        struct netif *et0 = tls_get_netif();
-        net_lwip2_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_STA, et0);
+        // netif association is handled by netdrv boot callbacks
+        // netdrv was registered early in main.c, trigger boot now
+        luat_netdrv_conf_t drvconf = {0};
+        drvconf.id = NW_ADAPTER_INDEX_LWIP_WIFI_STA;
+        luat_netdrv_setup(&drvconf);
         #if TLS_CONFIG_AP
         extern struct netif *nif4apsta;
         if (nif4apsta) {
-            net_lwip2_set_netif(NW_ADAPTER_INDEX_LWIP_WIFI_AP, nif4apsta);
-            net_lwip2_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_AP);
+            drvconf.id = NW_ADAPTER_INDEX_LWIP_WIFI_AP;
+            luat_netdrv_setup(&drvconf);
         }
         #endif
-        net_lwip2_register_adapter(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
 
         // 确保DHCP是默认开启
         struct tls_param_ip ip_param;
@@ -259,6 +312,7 @@ int luat_wlan_init(luat_wlan_config_t *conf) {
         #endif
     }
     tls_wifi_set_psflag(FALSE, FALSE);
+
 	return 0;
 }
 

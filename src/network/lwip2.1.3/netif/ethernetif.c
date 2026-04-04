@@ -307,18 +307,33 @@ int ethernetif_input(const u8 *bssid, u8 *buf, u32 buf_len)
 {
     struct netif    *netif = tls_get_netif();
     struct pbuf       *p;
+#ifdef __LUATOS__
+    int adapter_id = 2;  // NW_ADAPTER_INDEX_LWIP_WIFI_STA
+#endif
 
 #if TLS_CONFIG_AP
     u8* mac_addr = hostapd_get_mac();
     if (0 == compare_ether_addr(bssid, mac_addr))
     {
         netif = netif->next;
+#ifdef __LUATOS__
+        adapter_id = 3;  // NW_ADAPTER_INDEX_LWIP_WIFI_AP
+#endif
     }
 #endif
 
     /* move received packet into a new pbuf */
     p = low_level_input(netif, buf, buf_len);
     if (p) {
+#ifdef __LUATOS__
+        extern int luat_netdrv_napt_pkg_input(int id, uint8_t* buff, size_t len);
+        int napt_ret = luat_netdrv_napt_pkg_input(adapter_id, p->payload, p->tot_len);
+        if (napt_ret != 0) {
+            extern int luat_log_log(int level, const char* tag, const char* fmt, ...);
+            pbuf_free(p);
+            return 0;
+        }
+#endif
         if (ERR_OK != netif->input(p, netif)) {
             LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
             pbuf_free(p);

@@ -331,6 +331,10 @@ target("network")
     add_includedirs(luatos.."components/network/netdrv/include",{public = true})
     add_files(luatos.."components/network/netdrv/**.c")
 
+    -- icmp
+    add_includedirs(luatos.."components/network/icmp/include",{public = true})
+    add_files(luatos.."components/network/icmp/**.c")
+
     -- airlink
     add_includedirs(luatos.."components/airlink/include",{public = true})
     add_files(luatos.."components/airlink/**.c")

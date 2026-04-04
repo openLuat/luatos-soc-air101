@@ -97,7 +97,9 @@ static void sys_net_up()
         ip_addr_set_zero(&gateway);
         tls_netif_set_addr( &ip_addr, &net_mask, &gateway);
         tls_netif_set_up();
+#ifndef __LUATOS__
         tls_dhcp_start();
+#endif
     }
     else
     {
