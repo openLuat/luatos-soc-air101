@@ -72,7 +72,7 @@ with instruction statistics and decompilation status.
 | `0x080029A0` | `malloc` | 156 | 76 | 11 | 14/9 | `secboot_memory.c` | ✅ Decompiled |
 | `0x08002A3C` | `free` | 120 | 58 | 11 | 13/7 | `secboot_memory.c` | ✅ Decompiled |
 | `0x08002AB4` | `memcmp_or_recv` | 160 | 52 | 16 | 0/11 | `secboot_stdlib.c` | ✅ Decompiled |
-| `0x08002B54` | `memcpy` | 128 | 45 | 9 | 7/7 | `secboot_stdlib.c` | ✅ Decompiled |
+| `0x08002B54` | `memcpy` | 384 | 139 | 36 | 25/7 | `secboot_stdlib.c` | ✅ Decompiled |
 | `0x08002BD4` | `memcmp` | 332 | 121 | 35 | 24/0 | `secboot_memory.c` | ✅ Decompiled |
 | `0x08002D20` | `memset` | 92 | 38 | 5 | 2/3 | `secboot_stdlib.c` | ✅ Decompiled |
 | `0x08002D7C` | `strlen` | 304 | 106 | 20 | 13/8 | `secboot_stdlib.c` | ✅ Decompiled |
@@ -105,14 +105,14 @@ with instruction statistics and decompilation status.
 | `0x08003CA4` | `sha_hash_block` | 56 | 19 | 1 | 5/1 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08003CDC` | `sha_init` | 20 | 8 | 1 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08003CF0` | `sha_update` | 300 | 102 | 17 | 16/14 | `secboot_crypto.c` | ✅ Decompiled |
-| `0x08003E1C` | `sha_final` | 1084 | 381 | 85 | 71/46 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003E1C` | `sha_final` | 1060 | 372 | 83 | 69/44 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004258` | `crc32_table_init` | 132 | 50 | 9 | 8/7 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x080042DC` | `crc32_update` | 72 | 30 | 6 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004324` | `sha1_transform` | 88 | 38 | 2 | 12/14 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x0800437C` | `hash_ctx_init` | 136 | 49 | 8 | 3/0 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004404` | `hw_crypto_setup` | 12 | 6 | 1 | 0/3 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004410` | `hw_crypto_exec` | 168 | 63 | 10 | 10/8 | `secboot_crypto.c` | ✅ Decompiled |
-| `0x080044B8` | `hw_crypto_exec2` | 140 | 52 | 9 | 7/5 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080044B8` | `hw_crypto_exec2` | 236 | 88 | 17 | 15/9 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004544` | `hash_finalize` | 88 | 32 | 7 | 7/3 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x0800459C` | `hash_get_result` | 8 | 4 | 1 | 1/1 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x080045A4` | `sha1_init` | 52 | 24 | 2 | 7/9 | `secboot_crypto.c` | ✅ Decompiled |
@@ -133,7 +133,7 @@ with instruction statistics and decompilation status.
 | `0x08004D98` | `image_decrypt_init` | 256 | 100 | 30 | 6/2 | `secboot_image.c` | ✅ Decompiled |
 | `0x08004E98` | `image_decrypt_block` | 136 | 58 | 7 | 12/13 | `secboot_image.c` | ✅ Decompiled |
 | `0x08004F20` | `image_decrypt_process` | 228 | 90 | 18 | 9/5 | `secboot_image.c` | ✅ Decompiled |
-| `0x08005004` | `firmware_update_init` | 152 | 58 | 4 | 16/9 | `secboot_fwup.c` | ✅ Decompiled |
+| `0x08005004` | `firmware_update_init` | 484 | 182 | 14 | 52/31 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x0800509C` | `firmware_update_process` | 332 | 124 | 10 | 36/22 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x080051E8` | `flash_read_page` | 336 | 118 | 18 | 17/10 | `secboot_flash.c` | ✅ Decompiled |
 | `0x08005338` | `flash_init` | 32 | 12 | 1 | 1/2 | `secboot_flash.c` | ✅ Decompiled |
@@ -177,7 +177,7 @@ with instruction statistics and decompilation status.
 | `0x080071F4` | `image_header_verify` | 44 | 18 | 4 | 0/0 | `secboot_main.c` | ✅ Decompiled |
 | `0x08007220` | `boot_uart_check` | 88 | 40 | 8 | 5/4 | `secboot_main.c` | ✅ Decompiled |
 | `0x08007278` | `find_valid_image` | 140 | 54 | 14 | 9/0 | `secboot_image.c` | ✅ Decompiled |
-| `0x08007304` | `main` | 1240 | 528 | 175 | 192/11 | `secboot_main.c` | ✅ Decompiled |
+| `0x08007304` | `main` | 508 | 213 | 85 | 43/11 | `secboot_main.c` | ✅ Decompiled |
 
 ## Compiled vs Original Comparison / 编译对比
 
@@ -193,7 +193,7 @@ with the original binary. A higher match indicates better decompilation.
 | `malloc` | 76 | 72 | 0.95x | 🟡 54% |
 | `free` | 58 | 57 | 0.98x | 🔴 37% |
 | `memcmp_or_recv` | 52 | 11 | 0.21x | 🔴 6% |
-| `memcpy` | 45 | 69 | 1.53x | 🔴 23% |
+| `memcpy` | 139 | 69 | 0.50x | 🔴 21% |
 | `memcmp` | 121 | 96 | 0.79x | 🔴 42% |
 | `memset` | 38 | 38 | 1.00x | 🔴 18% |
 | `strlen` | 106 | 10 | 0.09x | 🔴 9% |
@@ -224,14 +224,14 @@ with the original binary. A higher match indicates better decompilation.
 | `sha_hash_block` | 19 | 20 | 1.05x | 🔴 41% |
 | `sha_init` | 8 | 9 | 1.12x | 🟢 94% |
 | `sha_update` | 102 | 83 | 0.81x | 🟡 52% |
-| `sha_final` | 381 | 167 | 0.44x | 🔴 38% |
+| `sha_final` | 372 | 167 | 0.45x | 🔴 39% |
 | `crc32_table_init` | 50 | 54 | 1.08x | 🟢 87% |
 | `crc32_update` | 30 | 30 | 1.00x | 🟡 77% |
 | `sha1_transform` | 38 | 74 | 1.95x | 🟡 66% |
 | `hash_ctx_init` | 49 | 40 | 0.82x | 🟡 76% |
 | `hw_crypto_setup` | 6 | 6 | 1.00x | 🟡 67% |
 | `hw_crypto_exec` | 63 | 58 | 0.92x | 🟢 83% |
-| `hw_crypto_exec2` | 52 | 47 | 0.90x | 🟢 81% |
+| `hw_crypto_exec2` | 88 | 47 | 0.53x | 🟡 59% |
 | `hash_finalize` | 32 | 23 | 0.72x | 🟡 65% |
 | `hash_get_result` | 4 | 4 | 1.00x | 🟢 100% |
 | `sha1_init` | 24 | 21 | 0.88x | 🟡 67% |
@@ -251,7 +251,7 @@ with the original binary. A higher match indicates better decompilation.
 | `image_decrypt_init` | 100 | 104 | 1.04x | 🟡 75% |
 | `image_decrypt_block` | 58 | 55 | 0.95x | 🟢 97% |
 | `image_decrypt_process` | 90 | 91 | 1.01x | 🟢 84% |
-| `firmware_update_init` | 58 | 46 | 0.79x | 🔴 19% |
+| `firmware_update_init` | 182 | 46 | 0.25x | 🔴 12% |
 | `firmware_update_process` | 124 | 77 | 0.62x | 🔴 24% |
 | `flash_read_page` | 118 | 100 | 0.85x | 🔴 44% |
 | `flash_init` | 12 | 11 | 0.92x | 🟢 87% |
@@ -294,9 +294,9 @@ with the original binary. A higher match indicates better decompilation.
 | `image_header_verify` | 18 | 20 | 1.11x | 🟡 79% |
 | `boot_uart_check` | 40 | 37 | 0.93x | 🔴 34% |
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
-| `main` | 528 | 141 | 0.27x | 🔴 33% |
+| `main` | 213 | 158 | 0.74x | 🟡 78% |
 
-**Average mnemonic similarity: 47.2%** (across 109 compared functions)
+**Average mnemonic similarity: 47.4%** (across 109 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 
@@ -458,7 +458,7 @@ Source: `secboot_hw_init.c`
   08007146:  0140                  lsli         r0, r0, 1
 ```
 
-### `main` (0x08007304) — 528 instructions, 1240 bytes
+### `main` (0x08007304) — 213 instructions, 508 bytes
 Source: `secboot_main.c`
 
 ```asm
@@ -512,7 +512,7 @@ Source: `secboot_main.c`
   08007384:  430045eb              cmpnei       r5, 67
   08007388:  540c                  bf           0x8007430
   0800738a:  430040eb              cmpnei       r0, 67
-  ... (478 more instructions)
+  ... (163 more instructions)
 ```
 
 ### `boot_uart_check` (0x08007220) — 40 instructions, 88 bytes
@@ -1133,9 +1133,9 @@ Source: `secboot_image.c`
 Complete mapping of all 116 identified functions with their addresses,
 sizes, and decompilation status.
 
-- Code region: `0x08002506` — `0x080077DC`
-- Total function code: 21206 bytes
-- Decompiled code: 21206 bytes (100%)
+- Code region: `0x08002506` — `0x08007500`
+- Total function code: 21134 bytes
+- Decompiled code: 21134 bytes (100%)
 
 ## Constant Data / 常量数据
 

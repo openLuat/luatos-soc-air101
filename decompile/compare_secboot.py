@@ -282,17 +282,26 @@ def try_compile_function(func_name, source_file, tmpdir):
 
 
 def compute_function_sizes(binary_data):
-    """Compute function sizes from address gaps."""
+    """Compute function sizes using size hints from FUNCTIONS dict.
+
+    Uses the size_hint field (FUNCTIONS[addr][1]) when available and non-zero.
+    Falls back to address-gap method when no hint is provided.
+    This avoids over-counting the last function (which would otherwise extend
+    to end-of-binary, including literal pool and data tables).
+    """
     sorted_addrs = sorted(FUNCTIONS.keys())
     sizes = {}
     binary_end = LOAD_ADDR + len(binary_data)
 
     for i, addr in enumerate(sorted_addrs):
-        if i + 1 < len(sorted_addrs):
-            next_addr = sorted_addrs[i + 1]
+        # Use size_hint from FUNCTIONS dict if available
+        size_hint = FUNCTIONS[addr][1]
+        if size_hint > 0:
+            sizes[addr] = size_hint
+        elif i + 1 < len(sorted_addrs):
+            sizes[addr] = sorted_addrs[i + 1] - addr
         else:
-            next_addr = binary_end
-        sizes[addr] = next_addr - addr
+            sizes[addr] = binary_end - addr
 
     return sizes
 
