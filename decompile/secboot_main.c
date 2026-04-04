@@ -35,6 +35,8 @@ extern int  image_header_verify(void *hdr_buf,
 extern int  signature_verify(uint32_t sig_addr,
                              uint32_t img_len,
                              void *hdr_buf);            /* 0x080070C4 */
+extern int  image_copy_update(const void *header,
+                              uint32_t data_length);    /* 0x080058EC */
 extern int  puts(const char *s);                        /* 0x080028F4 */
 extern void *memcpy(void *dst, const void *src,
                     uint32_t n);                        /* 0x08002B54 */
@@ -235,7 +237,7 @@ void tspend_handler(void)
  * check_result:
  *   8007210: mov   r1, r5
  *   8007212: mov   r0, r4
- *   8007214: bsr   uart_verify_data    ; 0x080058EC
+ *   8007214: bsr   image_copy_update   ; 0x080058EC
  *   8007218: bnez  r0, success         ; if verify OK -> 'C'
  *   800721c: movi  r0, 77              ; return 'M'
  *   800721e: pop   r4-r5, r15
@@ -265,7 +267,7 @@ int image_header_verify(void *hdr_buf, uint32_t img_len)
     }
 
     /* Extended verification: data integrity check */
-    if (uart_verify_data(hdr_buf, img_len) != 0)
+    if (image_copy_update(hdr_buf, img_len) != 0)
         return 'C';       /* Data verify OK */
     return 'M';           /* Data verify failed */
 }
