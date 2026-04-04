@@ -5,7 +5,7 @@
  * Cross-referenced with: tools/xt804/wm_tool.c (CRC32 table),
  *                         platform/common/crypto/ (SHA1 patterns)
  *
- * Functions (33 total):
+ * Functions (34 total):
  *   --- RSA big-number arithmetic ---
  *   rsa_core()           - 0x080039C0  (core RSA read loop)
  *   rsa_step()           - 0x08003A14  (RSA step with byte-swap)
