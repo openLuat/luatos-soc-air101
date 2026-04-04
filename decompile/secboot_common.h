@@ -342,6 +342,71 @@ typedef struct {
 #define CR_HINT                 31  /* cr<31,0> - Cache hint/control */
 
 /* ============================================================
+ * C-SKY Inline Assembly Intrinsics
+ *
+ * These macros generate the exact mtcr/mfcr/psrset instructions
+ * that the original secboot.bin uses for control register access.
+ * Without these, the compiler generates function calls which
+ * produce completely different instruction sequences.
+ * ============================================================ */
+
+/* Set Vector Base Register (cr<1,0>) */
+static inline void __set_VBR(uint32_t val)
+{
+    __asm__ __volatile__("mtcr %0, cr<1, 0>" : : "r"(val));
+}
+
+/* Read cache hint/control register (cr<31,0>) */
+static inline uint32_t __get_HINT(void)
+{
+    uint32_t val;
+    __asm__ __volatile__("mfcr %0, cr<31, 0>" : "=r"(val));
+    return val;
+}
+
+/* Write cache hint/control register (cr<31,0>) */
+static inline void __set_HINT(uint32_t val)
+{
+    __asm__ __volatile__("mtcr %0, cr<31, 0>" : : "r"(val));
+}
+
+/* Read Processor Status Register (cr<0,0>) */
+static inline uint32_t __get_PSR(void)
+{
+    uint32_t val;
+    __asm__ __volatile__("mfcr %0, cr<0, 0>" : "=r"(val));
+    return val;
+}
+
+/* Write Processor Status Register (cr<0,0>) */
+static inline void __set_PSR(uint32_t val)
+{
+    __asm__ __volatile__("mtcr %0, cr<0, 0>" : : "r"(val));
+}
+
+/* Enable exceptions (EE) and interrupts (IE) in PSR */
+static inline void __psrset_ee_ie(void)
+{
+    __asm__ __volatile__("psrset ee, ie");
+}
+
+/* Read Exception PC (cr<2,0>) - used by trap handler */
+static inline uint32_t __get_EPC(void)
+{
+    uint32_t val;
+    __asm__ __volatile__("mfcr %0, cr<2, 0>" : "=r"(val));
+    return val;
+}
+
+/* Read Exception PSR (cr<4,0>) - used by trap handler */
+static inline uint32_t __get_EPSR(void)
+{
+    uint32_t val;
+    __asm__ __volatile__("mfcr %0, cr<4, 0>" : "=r"(val));
+    return val;
+}
+
+/* ============================================================
  * XMODEM Protocol Constants
  * (Used by secboot_fwup.c)
  * ============================================================ */
@@ -389,6 +454,8 @@ extern int   uart_putchar(int ch);                                      /* 0x080
 
 /* --- secboot_flash.c --- */
 extern uint8_t flash_init(void);                                        /* 0x08005338 */
+extern int   flash_read_page(uint32_t addr, uint8_t *dest,
+                              uint32_t len, uint32_t mode);             /* 0x080051E8 */
 extern int   flash_read(uint32_t addr, uint8_t *buf, uint32_t len);    /* 0x080054F8 */
 extern int   flash_write(uint32_t addr, const uint8_t *src, uint32_t len);  /* 0x0800553C */
 extern int   flash_read_raw(uint32_t addr, uint8_t *buf, uint32_t len);   /* 0x08005358 */
@@ -405,6 +472,14 @@ extern int   validate_image(const uint8_t *header);                         /* 0
 extern int   find_valid_image(uint32_t start_addr, uint8_t *hdr_buf, int mode); /* 0x08007278 */
 extern int   signature_verify(uint32_t data_addr, uint32_t data_len,
                                uint32_t sig_addr);                          /* 0x080070C4 */
+extern int   image_header_verify(const uint8_t *hdr, uint32_t param);       /* 0x080071F4 */
+
+/* --- secboot_fwup.c --- */
+extern int   ota_process(void *flash_ctx, const uint8_t *upgrade_hdr,
+                          const uint8_t *running_hdr);                       /* 0x080062D4 */
+
+/* --- secboot_boot.c --- */
+extern int   app_boot_sequence(int mode);                                    /* 0x08007058 */
 
 /* --- secboot_crypto.c --- */
 extern crc_ctx_t *crc_ctx_alloc(void);                                      /* 0x08004CFC */

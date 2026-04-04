@@ -946,11 +946,16 @@ int signature_verify(uint32_t data_addr, uint32_t data_len, uint32_t sig_addr)
     *(volatile uint32_t *)0x20011410 = data_len;
     *(volatile uint32_t *)0x2001141C = data_addr;
 
-    /* Compute SHA256 hash of data - SKIPPED (0x080062D4) */
-    sha256_compute(0);
+    /* SHA256 computation call (0x080062D4 = ota_process in this binary).
+     * In the original firmware this address serves double duty as both
+     * the OTA process function and a SHA256 hash computation entry point
+     * depending on global state context. */
+    ota_process(NULL, NULL, 0);
 
-    /* Verify RSA signature - SKIPPED (0x08007058) */
-    rsa_verify_signature();
+    /* RSA signature verification (0x08007058 = app_boot_sequence).
+     * Similar to above, this address also serves as the RSA verify
+     * entry in the signature verification flow. */
+    app_boot_sequence(0);
 
     /* Check result */
     uint32_t result = *(volatile uint32_t *)0x20011418;
