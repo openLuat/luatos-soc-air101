@@ -239,9 +239,9 @@ with the original binary. A higher match indicates better decompilation.
 | `sha1_full` | 161 | 192 | 1.19x | 🟡 63% |
 | `pkey_setup` | 43 | 49 | 1.14x | 🟡 76% |
 | `pkey_verify_step` | 44 | 55 | 1.25x | 🟢 83% |
-| `pkey_verify` | 30 | 33 | 1.10x | 🟢 92% |
+| `pkey_verify` | 30 | 31 | 1.03x | 🟢 92% |
 | `signature_check_init` | 76 | 72 | 0.95x | 🟡 80% |
-| `signature_check_data` | 26 | 27 | 1.04x | 🟢 83% |
+| `signature_check_data` | 26 | 26 | 1.00x | 🟢 100% |
 | `signature_check_final` | 58 | 58 | 1.00x | 🟢 88% |
 | `cert_parse` | 48 | 54 | 1.12x | 🟡 65% |
 | `crc_ctx_alloc` | 19 | 18 | 0.95x | 🟢 97% |
@@ -292,7 +292,7 @@ with the original binary. A higher match indicates better decompilation.
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
 | `main` | 528 | 141 | 0.27x | 🔴 33% |
 
-**Average mnemonic similarity: 47.0%** (across 105 compared functions)
+**Average mnemonic similarity: 47.1%** (across 105 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 

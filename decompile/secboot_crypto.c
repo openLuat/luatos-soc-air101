@@ -154,7 +154,7 @@ extern int   crc_pipeline(void *ctx, void *a, void *b,
 #define RSACON      (*(volatile uint32_t *)(RSA_BASE + 0x00))
 #define RSAMC       (*(volatile uint32_t *)(RSA_BASE + 0x04))
 #define RSASIZE     (*(volatile uint32_t *)(RSA_BASE + 0x08))
-#define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_BASE + 0x000 + (i)*4))  /* 0x40000000 offset */
+#define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_BASE + 0x000 + (i)*4))
 
 /* RSA buffer addresses - direct memory-mapped */
 #define RSA_BUF_A   ((volatile uint32_t *)0x40000000)
@@ -1939,7 +1939,7 @@ int pkey_verify(uint8_t **pos, uint32_t remaining, mp_int *out)
         return -30;
 
     /* Check length fits in remaining data */
-    if (remaining < out->dp[0])
+    if (remaining < tag_len)
         return -8;
 
     /* Update position */
@@ -2047,26 +2047,25 @@ int signature_check_init(uint8_t **pos, uint32_t remaining,
 int signature_check_data(uint8_t **pos, uint32_t remaining,
                          uint32_t *out1, uint32_t *out2)
 {
-    uint8_t *p = *pos;
+    uint8_t *local_pos = *pos;
+    uint32_t seq_len;
 
     if (remaining == 0)
         return -30;
 
-    /* Parse outer SEQUENCE */
-    uint32_t seq_len;
-    uint8_t *next = p;
-    int ret = pkey_verify(&next, remaining, (mp_int *)out1);
+    /* Parse outer SEQUENCE: stores sub-length in seq_len */
+    int ret = pkey_verify((uint8_t **)&local_pos, remaining,
+                          (mp_int *)&seq_len);
     if (ret < 0)
         return -30;
 
-    /* Parse inner elements */
-    uint32_t inner_len;
-    ret = signature_check_init(&next, seq_len, out1, 1, out2);
-    if (ret < 0)
-        return ret;
+    /* Parse inner OID elements */
+    ret = signature_check_init((uint8_t **)&local_pos, seq_len,
+                               out1, 1, out2);
 
-    *pos = next;
-    return 0;
+    /* Always write back updated position */
+    *pos = local_pos;
+    return ret;
 }
 
 
