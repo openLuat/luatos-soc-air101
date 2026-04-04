@@ -93,7 +93,6 @@ uint8_t flash_init(void)
 int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_t mode)
 {
     volatile uint32_t *qspi = (volatile uint32_t *)FLASH_SPI_BASE;
-    uint32_t addr_aligned;
     uint32_t read_len;
     uint32_t offset_in_word;
     uint32_t cmd;
@@ -105,35 +104,26 @@ int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_
     offset_in_word = flash_addr & 0x0F;
     read_len = offset_in_word + length + 16;
     read_len &= ~0x0F;
-    addr_aligned = flash_addr & ~0x0F;
 
     if (mode == 1) {
-        /* Quad read mode: command 0x6B with address and dummy cycles */
-        cmd = 0xBC00C06B;
+        cmd = 0xBC00C06B;      /* Quad read mode */
     } else if (mode == 2) {
-        /* Dual read mode: command 0x3B */
-        cmd = 0xBC00C03B;
+        cmd = 0xBC00C03B;      /* Dual read mode */
     } else {
-        /* Standard read mode: command 0x0B (fast read) */
-        cmd = 0xBC00C00B;
+        cmd = 0xBC00C00B;      /* Standard fast read */
     }
 
     /* Setup flash SPI controller */
     qspi[0] = ((read_len - 1) << 16) | (cmd & 0xFFFF) | (0x03FF0000 & ((read_len - 1) << 16));
-    qspi[4] = addr_aligned & 0x01FFFFFF;    /* 25-bit flash address */
+    qspi[4] = (flash_addr & ~0x0F) & 0x01FFFFFF;   /* 25-bit aligned flash address */
 
     /* Trigger the read operation */
     uint32_t ctrl = qspi[1];
-    ctrl |= 0x100;          /* Set start bit */
+    ctrl |= 0x100;
     qspi[1] = ctrl;
-
-    if (dest == NULL)
-        return 0;
 
     /* Memory-mapped read: flash data appears at 0x40000000 + offset */
     volatile uint32_t *flash_mem = (volatile uint32_t *)0x40000000;
-    uint32_t byte_offset = offset_in_word & ~3;
-    volatile uint32_t *src_base = flash_mem + (byte_offset >> 2);
 
     /* Handle leading unaligned bytes */
     uint32_t lead_bytes = (4 - (offset_in_word & 3)) & 3;
@@ -141,10 +131,9 @@ int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_
     uint32_t bytes_done = lead_bytes;
 
     if (lead_bytes > 0) {
-        uint32_t word = *src_base;
-        uint32_t tmp_buf;
-        tmp_buf = word;
-        uint8_t *bp = (uint8_t *)&tmp_buf;
+        uint32_t word = *(flash_mem + ((offset_in_word & ~3) >> 2));
+        uint32_t tmp = word;
+        uint8_t *bp = (uint8_t *)&tmp;
         for (uint32_t i = 0; i < lead_bytes; i++) {
             dest[i] = bp[(offset_in_word & 3) + i];
         }
@@ -153,13 +142,9 @@ int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_
     /* Copy aligned 32-bit words, byte by byte to dest */
     uint32_t words_remaining = (length - bytes_done) >> 2;
     if (words_remaining > 0) {
-        uint32_t src_idx = bytes_done;
-        volatile uint32_t *s = src_base + ((bytes_done + offset_in_word) >> 2) - (offset_in_word >> 2);
-        /* Use the approach from the original: read word, then copy 4 bytes */
         for (uint32_t i = 0; i < words_remaining; i++) {
-            uint32_t word = *(flash_mem + ((byte_offset + bytes_done + offset_in_word - byte_offset) >> 2) + i);
-            uint32_t tmp;
-            tmp = word;
+            uint32_t word = *(flash_mem + ((bytes_done + offset_in_word) >> 2) + i);
+            uint32_t tmp = word;
             dest[bytes_done + 0] = ((uint8_t *)&tmp)[0];
             dest[bytes_done + 1] = ((uint8_t *)&tmp)[1];
             dest[bytes_done + 2] = ((uint8_t *)&tmp)[2];
@@ -171,10 +156,8 @@ int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_
     /* Copy remaining tail bytes */
     uint32_t tail = length - bytes_done;
     if (tail > 0) {
-        uint32_t word = *(flash_mem + ((byte_offset + bytes_done + offset_in_word - byte_offset) >> 2));
-        uint32_t tmp;
-        tmp = word;
-        /* Use memcpy for remaining bytes */
+        uint32_t word = *(flash_mem + ((bytes_done + offset_in_word) >> 2));
+        uint32_t tmp = word;
         for (uint32_t i = 0; i < tail; i++) {
             dest[bytes_done + i] = ((uint8_t *)&tmp)[i];
         }

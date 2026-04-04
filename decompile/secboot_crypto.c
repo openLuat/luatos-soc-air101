@@ -92,15 +92,8 @@ int asn1_parse_body(void *a, void *b, void *c, void *d)
 /* signature_check_final (0x08004BEC) defined later in this file */
 int crc_verify_exec(void *ctx, void *a, void *b, void *c)
 {
-    /* Forward to signature_check_final - defined later in this file.
-     * Use a function pointer to avoid conflicting type declarations. */
-    int (*fn)(uint8_t **, uint32_t *, uint32_t, uint8_t *) =
-        (int (*)(uint8_t **, uint32_t *, uint32_t, uint8_t *))0;
-    /* The linker will resolve via the actual function at link time.
-     * For functional equivalence we just pass through. */
     extern int signature_check_final(uint8_t **pos, uint32_t *remaining,
                                       uint32_t len, uint8_t *out);
-    (void)fn;
     return signature_check_final((uint8_t **)ctx, (uint32_t *)a,
                                   (uint32_t)(uintptr_t)b, (uint8_t *)c);
 }
@@ -215,12 +208,12 @@ static int s_mp_sub(mp_int *a, mp_int *b, mp_int *c)
     for (i = 0; i < b->used; i++) {
         uint64_t t = (uint64_t)a->dp[i] - (uint64_t)b->dp[i] - borrow;
         c->dp[i] = (uint32_t)(t & MP_MASK);
-        borrow = (t >> (sizeof(uint64_t)*8 - 1)) ? 1 : 0;
+        borrow = ((int64_t)t < 0) ? 1 : 0;
     }
     for (; i < a->used; i++) {
         uint64_t t = (uint64_t)a->dp[i] - borrow;
         c->dp[i] = (uint32_t)(t & MP_MASK);
-        borrow = (t >> (sizeof(uint64_t)*8 - 1)) ? 1 : 0;
+        borrow = ((int64_t)t < 0) ? 1 : 0;
     }
     c->used = a->used;
     mp_clamp(c);

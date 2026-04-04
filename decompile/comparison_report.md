@@ -195,6 +195,7 @@ with the original binary. A higher match indicates better decompilation.
 | `memcmp_or_recv` | 52 | 11 | 0.21x | 🔴 6% |
 | `memcpy` | 45 | 69 | 1.53x | 🔴 23% |
 | `memcmp` | 121 | 96 | 0.79x | 🔴 42% |
+| `memset` | 38 | 38 | 1.00x | 🔴 18% |
 | `strlen` | 106 | 10 | 0.09x | 🔴 9% |
 | `strcmp_or_strncpy` | 105 | 24 | 0.23x | 🔴 11% |
 | `snprintf` | 20 | 32 | 1.60x | 🔴 23% |
@@ -226,7 +227,7 @@ with the original binary. A higher match indicates better decompilation.
 | `sha_final` | 381 | 167 | 0.44x | 🔴 38% |
 | `crc32_table_init` | 50 | 54 | 1.08x | 🟢 87% |
 | `crc32_update` | 30 | 30 | 1.00x | 🟡 77% |
-| `sha1_transform` | 38 | 37 | 0.97x | 🟢 99% |
+| `sha1_transform` | 38 | 74 | 1.95x | 🟡 66% |
 | `hash_ctx_init` | 49 | 40 | 0.82x | 🟡 76% |
 | `hw_crypto_setup` | 6 | 6 | 1.00x | 🟡 67% |
 | `hw_crypto_exec` | 63 | 58 | 0.92x | 🟢 83% |
@@ -236,13 +237,13 @@ with the original binary. A higher match indicates better decompilation.
 | `sha1_init` | 24 | 21 | 0.88x | 🟡 67% |
 | `sha1_update` | 37 | 37 | 1.00x | 🟢 97% |
 | `sha1_final` | 91 | 92 | 1.01x | 🟡 67% |
-| `sha1_full` | 161 | 192 | 1.19x | 🟡 63% |
+| `sha1_full` | 161 | 246 | 1.53x | 🔴 18% |
 | `pkey_setup` | 43 | 49 | 1.14x | 🟡 76% |
 | `pkey_verify_step` | 44 | 55 | 1.25x | 🟢 83% |
 | `pkey_verify` | 30 | 31 | 1.03x | 🟢 92% |
 | `signature_check_init` | 76 | 72 | 0.95x | 🟡 80% |
 | `signature_check_data` | 26 | 26 | 1.00x | 🟢 100% |
-| `signature_check_final` | 58 | 58 | 1.00x | 🟢 88% |
+| `signature_check_final` | 58 | 81 | 1.40x | 🟡 71% |
 | `cert_parse` | 48 | 54 | 1.12x | 🟡 65% |
 | `crc_ctx_alloc` | 19 | 18 | 0.95x | 🟢 97% |
 | `crc_ctx_destroy` | 14 | 14 | 1.00x | 🟢 86% |
@@ -252,6 +253,7 @@ with the original binary. A higher match indicates better decompilation.
 | `image_decrypt_process` | 90 | 91 | 1.01x | 🟢 84% |
 | `firmware_update_init` | 58 | 46 | 0.79x | 🔴 19% |
 | `firmware_update_process` | 124 | 77 | 0.62x | 🔴 24% |
+| `flash_read_page` | 118 | 100 | 0.85x | 🔴 44% |
 | `flash_init` | 12 | 11 | 0.92x | 🟢 87% |
 | `flash_read_raw` | 157 | 25 | 0.16x | 🔴 12% |
 | `flash_read` | 27 | 26 | 0.96x | 🟢 87% |
@@ -271,7 +273,7 @@ with the original binary. A higher match indicates better decompilation.
 | `xmodem_recv_block` | 68 | 68 | 1.00x | 🔴 16% |
 | `xmodem_recv_data` | 25 | 31 | 1.24x | 🔴 29% |
 | `xmodem_process` | 116 | 37 | 0.32x | 🔴 34% |
-| `crc_verify_image` | 98 | 94 | 0.96x | 🟡 66% |
+| `crc_verify_image` | 98 | 91 | 0.93x | 🟡 63% |
 | `firmware_apply` | 58 | 53 | 0.91x | 🔴 23% |
 | `firmware_apply_ext` | 394 | 61 | 0.15x | 🔴 11% |
 | `ota_process` | 182 | 85 | 0.47x | 🔴 16% |
@@ -282,20 +284,19 @@ with the original binary. A higher match indicates better decompilation.
 | `boot_prepare` | 160 | 38 | 0.24x | 🔴 11% |
 | `boot_execute_prep` | 82 | 31 | 0.38x | 🔴 23% |
 | `app_boot_sequence` | 48 | 37 | 0.77x | 🔴 33% |
-| `signature_verify` | 48 | 29 | 0.60x | 🟡 55% |
+| `signature_verify` | 48 | 31 | 0.65x | 🔴 48% |
 | `board_init` | 12 | 11 | 0.92x | 🟡 78% |
-| `tspend_handler` | 21 | 14 | 0.67x | 🔴 46% |
 | `uart_putchar` | 19 | 18 | 0.95x | 🟢 92% |
 | `lock_acquire` | 2 | 2 | 1.00x | 🟢 100% |
 | `lock_release` | 2 | 2 | 1.00x | 🟢 100% |
-| `SystemInit` | 19 | 21 | 1.11x | 🔴 40% |
+| `SystemInit` | 19 | 21 | 1.11x | 🟡 70% |
 | `trap_c` | 2 | 1 | 0.50x | 🟡 67% |
 | `image_header_verify` | 18 | 20 | 1.11x | 🟡 79% |
 | `boot_uart_check` | 40 | 37 | 0.93x | 🔴 34% |
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
 | `main` | 528 | 141 | 0.27x | 🔴 33% |
 
-**Average mnemonic similarity: 48.2%** (across 108 compared functions)
+**Average mnemonic similarity: 47.2%** (across 109 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 
@@ -357,25 +358,25 @@ with the original binary. A higher match indicates better decompilation.
 
 | # | Original | Recompiled |
 |---|----------|------------|
-| 0 | `lrw r3, 0x8002400` | `push r15` |
-| 1 | `mtcr r3, cr<1, 0>` | `movi r0, 9216` |
-| 2 | `mfcr r3, cr<31, 0>` | `bseti r0, 27` |
-| 3 | `ori r3, r3, 16` | `bsr 0x0` |
-| 4 | `mtcr r3, cr<31, 0>` | `bsr 0x0` |
-| 5 | `mfcr r3, cr<0, 0>` | `ori r0, r0, 16` |
-| 6 | `ori r3, r3, 512` | `bsr 0x0` |
-| 7 | `mtcr r3, cr<0, 0>` | `bsr 0x0` |
-| 8 | `lrw r2, 0xe000e100` | `ori r0, r0, 512` |
-| 9 | `movi r3, 0` | `bsr 0x0` |
-| 10 | `st.w r3, (r2, 0x200)` | `lrw r3, 0xe000e300` |
-| 11 | `subi r3, 1` | `movi r2, 0` |
-| 12 | `st.w r3, (r2, 0x180)` | `st.w r2, (r3, 0x0)` |
-| 13 | `psrset ee, ie` | `mov r3, r2` |
-| 14 | `jmp r15` | `lrw r2, 0xe000e280` |
-| 15 | `bkpt ` | `subi r3, 1` |
-| 16 | `addi r4, 1` | `st.w r3, (r2, 0x0)` |
-| 17 | `bt 0x80071ea` | `bsr 0x0` |
-| 18 | `bsr 0xa0231ec` | `pop r15` |
+| 0 | `lrw r3, 0x8002400` | `movi r3, 9216` |
+| 1 | `mtcr r3, cr<1, 0>` | `bseti r3, 27` |
+| 2 | `mfcr r3, cr<31, 0>` | `mtcr r3, cr<1, 0>` |
+| 3 | `ori r3, r3, 16` | `mfcr r3, cr<31, 0>` |
+| 4 | `mtcr r3, cr<31, 0>` | `ori r3, r3, 16` |
+| 5 | `mfcr r3, cr<0, 0>` | `mtcr r3, cr<31, 0>` |
+| 6 | `ori r3, r3, 512` | `mfcr r3, cr<0, 0>` |
+| 7 | `mtcr r3, cr<0, 0>` | `ori r3, r3, 512` |
+| 8 | `lrw r2, 0xe000e100` | `mtcr r3, cr<0, 0>` |
+| 9 | `movi r3, 0` | `lrw r3, 0xe000e300` |
+| 10 | `st.w r3, (r2, 0x200)` | `movi r2, 0` |
+| 11 | `subi r3, 1` | `st.w r2, (r3, 0x0)` |
+| 12 | `st.w r3, (r2, 0x180)` | `mov r3, r2` |
+| 13 | `psrset ee, ie` | `lrw r2, 0xe000e280` |
+| 14 | `jmp r15` | `subi r3, 1` |
+| 15 | `bkpt ` | `st.w r3, (r2, 0x0)` |
+| 16 | `addi r4, 1` | `psrset ee, ie` |
+| 17 | `bt 0x80071ea` | `jmp r15` |
+| 18 | `bsr 0xa0231ec` | `.short 0x0000` |
 | 19 |  | `.long 0xe000e300` |
 | 20 |  | `.long 0xe000e280` |
 
@@ -409,32 +410,6 @@ with the original binary. A higher match indicates better decompilation.
 |---|----------|------------|
 | 0 | `movi r0, 0` | `movi r0, 0` |
 | 1 | `jmp r15` | `jmp r15` |
-
-#### `tspend_handler` (0x08007148)
-
-| # | Original | Recompiled |
-|---|----------|------------|
-| 0 | `nie ` | `subi r14, r14, 4` |
-| 1 | `ipush ` | `lrw r3, 0xe000e000` |
-| 2 | `subi r14, r14, 56` | `lrw r2, 0x20011380` |
-| 3 | `stm r18-r31, (r14)` | `ld.w r3, (r3, 0x10)` |
-| 4 | `subi r14, r14, 32` | `st.w r3, (r14, 0x0)` |
-| 5 | `fstms fr16-fr19, (r14)` | `ld.w r3, (r14, 0x0)` |
-| 6 | `lrw r2, 0x200113e4` | `ld.w r3, (r2, 0x64)` |
-| 7 | `lrw r3, 0xe000e000` | `addi r3, 1` |
-| 8 | `ld.w r3, (r3, 0x10)` | `st.w r3, (r2, 0x64)` |
-| 9 | `ld.w r3, (r2, 0x0)` | `addi r14, r14, 4` |
-| 10 | `addi r3, 1` | `jmp r15` |
-| 11 | `st.w r3, (r2, 0x0)` | `.short 0x0000` |
-| 12 | `fldms fr16-fr19, (r14)` | `.long 0xe000e000` |
-| 13 | `addi r14, r14, 32` | `.long 0x20011380` |
-| 14 | `ldm r18-r31, (r14)` |  |
-| 15 | `addi r14, r14, 56` |  |
-| 16 | `ipop ` |  |
-| 17 | `nir ` |  |
-| 18 | `lrw r7, 0x153814d4` |  |
-| 19 | `addi r0, 2` |  |
-| 20 | `bsr 0x8023178` |  |
 
 ## Detailed Disassembly / 详细反汇编
 

@@ -27,21 +27,71 @@ This directory contains the reverse-engineered analysis of the Air101/Air103 sec
 |------|-------------|
 | `README.md` | This document |
 | `secboot_common.h` | Shared header: register addresses, structures, cross-file declarations |
+| `Makefile` | Build system for compiling and linking the decompiled code |
+| `secboot.ld` | Linker script matching original binary memory layout |
+| `build.sh` | One-click build and comparison script |
 | `analyze_secboot.py` | Python analysis tool - parses binary, generates annotated disassembly |
-| `secboot_annotated.S` | Annotated disassembly with function labels and comments |
 | `secboot_vectors.S` | Reconstructed vector table and startup code |
-| `secboot_main.c` | Decompiled main boot logic (pseudo-C) |
-| `secboot_hw_init.c` | Decompiled hardware initialization (pseudo-C) |
-| `secboot_uart.c` | Decompiled UART driver and boot detection (pseudo-C) |
-| `secboot_flash.c` | Decompiled flash operations (pseudo-C) |
-| `secboot_image.c` | Decompiled image validation (pseudo-C) |
-| `secboot_crypto.c` | Decompiled CRC/crypto operations (pseudo-C) |
-| `secboot_memory.c` | Decompiled memory allocator (pseudo-C) |
-| `secboot_stdlib.c` | Decompiled standard library functions (pseudo-C) |
-| `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem (pseudo-C) |
-| `secboot_boot.c` | Decompiled boot parameter and app boot sequence (pseudo-C) |
+| `secboot_main.c` | Decompiled main boot logic |
+| `secboot_hw_init.c` | Decompiled hardware initialization |
+| `secboot_uart.c` | Decompiled UART driver and boot detection |
+| `secboot_flash.c` | Decompiled flash operations |
+| `secboot_image.c` | Decompiled image validation |
+| `secboot_crypto.c` | Decompiled CRC/crypto/bignum operations |
+| `secboot_memory.c` | Decompiled memory allocator |
+| `secboot_stdlib.c` | Decompiled standard library functions |
+| `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem |
+| `secboot_boot.c` | Decompiled boot parameter and app boot sequence |
 | `compare_secboot.py` | Compilation & comparison tool - compiles C, compares with original asm |
 | `comparison_report.md` | Auto-generated comparison report (original vs recompiled assembly) |
+
+## Building / 构建
+
+The decompiled code can be compiled and linked into a complete ELF/binary using the
+C-SKY toolchain. This produces a functionally equivalent binary for comparison with
+the original.
+
+本目录的反编译代码可以使用 C-SKY 工具链编译链接为完整的 ELF/二进制文件。
+
+### Prerequisites / 前提条件
+
+- C-SKY GCC toolchain (`csky-elfabiv2-gcc`)
+- Python 3 (for comparison reports)
+
+```bash
+# Install toolchain (automatic download)
+./build.sh --install
+
+# Or install manually:
+cd /tmp
+curl -sL -o csky-tools.zip \
+  "https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.zip"
+unzip -q csky-tools.zip -d /tmp/csky-tools
+export PATH="/tmp/csky-tools/gcc/bin:$PATH"
+```
+
+### Build Commands / 构建命令
+
+```bash
+# One-click build + comparison
+./build.sh
+
+# Or using make directly:
+make                    # Build secboot.elf and secboot.bin
+make compare            # Compare with original binary
+make disasm             # Generate disassembly
+make report             # Run full comparison (requires python3)
+make clean              # Clean build artifacts
+```
+
+### Build Output / 构建输出
+
+```
+build/secboot.elf  — ELF executable (for debugging/analysis)
+build/secboot.bin  — Raw binary (for flashing/comparison)
+build/secboot.dis  — Disassembly listing
+build/secboot.map  — Linker map file
+```
 
 ## Memory Map / 内存映射
 
