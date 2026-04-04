@@ -13,6 +13,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * Heap layout (from analysis of malloc/free):
@@ -40,6 +43,11 @@
 #define BLOCK_HEADER_SIZE   8
 #define MIN_SPLIT_SIZE      15  /* Don't split if remainder < 15 bytes */
 #define ALIGNMENT           8   /* All allocations aligned to 8 bytes */
+
+/* Forward declarations */
+extern void lock_acquire(uint32_t *lock);
+extern void lock_release(uint32_t *lock);
+extern void *realloc_internal(void *ptr, uint32_t size);
 
 typedef struct free_block {
     struct free_block *next;    /* Next free block in list */

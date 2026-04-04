@@ -21,6 +21,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * Hardware Crypto Engine Registers
@@ -60,9 +63,13 @@ extern int   memcmp(const void *a, const void *b,
                     uint32_t n);                    /* 0x08002BD4 */
 extern void  bignum_clear(void *bn);               /* 0x080031A8 */
 
+/* Forward type declarations */
+typedef struct sha1_ctx sha1_ctx_t;
+
 /* Forward declarations */
 static void sha1_transform(sha1_ctx_t *ctx);
 static int  asn1_parse_tag(uint8_t **pos, uint32_t *out_len, uint32_t remaining);
+void crc_ctx_reset(void *inner);
 
 
 /* ============================================================
@@ -82,7 +89,7 @@ static int  asn1_parse_tag(uint8_t **pos, uint32_t *out_len, uint32_t remaining)
  *
  * Total size: 96 bytes
  * ============================================================ */
-typedef struct {
+typedef struct sha1_ctx {
     uint32_t total_hi;
     uint32_t total_lo;
     uint32_t state[5];
