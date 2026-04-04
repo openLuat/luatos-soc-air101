@@ -77,11 +77,112 @@ uint8_t flash_init(void)
  * flash_read_page (0x080051E8)
  *
  * Read one page (up to 256 bytes) from flash via SPI controller.
- * Called by flash_read for each 256-byte chunk.
+ * Supports three read modes:
+ *   mode 0: Standard read (simple SPI)
+ *   mode 1: Fast read with quad output
+ *   mode 2: Dual output read
+ *
+ * The flash SPI controller maps flash data into memory space
+ * at 0x40000000 base with the configured address offset.
  *
  * r0 = flash_addr, r1 = dest_buf, r2 = length, r3 = mode
+ * Returns: 0 on success
+ *
+ * Disassembly: 0x080051E8 - 0x08005338 (336 bytes)
  * ============================================================ */
-int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_t mode);
+int flash_read_page(uint32_t flash_addr, uint8_t *dest, uint32_t length, uint32_t mode)
+{
+    volatile uint32_t *qspi = (volatile uint32_t *)FLASH_SPI_BASE;
+    uint32_t addr_aligned;
+    uint32_t read_len;
+    uint32_t offset_in_word;
+    uint32_t cmd;
+
+    if (dest == NULL)
+        return 0;
+
+    /* Align address down to 16-byte boundary and compute adjusted length */
+    offset_in_word = flash_addr & 0x0F;
+    read_len = offset_in_word + length + 16;
+    read_len &= ~0x0F;
+    addr_aligned = flash_addr & ~0x0F;
+
+    if (mode == 1) {
+        /* Quad read mode: command 0x6B with address and dummy cycles */
+        cmd = 0xBC00C06B;
+    } else if (mode == 2) {
+        /* Dual read mode: command 0x3B */
+        cmd = 0xBC00C03B;
+    } else {
+        /* Standard read mode: command 0x0B (fast read) */
+        cmd = 0xBC00C00B;
+    }
+
+    /* Setup flash SPI controller */
+    qspi[0] = ((read_len - 1) << 16) | (cmd & 0xFFFF) | (0x03FF0000 & ((read_len - 1) << 16));
+    qspi[4] = addr_aligned & 0x01FFFFFF;    /* 25-bit flash address */
+
+    /* Trigger the read operation */
+    uint32_t ctrl = qspi[1];
+    ctrl |= 0x100;          /* Set start bit */
+    qspi[1] = ctrl;
+
+    if (dest == NULL)
+        return 0;
+
+    /* Memory-mapped read: flash data appears at 0x40000000 + offset */
+    volatile uint32_t *flash_mem = (volatile uint32_t *)0x40000000;
+    uint32_t byte_offset = offset_in_word & ~3;
+    volatile uint32_t *src_base = flash_mem + (byte_offset >> 2);
+
+    /* Handle leading unaligned bytes */
+    uint32_t lead_bytes = (4 - (offset_in_word & 3)) & 3;
+    if (lead_bytes > length) lead_bytes = length;
+    uint32_t bytes_done = lead_bytes;
+
+    if (lead_bytes > 0) {
+        uint32_t word = *src_base;
+        uint32_t tmp_buf;
+        tmp_buf = word;
+        uint8_t *bp = (uint8_t *)&tmp_buf;
+        for (uint32_t i = 0; i < lead_bytes; i++) {
+            dest[i] = bp[(offset_in_word & 3) + i];
+        }
+    }
+
+    /* Copy aligned 32-bit words, byte by byte to dest */
+    uint32_t words_remaining = (length - bytes_done) >> 2;
+    if (words_remaining > 0) {
+        uint32_t src_idx = bytes_done;
+        volatile uint32_t *s = src_base + ((bytes_done + offset_in_word) >> 2) - (offset_in_word >> 2);
+        /* Use the approach from the original: read word, then copy 4 bytes */
+        for (uint32_t i = 0; i < words_remaining; i++) {
+            uint32_t word = *(flash_mem + ((byte_offset + bytes_done + offset_in_word - byte_offset) >> 2) + i);
+            uint32_t tmp;
+            tmp = word;
+            dest[bytes_done + 0] = ((uint8_t *)&tmp)[0];
+            dest[bytes_done + 1] = ((uint8_t *)&tmp)[1];
+            dest[bytes_done + 2] = ((uint8_t *)&tmp)[2];
+            dest[bytes_done + 3] = ((uint8_t *)&tmp)[3];
+            bytes_done += 4;
+        }
+    }
+
+    /* Copy remaining tail bytes */
+    uint32_t tail = length - bytes_done;
+    if (tail > 0) {
+        uint32_t word = *(flash_mem + ((byte_offset + bytes_done + offset_in_word - byte_offset) >> 2));
+        uint32_t tmp;
+        tmp = word;
+        /* Use memcpy for remaining bytes */
+        for (uint32_t i = 0; i < tail; i++) {
+            dest[bytes_done + i] = ((uint8_t *)&tmp)[i];
+        }
+    }
+
+    return 0;
+}
+
 
 /* ============================================================
  * flash_read (0x080054F8)

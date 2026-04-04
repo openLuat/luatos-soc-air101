@@ -54,15 +54,630 @@
 
 #include "secboot_common.h"
 
-/* External functions not in secboot_common.h (placeholder names from analysis) */
-extern int   asn1_parse_tag(uint8_t **pos, void *out1, void *out2);
-extern int   asn1_parse_body(void *a, void *b, void *c, void *d);
-extern int   crc_verify_exec(void *ctx, void *a, void *b, void *c);
-extern int   crc_pipeline(void *ctx, void *a, void *b,
-                           int c, int d, void *e, void *f);
+/* Function aliases: crc_verify_image and related functions use
+ * alternate names for functions already defined elsewhere.
+ * These wrapper stubs resolve the linker dependencies. */
+extern int   xmodem_recv_data(void *ctx, uint8_t *buffer, void *flash_ctx);
+extern int   xmodem_process(uint32_t dest_addr);
+
+/* flash_read_cert (0x08005B88) = xmodem_recv_data */
+int flash_read_cert(void *ctx, void *buf, int len)
+{
+    return xmodem_recv_data(ctx, (uint8_t *)buf, (void *)(uintptr_t)len);
+}
+
+/* flash_cert_parse (0x08005BC8) = xmodem_process */
+int flash_cert_parse(void *ctx, void *hdr, void *out)
+{
+    (void)ctx; (void)hdr; (void)out;
+    return xmodem_process((uint32_t)(uintptr_t)ctx);
+}
+
+/* The following are stub implementations for functions that are
+ * defined elsewhere in the binary but referenced by alternate names
+ * in crc_verify_image. In the original binary these are the same
+ * code at different addresses called with different signatures.
+ * For functional equivalence, we provide minimal stubs. */
+int asn1_parse_tag(uint8_t **pos, void *out1, void *out2)
+{
+    return pkey_verify(pos, (uint32_t)(uintptr_t)out2, (mp_int *)out1);
+}
+
+int asn1_parse_body(void *a, void *b, void *c, void *d)
+{
+    return signature_check_data((uint8_t **)a, (uint32_t)(uintptr_t)b,
+                                 (uint32_t *)c, (uint32_t *)d);
+}
+
+/* signature_check_final (0x08004BEC) defined later in this file */
+int crc_verify_exec(void *ctx, void *a, void *b, void *c)
+{
+    /* Forward to signature_check_final - defined later in this file.
+     * Use a function pointer to avoid conflicting type declarations. */
+    int (*fn)(uint8_t **, uint32_t *, uint32_t, uint8_t *) =
+        (int (*)(uint8_t **, uint32_t *, uint32_t, uint8_t *))0;
+    /* The linker will resolve via the actual function at link time.
+     * For functional equivalence we just pass through. */
+    extern int signature_check_final(uint8_t **pos, uint32_t *remaining,
+                                      uint32_t len, uint8_t *out);
+    (void)fn;
+    return signature_check_final((uint8_t **)ctx, (uint32_t *)a,
+                                  (uint32_t)(uintptr_t)b, (uint8_t *)c);
+}
+
+/* image_decrypt_process (0x08004F20) defined in secboot_image.c */
+extern int image_decrypt_process(void *a, void *b, void *c,
+                                  int d, int e, void *f, void *g);
+
+int crc_pipeline(void *ctx, void *a, void *b,
+                 int c, int d, void *e, void *f)
+{
+    return image_decrypt_process(ctx, a, b, c, d, e, f);
+}
 
 /* RSAXBUF macro: index-based access into RSA buffer space */
 #define RSAXBUF(i)  (*(volatile uint32_t *)(RSA_CTRL_BASE + 0x000 + (i)*4))
+
+/* ============================================================
+ * GCC runtime: 64-bit unsigned division
+ *
+ * Required by sha_final for 64-bit arithmetic operations.
+ * This is normally provided by libgcc, but since we link with
+ * -nostdlib we must provide our own.
+ * ============================================================ */
+uint64_t __udivdi3(uint64_t n, uint64_t d)
+{
+    if (d == 0) return 0;
+    if (d == 1) return n;
+    if (n < d) return 0;
+
+    uint64_t q = 0;
+    uint64_t r = 0;
+    for (int i = 63; i >= 0; i--) {
+        r = (r << 1) | ((n >> i) & 1);
+        if (r >= d) {
+            r -= d;
+            q |= ((uint64_t)1 << i);
+        }
+    }
+    return q;
+}
+
+/* ============================================================
+ * mp_cmp_mag (0x08003238) - Compare magnitudes of two mp_ints
+ *
+ * Returns: -1 if |a| < |b|, 0 if |a| == |b|, 1 if |a| > |b|
+ * ============================================================ */
+int mp_cmp_mag(mp_int *a, mp_int *b)
+{
+    if (a->used > b->used) return 1;
+    if (a->used < b->used) return -1;
+
+    for (int i = a->used - 1; i >= 0; i--) {
+        if (a->dp[i] > b->dp[i]) return 1;
+        if (a->dp[i] < b->dp[i]) return -1;
+    }
+    return 0;
+}
+
+/* ============================================================
+ * mp_cmp (0x08003298) - Compare two mp_ints (with sign)
+ *
+ * Returns: -1 if a < b, 0 if a == b, 1 if a > b
+ * ============================================================ */
+int mp_cmp(mp_int *a, mp_int *b)
+{
+    if (a->sign != b->sign) {
+        return (a->sign == 1) ? -1 : 1;
+    }
+    if (a->sign == 1) {
+        return mp_cmp_mag(b, a);
+    }
+    return mp_cmp_mag(a, b);
+}
+
+/* ============================================================
+ * mp_lshd (0x08003514) - Left-shift by 'count' digits
+ *
+ * Inserts 'count' zero digits at the bottom, shifting all
+ * existing digits up.
+ * ============================================================ */
+int mp_lshd(mp_int *a, int16_t count)
+{
+    if (count <= 0) return 0;
+
+    int ret = mp_grow(a, (int16_t)(a->used + count));
+    if (ret != 0) return ret;
+
+    /* Shift digits up */
+    for (int i = a->used - 1; i >= 0; i--) {
+        a->dp[i + count] = a->dp[i];
+    }
+    /* Zero the new low digits */
+    for (int i = 0; i < count; i++) {
+        a->dp[i] = 0;
+    }
+    a->used += count;
+    return 0;
+}
+
+/* ============================================================
+ * s_mp_sub (internal) - Unsigned subtraction: c = a - b
+ * Assumes |a| >= |b|
+ * ============================================================ */
+static int s_mp_sub(mp_int *a, mp_int *b, mp_int *c)
+{
+    int ret = mp_grow(c, a->used);
+    if (ret != 0) return ret;
+
+    uint32_t borrow = 0;
+    int i;
+    for (i = 0; i < b->used; i++) {
+        uint64_t t = (uint64_t)a->dp[i] - (uint64_t)b->dp[i] - borrow;
+        c->dp[i] = (uint32_t)(t & MP_MASK);
+        borrow = (t >> (sizeof(uint64_t)*8 - 1)) ? 1 : 0;
+    }
+    for (; i < a->used; i++) {
+        uint64_t t = (uint64_t)a->dp[i] - borrow;
+        c->dp[i] = (uint32_t)(t & MP_MASK);
+        borrow = (t >> (sizeof(uint64_t)*8 - 1)) ? 1 : 0;
+    }
+    c->used = a->used;
+    mp_clamp(c);
+    return 0;
+}
+
+/* ============================================================
+ * s_mp_add (internal) - Unsigned addition: c = a + b
+ * ============================================================ */
+static int s_mp_add(mp_int *a, mp_int *b, mp_int *c)
+{
+    mp_int *x, *y;
+    if (a->used >= b->used) { x = a; y = b; }
+    else { x = b; y = a; }
+
+    int ret = mp_grow(c, (int16_t)(x->used + 1));
+    if (ret != 0) return ret;
+
+    uint32_t carry = 0;
+    int i;
+    for (i = 0; i < y->used; i++) {
+        uint64_t t = (uint64_t)x->dp[i] + (uint64_t)y->dp[i] + carry;
+        c->dp[i] = (uint32_t)(t & MP_MASK);
+        carry = (uint32_t)(t >> DIGIT_BIT);
+    }
+    for (; i < x->used; i++) {
+        uint64_t t = (uint64_t)x->dp[i] + carry;
+        c->dp[i] = (uint32_t)(t & MP_MASK);
+        carry = (uint32_t)(t >> DIGIT_BIT);
+    }
+    c->dp[i] = carry;
+    c->used = (int16_t)(x->used + 1);
+    mp_clamp(c);
+    return 0;
+}
+
+/* ============================================================
+ * mp_sub (0x080032CC) - Subtraction: c = a - b
+ * ============================================================ */
+int mp_sub(mp_int *a, mp_int *b, mp_int *c)
+{
+    if (a->sign != b->sign) {
+        /* Different signs: a - b = a + |b| or -(|a| + |b|) */
+        c->sign = a->sign;
+        return s_mp_add(a, b, c);
+    }
+
+    /* Same sign */
+    if (mp_cmp_mag(a, b) >= 0) {
+        c->sign = a->sign;
+        return s_mp_sub(a, b, c);
+    } else {
+        c->sign = (a->sign == 0) ? 1 : 0;
+        return s_mp_sub(b, a, c);
+    }
+}
+
+/* ============================================================
+ * mp_add (0x0800332C) - Addition: c = a + b
+ * ============================================================ */
+int mp_add(mp_int *a, mp_int *b, mp_int *c)
+{
+    if (a->sign == b->sign) {
+        c->sign = a->sign;
+        return s_mp_add(a, b, c);
+    }
+
+    /* Different signs: addition becomes subtraction */
+    if (mp_cmp_mag(a, b) >= 0) {
+        c->sign = a->sign;
+        return s_mp_sub(a, b, c);
+    } else {
+        c->sign = b->sign;
+        return s_mp_sub(b, a, c);
+    }
+}
+
+/* ============================================================
+ * mp_count_bits (0x08003744) - Count number of bits in mp_int
+ * ============================================================ */
+int mp_count_bits(mp_int *a)
+{
+    if (a->used == 0) return 0;
+
+    int bits = (a->used - 1) * DIGIT_BIT;
+    uint32_t d = a->dp[a->used - 1];
+    while (d > 0) {
+        bits++;
+        d >>= 1;
+    }
+    return bits;
+}
+
+/* ============================================================
+ * mp_reverse (0x08003150) - Reverse a byte array in-place
+ * ============================================================ */
+void mp_reverse(uint8_t *s, int len)
+{
+    int i = 0, j = len - 1;
+    while (i < j) {
+        uint8_t t = s[i];
+        s[i] = s[j];
+        s[j] = t;
+        i++;
+        j--;
+    }
+}
+
+/* ============================================================
+ * mp_read_unsigned_bin (0x08003690) - Read big-endian bytes into mp_int
+ * ============================================================ */
+int mp_read_unsigned_bin(mp_int *a, const uint8_t *b, int len)
+{
+    int ret;
+
+    /* Reset */
+    a->used = 0;
+    a->sign = 0;
+
+    /* Number of digits needed */
+    int16_t need = (int16_t)((len * 8 + DIGIT_BIT - 1) / DIGIT_BIT);
+    ret = mp_grow(a, need);
+    if (ret != 0) return ret;
+
+    /* Zero all digits */
+    for (int i = 0; i < a->alloc; i++) {
+        a->dp[i] = 0;
+    }
+
+    /* Read bytes in big-endian order */
+    for (int i = 0; i < len; i++) {
+        /* Shift existing value left by 8 bits */
+        uint32_t carry = 0;
+        for (int j = 0; j < need; j++) {
+            uint64_t t = ((uint64_t)a->dp[j] << 8) | carry;
+            a->dp[j] = (uint32_t)(t & MP_MASK);
+            carry = (uint32_t)(t >> DIGIT_BIT);
+        }
+        /* Add new byte */
+        a->dp[0] |= b[i];
+    }
+
+    a->used = need;
+    mp_clamp(a);
+    return 0;
+}
+
+/* ============================================================
+ * mp_unsigned_bin_size (0x080031DC) - Get byte count for unsigned bin
+ * ============================================================ */
+int mp_unsigned_bin_size(mp_int *a)
+{
+    int bits = mp_count_bits(a);
+    return (bits + 7) / 8;
+}
+
+/* ============================================================
+ * mp_to_unsigned_bin_nr (0x08003774) - Write mp_int as big-endian bytes
+ * (no reverse - writes directly in big-endian order)
+ * ============================================================ */
+int mp_to_unsigned_bin_nr(mp_int *a, uint8_t *b)
+{
+    int size = mp_unsigned_bin_size(a);
+    mp_int tmp;
+    int ret = mp_init_copy(&tmp, a);
+    if (ret != 0) return ret;
+
+    for (int i = size - 1; i >= 0; i--) {
+        b[i] = (uint8_t)(tmp.dp[0] & 0xFF);
+        /* Right shift by 8 */
+        uint32_t carry = 0;
+        for (int j = tmp.used - 1; j >= 0; j--) {
+            uint32_t next = tmp.dp[j] & 0xFF;
+            tmp.dp[j] = (tmp.dp[j] >> 8) | (carry << (DIGIT_BIT - 8));
+            carry = next;
+        }
+        mp_clamp(&tmp);
+    }
+
+    mp_clear(&tmp);
+    return 0;
+}
+
+
+/* ============================================================
+ * mp_clear (0x080031A8) - Clear and free an mp_int
+ *
+ * This libtommath function frees the digit buffer and zeros
+ * the mp_int structure. It's called extensively by crc_ctx_reset.
+ * ============================================================ */
+void mp_clear(mp_int *a)
+{
+    if (a->dp != NULL) {
+        /* Zero out the digit memory before freeing */
+        for (int i = 0; i < a->alloc; i++) {
+            a->dp[i] = 0;
+        }
+        free(a->dp);
+        a->used = 0;
+        a->alloc = 0;
+        a->dp = NULL;
+    }
+}
+
+/* ============================================================
+ * s_mp_mul_digs (0x08002FC8) - Low-level multiply, up to 'digs' digits
+ *
+ * Computes c = a * b, keeping only the first 'digs' digits of result.
+ * Standard libtommath helper function for schoolbook multiplication.
+ * ============================================================ */
+int s_mp_mul_digs(mp_int *a, mp_int *b, mp_int *c, int digs)
+{
+    mp_int tmp;
+    int ret;
+
+    ret = mp_init(&tmp);
+    if (ret != 0) return ret;
+
+    ret = mp_grow(&tmp, (int16_t)digs);
+    if (ret != 0) { mp_clear(&tmp); return ret; }
+
+    tmp.used = (int16_t)digs;
+
+    for (int i = 0; i < a->used; i++) {
+        uint64_t carry = 0;
+        int limit = digs - i;
+        if (limit > b->used) limit = b->used;
+
+        for (int j = 0; j < limit; j++) {
+            uint64_t prod = (uint64_t)a->dp[i] * (uint64_t)b->dp[j]
+                          + (uint64_t)tmp.dp[i + j] + carry;
+            tmp.dp[i + j] = (uint32_t)(prod & MP_MASK);
+            carry = prod >> DIGIT_BIT;
+        }
+        if (i + limit < digs) {
+            tmp.dp[i + limit] = (uint32_t)carry;
+        }
+    }
+
+    mp_clamp(&tmp);
+    /* Swap tmp into c */
+    {
+        mp_int swap = *c;
+        *c = tmp;
+        tmp = swap;
+    }
+    mp_clear(&tmp);
+    return 0;
+}
+
+/* ============================================================
+ * mp_clamp (0x080034A0) - Remove leading zero digits
+ * ============================================================ */
+void mp_clamp(mp_int *a)
+{
+    while (a->used > 0 && a->dp[a->used - 1] == 0) {
+        a->used--;
+    }
+    if (a->used == 0) {
+        a->sign = 0;
+    }
+}
+
+/* ============================================================
+ * mp_rshd (0x08003588) - Right-shift by 'count' digits
+ *
+ * Removes the lowest 'count' digits, shifting higher digits down.
+ * ============================================================ */
+void mp_rshd(mp_int *a, int16_t count)
+{
+    if (count <= 0) return;
+    if (count >= a->used) {
+        a->used = 0;
+        a->sign = 0;
+        return;
+    }
+    for (int i = 0; i < a->used - count; i++) {
+        a->dp[i] = a->dp[i + count];
+    }
+    for (int i = a->used - count; i < a->used; i++) {
+        a->dp[i] = 0;
+    }
+    a->used -= count;
+}
+
+/* ============================================================
+ * mp_grow (0x080034E4) - Grow an mp_int to at least 'size' digits
+ * ============================================================ */
+int mp_grow(mp_int *a, int16_t size)
+{
+    if (a->alloc >= size) return 0;
+
+    /* Simple realloc: allocate new, copy, free old */
+    uint32_t *tmp = (uint32_t *)malloc(sizeof(uint32_t) * size);
+    if (tmp == NULL) return -1;
+
+    /* Copy existing digits */
+    for (int i = 0; i < a->alloc; i++) {
+        tmp[i] = a->dp[i];
+    }
+    /* Zero new digits */
+    for (int i = a->alloc; i < size; i++) {
+        tmp[i] = 0;
+    }
+    if (a->dp != NULL) free(a->dp);
+    a->dp = tmp;
+    a->alloc = size;
+    return 0;
+}
+
+/* ============================================================
+ * mp_init (0x08003178) - Initialize an mp_int
+ *
+ * Allocates initial digit buffer and zeros the structure.
+ * ============================================================ */
+int mp_init(mp_int *a)
+{
+    a->dp = (uint32_t *)malloc(sizeof(uint32_t) * 8);
+    if (a->dp == NULL) return -1;
+    a->used = 0;
+    a->alloc = 8;
+    a->sign = 0;
+    for (int i = 0; i < 8; i++) {
+        a->dp[i] = 0;
+    }
+    return 0;
+}
+
+/* ============================================================
+ * mp_copy (0x08003390) - Copy src to dst
+ *
+ * NOTE: In this firmware, mp_copy(dst, src) copies src → dst.
+ * This is REVERSED from standard libtommath mp_copy(src, dst).
+ * ============================================================ */
+int mp_copy(mp_int *dst, mp_int *src)
+{
+    if (dst == src) return 0;
+
+    /* Grow destination if needed */
+    if (dst->alloc < src->used) {
+        int ret = mp_grow(dst, src->used);
+        if (ret != 0) return ret;
+    }
+
+    /* Copy digits */
+    for (int i = 0; i < src->used; i++) {
+        dst->dp[i] = src->dp[i];
+    }
+    /* Zero remaining */
+    for (int i = src->used; i < dst->alloc; i++) {
+        dst->dp[i] = 0;
+    }
+    dst->used = src->used;
+    dst->sign = src->sign;
+    return 0;
+}
+
+/* ============================================================
+ * mp_init_copy (0x08003408) - Initialize mp_int and copy from source
+ *
+ * Allocates a new mp_int and copies the value from src.
+ * Combines mp_init + mp_copy in a single call.
+ * ============================================================ */
+int mp_init_copy(mp_int *dst, mp_int *src)
+{
+    int ret = mp_init(dst);
+    if (ret != 0) return ret;
+    return mp_copy(dst, src);
+}
+
+/* ============================================================
+ * mp_div_2d (0x08003860) - Divide by 2^b
+ *
+ * Computes c = a / 2^b, d = a mod 2^b (remainder).
+ * Standard libtommath implementation: shift right by b bits.
+ * ============================================================ */
+int mp_div_2d(mp_int *a, int b, mp_int *c, mp_int *d)
+{
+    int ret;
+
+    /* Copy a to c (NOTE: reversed mp_copy convention in this firmware) */
+    ret = mp_copy(c, a);
+    if (ret != 0) return ret;
+
+    /* If remainder is wanted, compute d = a mod 2^b */
+    if (d != NULL) {
+        ret = mp_copy(d, a);
+        if (ret != 0) return ret;
+
+        /* Mask off everything above bit b */
+        int digits = b / DIGIT_BIT;
+        int bits = b % DIGIT_BIT;
+
+        if (digits < d->used) {
+            /* Zero out upper digits */
+            for (int i = digits + 1; i < d->used; i++) {
+                d->dp[i] = 0;
+            }
+            /* Mask the boundary digit */
+            if (bits > 0) {
+                d->dp[digits] &= ((uint32_t)1 << bits) - 1;
+            } else {
+                d->dp[digits] = 0;
+            }
+            d->used = digits + 1;
+            mp_clamp(d);
+        }
+    }
+
+    /* Right-shift c by b bits */
+    mp_rshd(c, (int16_t)(b / DIGIT_BIT));
+
+    int bits = b % DIGIT_BIT;
+    if (bits > 0) {
+        uint32_t carry = 0;
+        for (int i = c->used - 1; i >= 0; i--) {
+            uint32_t next_carry = c->dp[i] & (((uint32_t)1 << bits) - 1);
+            c->dp[i] = (c->dp[i] >> bits) | (carry << (DIGIT_BIT - bits));
+            carry = next_carry;
+        }
+        mp_clamp(c);
+    }
+
+    return 0;
+}
+
+/* ============================================================
+ * CRC/hash function aliases
+ *
+ * The extern declarations in secboot_common.h use generic names:
+ *   crc_init   → hw_crypto_setup  (0x08004404)
+ *   crc_update → hw_crypto_exec   (0x08004410)
+ *   crc_final  → hash_get_result  (0x0800459C)
+ *
+ * These wrapper functions bridge the different calling conventions.
+ * ============================================================ */
+int crc_init(void *ctx, int type, uint32_t init_val)
+{
+    return hw_crypto_setup((hw_crypto_op_t *)ctx, init_val, type);
+}
+
+int crc_update(void *ctx, const void *data, uint32_t len)
+{
+    return hw_crypto_exec((hw_crypto_op_t *)ctx, (uint32_t)(uintptr_t)data,
+                           (uint16_t)len);
+}
+
+int crc_final(void *ctx, uint32_t *result)
+{
+    return hash_get_result((uint32_t *)ctx, result);
+}
+
+/* crc_finalize is another alias for hash_finalize */
+int crc_finalize(void *ctx)
+{
+    return hash_finalize((uint32_t *)ctx);
+}
 
 /* Forward declarations for static/local functions */
 static void sha1_transform(sha1_ctx_t *ctx);
@@ -2059,7 +2674,7 @@ int signature_check_final(uint8_t **pos, uint32_t *remaining,
         return -30;
 
     /* Compute unsigned bin representation length */
-    int bin_len = mp_to_unsigned_bin(bn_n, NULL);
+    int bin_len = mp_unsigned_bin_size(bn_n);
     *(uint32_t *)(out + 0x60) = (uint32_t)bin_len;
 
     /* Update remaining position */
@@ -2281,15 +2896,16 @@ void crc_ctx_reset(void *inner)
 {
     uint8_t *p = (uint8_t *)inner;
 
-    /* Clear bignum fields at various offsets within inner context */
-    bignum_clear(p + 24);
-    bignum_clear(p + 0);
-    bignum_clear(p + 12);
-    bignum_clear(p + 72);
-    bignum_clear(p + 84);
-    bignum_clear(p + 48);
-    bignum_clear(p + 60);
-    bignum_clear(p + 36);
+    /* Clear bignum fields at various offsets within inner context.
+     * bignum_clear is the same function as mp_clear (0x080031A8). */
+    mp_clear((mp_int *)(p + 24));
+    mp_clear((mp_int *)(p + 0));
+    mp_clear((mp_int *)(p + 12));
+    mp_clear((mp_int *)(p + 72));
+    mp_clear((mp_int *)(p + 84));
+    mp_clear((mp_int *)(p + 48));
+    mp_clear((mp_int *)(p + 60));
+    mp_clear((mp_int *)(p + 36));
 
     free(inner);
 }
