@@ -248,8 +248,8 @@ with the original binary. A higher match indicates better decompilation.
 | `crc_ctx_destroy` | 14 | 14 | 1.00x | 🟢 86% |
 | `crc_ctx_reset` | 21 | 21 | 1.00x | 🟢 100% |
 | `image_decrypt_init` | 100 | 104 | 1.04x | 🟡 75% |
-| `image_decrypt_block` | 58 | 55 | 0.95x | 🟢 96% |
-| `image_decrypt_process` | 90 | 96 | 1.07x | 🟢 81% |
+| `image_decrypt_block` | 58 | 55 | 0.95x | 🟢 97% |
+| `image_decrypt_process` | 90 | 91 | 1.01x | 🟢 84% |
 | `firmware_update_init` | 58 | 46 | 0.79x | 🔴 19% |
 | `firmware_update_process` | 124 | 77 | 0.62x | 🔴 24% |
 | `flash_init` | 12 | 11 | 0.92x | 🟢 87% |

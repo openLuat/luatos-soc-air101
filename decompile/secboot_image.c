@@ -310,7 +310,7 @@ int image_decrypt_init(void *ctx, const uint8_t *input_data,
  * ============================================================ */
 int image_decrypt_block(void *ctx, rsa_key_t *rsa_key,
                         uint8_t *input_data, uint32_t input_len,
-                        uint8_t *out_buf, uint32_t *out_len_ptr,
+                        uint8_t *out_buf, uint32_t out_len,
                         uint32_t mode)
 {
     uint32_t key_size;
@@ -323,7 +323,9 @@ int image_decrypt_block(void *ctx, rsa_key_t *rsa_key,
     if (key_size != input_len)
         return -6;
 
-    /* Decrypt in-place: output overwrites input buffer */
+    /* Decrypt in-place: output overwrites input buffer.
+     * Note: mode is hardcoded to 1 (public key op) per binary —
+     * the 'mode' parameter from caller is used for cert_parse marker. */
     local_len = key_size;
     ret = image_decrypt_init(ctx, input_data, input_len, input_data,
                              &local_len, rsa_key, 1);
@@ -335,7 +337,7 @@ int image_decrypt_block(void *ctx, rsa_key_t *rsa_key,
         return -1;
 
     /* Strip PKCS#1 v1.5 padding via cert_parse */
-    ret = cert_parse(input_data, key_size, out_buf, *out_len_ptr, 1);
+    ret = cert_parse(input_data, key_size, out_buf, out_len, 1);
 
     /* Clamp return value to <= 0 (cert_parse returns positive on success) */
     if (ret > 0)
@@ -425,7 +427,7 @@ int image_decrypt_process(void *ctx, rsa_key_t **rsa_key_ptr,
 
     /* RSA decrypt the signature block into buf */
     ret = image_decrypt_block(ctx, *rsa_key_ptr, sig_data, sig_len,
-                              buf, &buf_size, extra_param);
+                              buf, buf_size, extra_param);
     if (ret < 0) {
         free(buf);
         return ret;
