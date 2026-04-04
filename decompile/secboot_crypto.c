@@ -5,19 +5,51 @@
  * Cross-referenced with: tools/xt804/wm_tool.c (CRC32 table),
  *                         platform/common/crypto/ (SHA1 patterns)
  *
- * Functions:
+ * Functions (33 total):
+ *   --- RSA big-number arithmetic ---
+ *   rsa_core()           - 0x080039C0  (core RSA read loop)
+ *   rsa_step()           - 0x08003A14  (RSA step with byte-swap)
+ *   rsa_modexp()         - 0x08003A8C  (RSA modular exponentiation init)
+ *   rsa_init()           - 0x08003AE8  (RSA bignum allocation)
+ *   rsa_process()        - 0x08003B3C  (RSA multiply-accumulate)
+ *   --- SHA (bignum-based, calls into RSA engine) ---
+ *   sha_hash_block()     - 0x08003CA4  (hash one block via rsa_process)
+ *   sha_init()           - 0x08003CDC  (SHA bignum init wrapper)
+ *   sha_update()         - 0x08003CF0  (SHA bignum update / multiply)
+ *   sha_final()          - 0x08003E1C  (SHA bignum finalize)
+ *   --- CRC32 (table-based via HW engine) ---
+ *   crc32_table_init()   - 0x08004258  (init CRC32 lookup bignum)
+ *   crc32_update()       - 0x080042DC  (CRC32 multiply step)
+ *   --- SHA-1 (hardware-accelerated) ---
+ *   sha1_transform()     - 0x08004324  (SHA-1 block transform via HW engine)
+ *   --- Hash context management ---
+ *   hash_ctx_init()      - 0x0800437C  (hash context alloc + init)
+ *   hw_crypto_setup()    - 0x08004404  (hardware crypto engine configuration)
+ *   hw_crypto_exec()     - 0x08004410  (execute hardware crypto operation)
+ *   hw_crypto_exec2()    - 0x080044B8  (execute hardware crypto op variant)
+ *   hash_finalize()      - 0x08004544  (finalize hash, get digest)
+ *   hash_get_result()    - 0x0800459C  (copy result word to output)
+ *   --- SHA-1 context operations ---
  *   sha1_init()          - 0x080045A4  (SHA-1 context initialization)
  *   sha1_update()        - 0x080045D8  (SHA-1 data feed)
  *   sha1_final()         - 0x0800463C  (SHA-1 finalize + digest output)
- *   sha1_transform()     - 0x08004324  (SHA-1 block transform via HW engine)
  *   sha1_full()          - 0x0800472C  (SHA-1 one-shot: init+update+final)
+ *   --- Crypto subsystem ---
+ *   crypto_subsys_init() - 0x08004906  (cryptographic subsystem init)
+ *   pkey_setup()         - 0x080049CC  (public key setup)
+ *   pkey_verify_step()   - 0x08004A4C  (public key verify step)
+ *   pkey_verify()        - 0x08004AB4  (public key verification)
+ *   --- Signature / certificate ---
+ *   signature_check_init()  - 0x08004AF8  (init signature check)
+ *   signature_check_data()  - 0x08004BB0  (feed data to signature check)
+ *   signature_check_final() - 0x08004BEC  (finalize signature check)
+ *   cert_parse()         - 0x08004C78  (parse certificate structure)
+ *   --- CRC verification context ---
  *   crc_ctx_alloc()      - 0x08004CFC  (allocate CRC verification context)
  *   crc_ctx_destroy()    - 0x08004D2C  (destroy CRC context)
  *   crc_ctx_reset()      - 0x08004D50  (reset CRC internal state)
- *   crc_verify_setup()   - 0x08004D98  (setup CRC verification pipeline)
+ *   --- Image verification ---
  *   crc_verify_image()   - 0x08005CFC  (full CRC32 image verification)
- *   hw_crypto_setup()    - 0x08004404  (hardware crypto engine configuration)
- *   hw_crypto_exec()     - 0x080044B8  (execute hardware crypto operation)
  */
 
 #include <stdint.h>
