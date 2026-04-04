@@ -23,6 +23,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 #include <stdarg.h>
 
 /* Forward declarations (defined in other decompile units) */

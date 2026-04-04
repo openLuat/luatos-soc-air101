@@ -38,6 +38,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 #define FLASH_SPI_BASE      0xC0002000  /* SPI flash controller base (0x2000 | (1<<30)) */
 #define FLASH_BASE_ADDR     0x08000000

@@ -13,6 +13,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * Image Header Structure (from include/platform/wm_fwup.h)

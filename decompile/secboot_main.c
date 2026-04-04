@@ -13,6 +13,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * External functions (defined in other secboot_*.c modules)

@@ -19,6 +19,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * UART0 Register Definitions

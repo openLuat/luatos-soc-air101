@@ -13,6 +13,9 @@
  */
 
 #include <stdint.h>
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 /* ============================================================
  * Register Definitions (from include/wm_regs.h)

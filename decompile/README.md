@@ -39,6 +39,8 @@ This directory contains the reverse-engineered analysis of the Air101/Air103 sec
 | `secboot_stdlib.c` | Decompiled standard library functions (pseudo-C) |
 | `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem (pseudo-C) |
 | `secboot_boot.c` | Decompiled boot parameter and app boot sequence (pseudo-C) |
+| `compare_secboot.py` | Compilation & comparison tool - compiles C, compares with original asm |
+| `comparison_report.md` | Auto-generated comparison report (original vs recompiled assembly) |
 
 ## Memory Map / 内存映射
 
@@ -152,6 +154,47 @@ csky-elfabiv2-objdump -D -b binary -m csky --adjust-vma=0x08002400 tools/xt804/x
 # Or use the analysis script
 python3 decompile/analyze_secboot.py
 ```
+
+## Compilation & Comparison / 编译与对比
+
+The decompiled C files can be compiled with the C-SKY toolchain and compared
+against the original binary assembly:
+
+```bash
+# Run the comparison tool (requires csky-elfabiv2-gcc in PATH)
+python3 decompile/compare_secboot.py
+
+# This produces:
+#   - Compiles each .c file with csky-elfabiv2-gcc -mcpu=ck804ef -O2
+#   - Extracts per-function assembly from compiled .o files
+#   - Compares instruction sequences with the original binary
+#   - Outputs comparison_report.md with detailed results
+```
+
+### Compilation Status / 编译状态
+
+| File | Compiles | Notes |
+|------|----------|-------|
+| secboot_boot.c | ✅ | All 5 boot functions compile |
+| secboot_crypto.c | ✅ | All crypto functions compile |
+| secboot_flash.c | ✅ | All 26 flash functions compile |
+| secboot_fwup.c | ✅ | All firmware update functions compile |
+| secboot_hw_init.c | ✅ | Hardware init functions compile |
+| secboot_image.c | ✅ | Image validation functions compile |
+| secboot_main.c | ✅ | Main boot logic compiles |
+| secboot_memory.c | ✅ | Memory allocator compiles |
+| secboot_stdlib.c | ✅ | Standard library functions compile |
+| secboot_uart.c | ✅ | UART driver functions compile |
+| secboot_vectors.S | ❌ | Uses C-SKY specific `mtcr`/`mfcr` instructions |
+
+### Comparison Highlights / 对比要点
+
+Several functions show near-perfect instruction match when compiled:
+- `uart_putchar` — 17/19 instructions identical (branches differ only in address encoding)
+- `uart_rx_ready` — 6/8 instructions identical
+- `flash_init` — 10/12 instructions near-identical
+- `flash_read` — 87% mnemonic similarity
+- `calloc` — 64% similarity with matched instruction count
 
 ## Function Map / 函数映射 (116 functions identified, 80 decompiled)
 
