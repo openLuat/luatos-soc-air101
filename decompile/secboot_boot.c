@@ -13,55 +13,7 @@
  *   app_boot_sequence()   - 0x08007058  (application boot sequence)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-/* ============================================================
- * Constants
- * ============================================================ */
-
-#define FLASH_BASE_ADDR         0x08000000
-#define CODE_UPD_START_ADDR     0x08010000
-#define CODE_RUN_START_ADDR     0x080D0000
-#define INSIDE_FLS_SECTOR_SIZE  0x1000
-#define IMAGE_HEADER_SIZE       64
-#define SIGNATURE_SIZE          128
-#define SIGNATURE_WORD          0xA0FFFF9F
-
-/* SRAM global state addresses (from disassembly literal pools) */
-#define PARAM_BLOCK_PTR_ADDR    0x2001007C
-#define BOOT_PARAMS_BASE        0x200101A0
-#define APP_ENTRY_PTR           0x200101D0
-#define ERROR_HANDLER_PTR       0x200101D4
-
-/* Watchdog */
-#define WDG_BASE                0x40000E00
-#define WDG_FEED_REG            (*(volatile uint32_t *)(WDG_BASE + 0x08))
-#define WDG_CTRL_REG            (*(volatile uint32_t *)(WDG_BASE + 0x14))
-
-/* VIC / Interrupt controller */
-#define VIC_BASE                0xE000E000
-#define VIC_INT_EN_BASE         0xE000E100
-
-/* ============================================================
- * External functions
- * ============================================================ */
-extern int   flash_read(uint32_t addr, void *buf, uint32_t len);    /* 0x080054F8 */
-extern int   flash_write(uint32_t addr, void *buf, uint32_t len);   /* 0x0800553C */
-extern void  flash_copy_data(uint32_t dst, uint32_t src,
-                             uint32_t len);                          /* 0x0800582C */
-extern int   flash_erase_range(uint32_t addr, uint32_t len);        /* 0x08005670 */
-extern void  flash_protect_config(uint32_t mode);                    /* 0x080056B0 */
-extern int   validate_image(const uint8_t *header);                  /* 0x08005988 */
-extern int   crc_verify_image(void *hdr, void *param);               /* 0x08005CFC */
-extern int   signature_verify(uint32_t data_addr, uint32_t data_len,
-                              uint32_t sig_addr);                    /* 0x080070C4 */
-extern void *memcpy(void *dst, const void *src, uint32_t n);        /* 0x08002B54 */
-extern void *memset(void *s, int c, uint32_t n);                    /* 0x08002D20 */
-extern int   puts(const char *s);                                    /* 0x080028F4 */
-
+#include "secboot_common.h"
 
 /* ============================================================
  * IMAGE_HEADER_PARAM_ST - Image Header Structure

@@ -39,9 +39,11 @@ CSKY_GCC = os.environ.get("CSKY_GCC", "csky-elfabiv2-gcc")
 CSKY_OBJDUMP = os.environ.get("CSKY_OBJDUMP", "csky-elfabiv2-objdump")
 CSKY_OBJCOPY = os.environ.get("CSKY_OBJCOPY", "csky-elfabiv2-objcopy")
 
-# Find toolchain sysroot
+# Find toolchain sysroot (supports both zip and tar.gz extraction layouts)
 CSKY_SYSROOT = None
-for candidate in ["/tmp/csky-tools/csky-elfabiv2/sys-include",
+for candidate in ["/tmp/csky-tools/gcc/csky-elfabiv2/sys-include",
+                   "/tmp/csky-tools/gcc/csky-elfabiv2/include",
+                   "/tmp/csky-tools/csky-elfabiv2/sys-include",
                    "/tmp/csky-tools/csky-elfabiv2/include"]:
     if os.path.isdir(candidate):
         CSKY_SYSROOT = candidate
@@ -59,6 +61,7 @@ CFLAGS = [
     "-Wno-unused-variable",
     "-Wno-unused-function",
     "-fno-builtin",
+    "-I", str(SCRIPT_DIR),
 ]
 if CSKY_SYSROOT:
     CFLAGS += ["-isystem", CSKY_SYSROOT]
@@ -77,7 +80,7 @@ FUNCTIONS = {
     0x08002A3C: ("free", 0x78, "secboot_memory.c"),
     0x08002AB4: ("memcmp_or_recv", 0xA0, "secboot_stdlib.c"),
     0x08002B54: ("memcpy", 0x180, "secboot_stdlib.c"),
-    0x08002BD4: ("memmove", 0x14C, "secboot_stdlib.c"),
+    0x08002BD4: ("memcmp", 0x14C, "secboot_memory.c"),
     0x08002D20: ("memset", 0x5C, "secboot_stdlib.c"),
     0x08002D7C: ("strlen", 0x130, "secboot_stdlib.c"),
     0x08002EAC: ("strcmp_or_strncpy", 0x11C, "secboot_stdlib.c"),
@@ -112,17 +115,17 @@ FUNCTIONS = {
     0x08003E1C: ("sha_final", 0x424, "secboot_crypto.c"),
     0x08004258: ("crc32_table_init", 0x84, "secboot_crypto.c"),
     0x080042DC: ("crc32_update", 0x48, "secboot_crypto.c"),
-    0x08004324: ("crc32_finalize", 0x58, "secboot_crypto.c"),
+    0x08004324: ("sha1_transform", 0x58, "secboot_crypto.c"),
     0x0800437C: ("hash_ctx_init", 0x88, "secboot_crypto.c"),
-    0x08004404: ("hash_set_mode", 0x0C, "secboot_crypto.c"),
-    0x08004410: ("hash_update_data", 0xA8, "secboot_crypto.c"),
-    0x080044B8: ("hash_compress", 0xEC, "secboot_crypto.c"),
+    0x08004404: ("hw_crypto_setup", 0x0C, "secboot_crypto.c"),
+    0x08004410: ("hw_crypto_exec", 0xA8, "secboot_crypto.c"),
+    0x080044B8: ("hw_crypto_exec2", 0xEC, "secboot_crypto.c"),
     0x08004544: ("hash_finalize", 0x58, "secboot_crypto.c"),
     0x0800459C: ("hash_get_result", 0x08, "secboot_crypto.c"),
-    0x080045A4: ("hash_get_result2", 0x34, "secboot_crypto.c"),
-    0x080045D8: ("hmac_init", 0x64, "secboot_crypto.c"),
-    0x0800463C: ("hmac_update", 0xF0, "secboot_crypto.c"),
-    0x0800472C: ("hmac_final", 0x1DA, "secboot_crypto.c"),
+    0x080045A4: ("sha1_init", 0x34, "secboot_crypto.c"),
+    0x080045D8: ("sha1_update", 0x64, "secboot_crypto.c"),
+    0x0800463C: ("sha1_final", 0xF0, "secboot_crypto.c"),
+    0x0800472C: ("sha1_full", 0x1DA, "secboot_crypto.c"),
     0x08004906: ("crypto_subsys_init", 0xC6, "secboot_crypto.c"),
     0x080049CC: ("pkey_setup", 0x80, "secboot_crypto.c"),
     0x08004A4C: ("pkey_verify_step", 0x68, "secboot_crypto.c"),
@@ -131,9 +134,9 @@ FUNCTIONS = {
     0x08004BB0: ("signature_check_data", 0x3C, "secboot_crypto.c"),
     0x08004BEC: ("signature_check_final", 0x8C, "secboot_crypto.c"),
     0x08004C78: ("cert_parse", 0x84, "secboot_crypto.c"),
-    0x08004CFC: ("cert_validate", 0x30, "secboot_crypto.c"),
-    0x08004D2C: ("cert_get_pubkey", 0x24, "secboot_crypto.c"),
-    0x08004D50: ("cert_chain_verify", 0x48, "secboot_crypto.c"),
+    0x08004CFC: ("crc_ctx_alloc", 0x30, "secboot_crypto.c"),
+    0x08004D2C: ("crc_ctx_destroy", 0x24, "secboot_crypto.c"),
+    0x08004D50: ("crc_ctx_reset", 0x48, "secboot_crypto.c"),
     0x08004D98: ("image_decrypt_init", 0x100, "secboot_image.c"),
     0x08004E98: ("image_decrypt_block", 0x88, "secboot_image.c"),
     0x08004F20: ("image_decrypt_process", 0xE4, "secboot_image.c"),
@@ -153,13 +156,13 @@ FUNCTIONS = {
     0x0800588C: ("uart_rx_ready", 0x14, "secboot_uart.c"),
     0x080058A0: ("uart_getchar", 0x18, "secboot_uart.c"),
     0x080058B8: ("uart_init", 0x34, "secboot_uart.c"),
-    0x080058EC: ("uart_verify_data", 0x9C, "secboot_uart.c"),
+    0x080058EC: ("image_copy_update", 0x9C, "secboot_image.c"),
     0x08005988: ("validate_image", 0xD4, "secboot_image.c"),
     0x08005A5C: ("xmodem_recv_init", 0x78, "secboot_fwup.c"),
     0x08005AD4: ("xmodem_recv_block", 0xB4, "secboot_fwup.c"),
     0x08005B88: ("xmodem_recv_data", 0x40, "secboot_fwup.c"),
     0x08005BC8: ("xmodem_process", 0x134, "secboot_fwup.c"),
-    0x08005CFC: ("crc_verify_image", 0xF4, "secboot_image.c"),
+    0x08005CFC: ("crc_verify_image", 0xF4, "secboot_crypto.c"),
     0x08005DF0: ("firmware_apply", 0x84, "secboot_fwup.c"),
     0x08005E74: ("firmware_apply_ext", 0x460, "secboot_fwup.c"),
     0x080062D4: ("ota_process", 0x1C0, "secboot_fwup.c"),

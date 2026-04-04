@@ -7,53 +7,16 @@
  *
  * Functions:
  *   main()              - 0x08007304  (top-level boot logic)
- *   boot_uart_check()   - 0x08007220  (UART activity detection)
- *   image_header_verify() - 0x080071F4 (CRC + optional data verify)
- *   tspend_handler()    - 0x08007148  (timer/software pending ISR #57)
+ *
+ * Note: boot_uart_check is defined in secboot_uart.c,
+ *       image_header_verify is defined in secboot_image.c,
+ *       tspend_handler is defined in secboot_vectors.S.
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "secboot_common.h"
 
-/* ============================================================
- * External functions (defined in other secboot_*.c modules)
- * ============================================================ */
-extern int  flash_init(void);                           /* 0x08005338 */
-extern int  flash_read(uint32_t addr, void *buf,
-                       uint32_t len);                   /* 0x080054F8 */
-extern int  flash_write(uint32_t addr, void *buf,
-                        uint32_t len);                  /* 0x0800553C */
-extern void flash_read_raw(uint32_t addr, void *buf,
-                           uint32_t len);               /* 0x0800582C */
-extern int  boot_uart_check(void);                      /* 0x08007220 */
-extern int  find_valid_image(uint32_t flash_addr,
-                             void *hdr_buf, int flags); /* 0x08007278 */
-extern int  image_header_verify(void *hdr_buf,
-                                uint32_t img_len);      /* 0x080071F4 */
-extern int  signature_verify(uint32_t sig_addr,
-                             uint32_t img_len,
-                             void *hdr_buf);            /* 0x080070C4 */
-extern int  puts(const char *s);                        /* 0x080028F4 */
-extern void *memcpy(void *dst, const void *src,
-                    uint32_t n);                        /* 0x08002B54 */
-
-/* ============================================================
- * Global / SRAM addresses
- * ============================================================ */
-#define PARAM_BLOCK_PTR     (*(volatile uint32_t *)0x2001007C)
-
-/* Watchdog registers */
-#define WDG_BASE            0x40000E00
-#define WDG_CTRL            (*(volatile uint32_t *)(WDG_BASE + 0x14))
-
-/* Boot result handler function pointers in SRAM */
-#define APP_ENTRY_PTR       (*(volatile uint32_t *)0x200101D0)
-#define ERROR_HANDLER_PTR   (*(volatile uint32_t *)0x200101D4)
-
-/* Boot mode flag */
-#define BOOT_MODE_FLAG      (*(volatile uint8_t *)0x200113EC)
+/* Local aliases for main-specific SRAM addresses */
+#define WDG_CTRL            WDG_CTRL_REG
 
 /* Flash addresses */
 #define FLASH_BASE_OTP      0x08000000
@@ -61,13 +24,7 @@ extern void *memcpy(void *dst, const void *src,
 #define FOTA_HEADER_ADDR    (0x080D0000)            /* movih(2049) = secondary partition */
 #define USER_IMAGE_ADDR     IMAGE_AREA_ADDR
 
-/* Return codes (ASCII characters used as status codes) */
-#define STATUS_OK           'C'     /* 67 = 0x43 */
-#define STATUS_FLASH_FAIL   'N'     /* 78 = 0x4E */
-#define STATUS_APP_FAIL     'Y'     /* 89 = 0x59 */
-#define STATUS_SIG_FAIL     'M'     /* 77 = 0x4D */
-
-/* Image header offsets */
+/* Image header offsets (byte offsets into header buffer, used in disassembly) */
 #define HDR_IMG_ATTR_OFF    0x04
 #define HDR_SIGNATURE_BIT   0x26    /* byte offset in header buf for signature flag */
 #define HDR_ENCRYPT_BIT     0x25    /* byte offset for encryption flag */
@@ -76,200 +33,9 @@ extern void *memcpy(void *dst, const void *src,
 #define HDR_SIG_ADDR_OFF    0x30
 #define HDR_NEXT_OFF        0x38
 
-
-/* ============================================================
- * boot_uart_check (0x08007220)
- *
- * Polls UART0 for approximately 196606 iterations.
- * If a byte is received:
- *   - If ESC (0x1B): reset counter, keep polling
- *   - If non-ESC: increment a counter
- *   - If 3+ non-ESC bytes: enter bootloader mode
- * Sets BOOT_MODE_FLAG = 1 and returns 1 on detection,
- * else returns 0.
- *
- * Disassembly:
- *   8007220: push  r4-r7, r15
- *   8007222: subi  r14, 4
- *   8007224: movi  r5, 0               ; esc_count = 0
- *   8007226: movih r4, 3               ; r4 = 0x30000
- *   800722a: st.w  r5, (sp, 0x0)       ; poll_count = 0
- *   800722c: subi  r4, 2               ; r4 = 0x2FFFE = 196606
- *   800722e: mov   r6, r5              ; saved_count = 0
- *   8007230: movi  r7, 2               ; threshold = 2
- *
- * loop:
- *   8007232: ld.w  r3, (sp, 0x0)
- *   8007234: cmplt r4, r3              ; if poll_count > max
- *   8007236: bt    return_0
- *   8007238: bsr   uart_rx_ready       ; 0x0800588C
- *   800723c: bnez  r0, got_byte
- *   8007240: ld.w  r3, (sp, 0x0)
- *   8007242: addi  r3, 1
- *   8007244: st.w  r3, (sp, 0x0)
- *   8007248: cmplt r4, r3
- *   800724a: bf    loop
- *
- * return_0:
- *   800724c: movi  r0, 0
- *   800724e: addi  r14, 4
- *   8007250: pop   r4-r7, r15
- *
- * got_byte:
- *   8007252: bsr   uart_getchar        ; 0x080058A0
- *   8007256: cmpnei r0, 27            ; ESC?
- *   8007258: bf    reset_esc           ; yes -> reset
- *   800725a: movi  r5, 0              ; non-ESC count = 0
- *   800725c: br    loop
- *
- * reset_esc:
- *   800725e: addi  r5, 1
- *   8007260: zextb r5, r5
- *   8007262: cmphs r7, r5             ; if esc_count <= 2
- *   8007264: st.w  r6, (sp, 0x0)      ; reset poll_count
- *   8007266: bt    loop
- *
- * enter_bootloader:
- *   8007268: lrw   r3, 0x200113EC
- *   800726a: movi  r0, 1
- *   800726c: st.b  r6, (r3, 0x0)      ; set flag
- *   800726e: addi  r14, 4
- *   8007270: pop   r4-r7, r15
- * ============================================================ */
-int boot_uart_check(void)
-{
-    int poll_count = 0;
-    const int max_polls = 0x2FFFE;  /* ~196606 iterations */
-    int esc_count = 0;
-    const int threshold = 2;
-
-    while (poll_count <= max_polls) {
-        if (uart_rx_ready()) {
-            uint8_t ch = uart_getchar();
-            if (ch == 0x1B) {
-                /* ESC character - reset non-ESC count */
-                esc_count = 0;
-            } else {
-                esc_count++;
-                esc_count &= 0xFF;
-                poll_count = 0;  /* Reset timeout on non-ESC byte */
-                if (esc_count > threshold) {
-                    /* 3+ non-ESC bytes received: enter bootloader */
-                    BOOT_MODE_FLAG = 1;
-                    return 1;
-                }
-            }
-        } else {
-            poll_count++;
-        }
-    }
-    return 0;
-}
-
-
-/* ============================================================
- * tspend_handler (0x08007148)
- *
- * Timer/software pending interrupt handler (ISR #57).
- * Saves all callee-saved registers + FPU state, increments
- * a counter at 0x200113E4, reads VIC status, then restores.
- *
- * Disassembly:
- *   8007148: nie                       ; nested interrupt entry
- *   800714a: ipush                     ; push interrupt context
- *   800714c: subi  r14, 56
- *   800714e: stm   r18-r31, (r14)     ; save callee-saved
- *   8007152: subi  r14, 32
- *   8007154: fstms fr16-fr19, (r14)   ; save FPU regs
- *   8007158: lrw   r2, 0x200113E4     ; counter address
- *   800715a: lrw   r3, 0xE000E000     ; VIC base
- *   800715c: ld.w  r3, (r3, 0x10)     ; read VIC status
- *   800715e: ld.w  r3, (r2, 0x0)      ; load counter
- *   8007160: addi  r3, 1
- *   8007162: st.w  r3, (r2, 0x0)      ; counter++
- *   8007164: fldms fr16-fr19, (r14)   ; restore FPU
- *   8007168: addi  r14, 32
- *   800716a: ldm   r18-r31, (r14)     ; restore callee-saved
- *   800716e: addi  r14, 56
- *   8007170: ipop                      ; restore interrupt context
- *   8007172: nir                       ; nested interrupt return
- * ============================================================ */
-void tspend_handler(void)
-{
-    /* Read VIC status register (side-effect: acknowledge interrupt) */
-    volatile uint32_t vic_status = *(volatile uint32_t *)(0xE000E000 + 0x10);
-    (void)vic_status;
-
-    /* Increment software timer counter */
-    uint32_t *counter = (uint32_t *)0x200113E4;
-    (*counter)++;
-}
-
-
-/* ============================================================
- * image_header_verify (0x080071F4)
- *
- * Verifies image integrity using CRC and optional data check.
- *
- * r0 = pointer to image header buffer (already in RAM)
- * r1 = image data length (img_len)
- * Returns: 'C' (67) on success, 'Z' (90) on CRC error,
- *          'M' (77) on data verify fail
- *
- * Disassembly:
- *   80071f4: push  r4-r5, r15
- *   80071f6: mov   r4, r0              ; r4 = hdr_buf
- *   80071f8: mov   r5, r1              ; r5 = img_len
- *   80071fa: bsr   crc_verify_image    ; 0x08005CFC
- *   80071fe: addi  r3, r0, 3
- *   8007200: cmphsi r3, 2
- *   8007202: bf    check_result
- *   8007204: blz   r0, crc_fail        ; if result < 0 -> 'Z'
- *   8007208: movi  r0, 67              ; return 'C'
- *   800720a: pop   r4-r5, r15
- *
- * crc_fail:
- *   800720c: movi  r0, 90              ; return 'Z'
- *   800720e: pop   r4-r5, r15
- *
- * check_result:
- *   8007210: mov   r1, r5
- *   8007212: mov   r0, r4
- *   8007214: bsr   uart_verify_data    ; 0x080058EC
- *   8007218: bnez  r0, success         ; if verify OK -> 'C'
- *   800721c: movi  r0, 77              ; return 'M'
- *   800721e: pop   r4-r5, r15
- * ============================================================ */
-int image_header_verify(void *hdr_buf, uint32_t img_len)
-{
-    int crc_result = crc_verify_image(hdr_buf, img_len);
-
-    /*
-     * Decision logic from disassembly:
-     *   r3 = crc_result + 3
-     *   if r3 >= 2 (unsigned): check sign
-     *     if crc_result < 0: return 'Z' (CRC read error)
-     *     else: return 'C' (success)
-     *   else: fall through to data verify
-     *
-     * This means: if crc_result >= -1 (i.e., -1 or 0+):
-     *   crc_result < 0 → return 'Z'
-     *   crc_result >= 0 → return 'C'
-     * If crc_result < -1 (very negative): do data verify
-     */
-    if (crc_result + 3 >= 2) {
-        /* Normal CRC result path */
-        if (crc_result < 0)
-            return 'Z';   /* CRC mismatch */
-        return 'C';       /* CRC OK */
-    }
-
-    /* Extended verification: data integrity check */
-    if (uart_verify_data(hdr_buf, img_len) != 0)
-        return 'C';       /* Data verify OK */
-    return 'M';           /* Data verify failed */
-}
-
+/* boot_uart_check, tspend_handler, and image_header_verify are defined
+ * in secboot_uart.c, secboot_vectors.S, and secboot_image.c respectively.
+ * They are declared in secboot_common.h as extern. */
 
 /* ============================================================
  * main (0x08007304)

@@ -26,21 +26,72 @@ This directory contains the reverse-engineered analysis of the Air101/Air103 sec
 | File | Description |
 |------|-------------|
 | `README.md` | This document |
+| `secboot_common.h` | Shared header: register addresses, structures, cross-file declarations |
+| `Makefile` | Build system for compiling and linking the decompiled code |
+| `secboot.ld` | Linker script matching original binary memory layout |
+| `build.sh` | One-click build and comparison script |
 | `analyze_secboot.py` | Python analysis tool - parses binary, generates annotated disassembly |
-| `secboot_annotated.S` | Annotated disassembly with function labels and comments |
 | `secboot_vectors.S` | Reconstructed vector table and startup code |
-| `secboot_main.c` | Decompiled main boot logic (pseudo-C) |
-| `secboot_hw_init.c` | Decompiled hardware initialization (pseudo-C) |
-| `secboot_uart.c` | Decompiled UART driver and boot detection (pseudo-C) |
-| `secboot_flash.c` | Decompiled flash operations (pseudo-C) |
-| `secboot_image.c` | Decompiled image validation (pseudo-C) |
-| `secboot_crypto.c` | Decompiled CRC/crypto operations (pseudo-C) |
-| `secboot_memory.c` | Decompiled memory allocator (pseudo-C) |
-| `secboot_stdlib.c` | Decompiled standard library functions (pseudo-C) |
-| `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem (pseudo-C) |
-| `secboot_boot.c` | Decompiled boot parameter and app boot sequence (pseudo-C) |
+| `secboot_main.c` | Decompiled main boot logic |
+| `secboot_hw_init.c` | Decompiled hardware initialization |
+| `secboot_uart.c` | Decompiled UART driver and boot detection |
+| `secboot_flash.c` | Decompiled flash operations |
+| `secboot_image.c` | Decompiled image validation |
+| `secboot_crypto.c` | Decompiled CRC/crypto/bignum operations |
+| `secboot_memory.c` | Decompiled memory allocator |
+| `secboot_stdlib.c` | Decompiled standard library functions |
+| `secboot_fwup.c` | Decompiled firmware update, OTA, and xmodem |
+| `secboot_boot.c` | Decompiled boot parameter and app boot sequence |
 | `compare_secboot.py` | Compilation & comparison tool - compiles C, compares with original asm |
 | `comparison_report.md` | Auto-generated comparison report (original vs recompiled assembly) |
+
+## Building / 构建
+
+The decompiled code can be compiled and linked into a complete ELF/binary using the
+C-SKY toolchain. This produces a functionally equivalent binary for comparison with
+the original.
+
+本目录的反编译代码可以使用 C-SKY 工具链编译链接为完整的 ELF/二进制文件。
+
+### Prerequisites / 前提条件
+
+- C-SKY GCC toolchain (`csky-elfabiv2-gcc`)
+- Python 3 (for comparison reports)
+
+```bash
+# Install toolchain (automatic download)
+./build.sh --install
+
+# Or install manually:
+cd /tmp
+curl -sL -o csky-tools.zip \
+  "https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.zip"
+unzip -q csky-tools.zip -d /tmp/csky-tools
+export PATH="/tmp/csky-tools/gcc/bin:$PATH"
+```
+
+### Build Commands / 构建命令
+
+```bash
+# One-click build + comparison
+./build.sh
+
+# Or using make directly:
+make                    # Build secboot.elf and secboot.bin
+make compare            # Compare with original binary
+make disasm             # Generate disassembly
+make report             # Run full comparison (requires python3)
+make clean              # Clean build artifacts
+```
+
+### Build Output / 构建输出
+
+```
+build/secboot.elf  — ELF executable (for debugging/analysis)
+build/secboot.bin  — Raw binary (for flashing/comparison)
+build/secboot.dis  — Disassembly listing
+build/secboot.map  — Linker map file
+```
 
 ## Memory Map / 内存映射
 
@@ -143,10 +194,10 @@ Return codes (r5):
 To reproduce the disassembly:
 
 ```bash
-# Download C-SKY GCC toolchain
-wget https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.tar.gz
-mkdir csky-tools && tar xzf csky-elfabiv2-tools-*.tar.gz -C csky-tools --no-same-owner
-export PATH=$PWD/csky-tools/bin:$PATH
+# Download C-SKY GCC toolchain (zip format, from project releases)
+wget https://github.com/openLuat/luatos-soc-air101/releases/download/v2001.gcc/csky-elfabiv2-tools-x86_64-minilibc-20230301.zip
+unzip csky-elfabiv2-tools-x86_64-minilibc-20230301.zip -d csky-tools
+export PATH=$PWD/csky-tools/gcc/bin:$PATH
 
 # Disassemble
 csky-elfabiv2-objdump -D -b binary -m csky --adjust-vma=0x08002400 tools/xt804/xt804_secboot.bin
@@ -185,7 +236,7 @@ python3 decompile/compare_secboot.py
 | secboot_memory.c | ✅ | Memory allocator compiles |
 | secboot_stdlib.c | ✅ | Standard library functions compile |
 | secboot_uart.c | ✅ | UART driver functions compile |
-| secboot_vectors.S | ❌ | Uses C-SKY specific `mtcr`/`mfcr` instructions |
+| secboot_vectors.S | ✅ | Startup code and vector table, C-SKY assembly |
 
 ### Comparison Highlights / 对比要点
 
@@ -196,9 +247,11 @@ Several functions show near-perfect instruction match when compiled:
 - `flash_read` — 87% mnemonic similarity
 - `calloc` — 64% similarity with matched instruction count
 
-## Function Map / 函数映射 (116 functions identified, 80 decompiled)
+## Function Map / 函数映射 (116 functions identified, 116 decompiled — 100%)
 
 See `secboot_annotated.S` for complete annotated disassembly.
+
+All 116 identified functions have been decompiled across 11 source files.
 
 ### Key Functions / 核心函数
 
@@ -212,6 +265,7 @@ See `secboot_annotated.S` for complete annotated disassembly.
 | 0x080029A0 | malloc | Heap allocator (first-fit, heap at 0x20011430-0x20028000) |
 | 0x08002A3C | free | Heap deallocator |
 | 0x08002B54 | memcpy | Standard memcpy |
+| 0x08002BD4 | memcmp | Optimized memory compare (word-aligned fast path) |
 | 0x08002D20 | memset | Standard memset |
 | 0x08005338 | flash_init | Flash controller init (SPI flash at 0xC0002000) |
 | 0x080051E8 | flash_read_page | Read one flash page (256 bytes) |
@@ -220,7 +274,7 @@ See `secboot_annotated.S` for complete annotated disassembly.
 | 0x0800588C | uart_rx_ready | Check UART0 RX FIFO non-empty |
 | 0x080058A0 | uart_getchar | Blocking UART0 read one byte |
 | 0x080058B8 | uart_init | UART0 baud rate config (default 115200) |
-| 0x080058EC | uart_verify_data | Verify received data block |
+| 0x080058EC | image_copy_update | Read image data from flash and verify CRC32 checksum |
 | 0x08005988 | validate_image | Validate IMAGE_HEADER (magic, addr, len, CRC) |
 | 0x08005CFC | crc_verify_image | CRC32 verification of image data |
 | 0x080070C4 | signature_verify | Optional 128-byte signature verification |

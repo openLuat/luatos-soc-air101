@@ -22,16 +22,7 @@
  *   printf()           - 0x080031DC  (formatted print to UART)
  */
 
-#include <stdint.h>
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-#include <stdarg.h>
-
-/* Forward declarations (defined in other decompile units) */
-extern void *malloc(uint32_t size);                 /* secboot_memory.c 0x080029A0 */
-extern void *memcpy(void *dst, const void *src, uint32_t n); /* secboot_memory.c 0x08002B54 */
-extern void  uart_putchar(int ch);                  /* secboot_uart.c  0x0800717C */
+#include "secboot_common.h"
 
 
 /* ============================================================
@@ -717,4 +708,36 @@ int printf(const char *fmt, ...)
         uart_putchar(buf[i]);
 
     return (int)count;
+}
+
+
+/* memcpy and memcmp are defined in secboot_memory.c.
+ * memset is defined below as it's not in secboot_memory.c. */
+
+
+/* ============================================================
+ * memset (0x08002D20)
+ *
+ * Fill 'n' bytes of memory at 's' with value 'c'.
+ * Uses word fill for aligned regions.
+ * ============================================================ */
+void *memset(void *s, int c, uint32_t n)
+{
+    uint8_t *p = (uint8_t *)s;
+    uint8_t val = (uint8_t)c;
+
+    /* Word-aligned fast path */
+    if (((uintptr_t)p & 3) == 0 && n >= 4) {
+        uint32_t word = val | (val << 8) | (val << 16) | (val << 24);
+        while (n >= 4) {
+            *(uint32_t *)p = word;
+            p += 4; n -= 4;
+        }
+    }
+
+    /* Byte-by-byte tail */
+    while (n--) {
+        *p++ = val;
+    }
+    return s;
 }

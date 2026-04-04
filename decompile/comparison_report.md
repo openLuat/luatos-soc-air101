@@ -8,8 +8,8 @@ Generated from `xt804_secboot.bin` (21468 bytes)
 | Metric | Value |
 |--------|-------|
 | Total functions identified / 已识别函数总数 | 116 |
-| Functions with decompiled C / 已反编译函数数 | 79 |
-| Decompilation coverage / 反编译覆盖率 | 68% |
+| Functions with decompiled C / 已反编译函数数 | 116 |
+| Decompilation coverage / 反编译覆盖率 | 100% |
 | Total binary code size / 二进制代码总大小 | 21468 bytes |
 
 ## Per-File Coverage / 各文件覆盖率
@@ -17,15 +17,15 @@ Generated from `xt804_secboot.bin` (21468 bytes)
 | Source File | Functions | Decompiled | Coverage |
 |-------------|-----------|------------|----------|
 | `secboot_boot.c` | 5 | 5 | 100% |
-| `secboot_crypto.c` | 33 | 1 | 3% |
+| `secboot_crypto.c` | 34 | 34 | 100% |
 | `secboot_flash.c` | 26 | 26 | 100% |
 | `secboot_fwup.c` | 11 | 11 | 100% |
 | `secboot_hw_init.c` | 5 | 5 | 100% |
-| `secboot_image.c` | 7 | 4 | 57% |
+| `secboot_image.c` | 7 | 7 | 100% |
 | `secboot_main.c` | 4 | 4 | 100% |
-| `secboot_memory.c` | 3 | 3 | 100% |
-| `secboot_stdlib.c` | 15 | 14 | 93% |
-| `secboot_uart.c` | 5 | 4 | 80% |
+| `secboot_memory.c` | 4 | 4 | 100% |
+| `secboot_stdlib.c` | 14 | 14 | 100% |
+| `secboot_uart.c` | 4 | 4 | 100% |
 | `secboot_vectors.S` | 2 | 2 | 100% |
 
 ## Compilation Results / 编译结果
@@ -53,21 +53,7 @@ to check if the pseudo-C produces valid C-SKY assembly.
 
 ### `secboot_uart.c` — ✅ Compiles
 
-### `secboot_vectors.S` — ❌ Errors
-
-```
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S: Assembler messages:
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:99: Error: bad expression
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:99: Error: bad expression
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:99: Error: bad expression
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:99: Error: Operands mismatch, it has a bad end: (null)
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:188: Error: bad expression
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:188: Error: Operand 2 error: r13 register is over range.
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:191: Error: bad expression
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:191: Error: Operand 2 error: r14 register is over range.
-/home/runner/work/luatos-soc-air101/luatos-soc-air101/decompile/secboot_vectors.S:198: Error: bad expression
-... (19 total error lines)
-```
+### `secboot_vectors.S` — ✅ Compiles
 
 ## Function Analysis / 函数分析
 
@@ -87,7 +73,7 @@ with instruction statistics and decompilation status.
 | `0x08002A3C` | `free` | 120 | 58 | 11 | 13/7 | `secboot_memory.c` | ✅ Decompiled |
 | `0x08002AB4` | `memcmp_or_recv` | 160 | 52 | 16 | 0/11 | `secboot_stdlib.c` | ✅ Decompiled |
 | `0x08002B54` | `memcpy` | 128 | 45 | 9 | 7/7 | `secboot_stdlib.c` | ✅ Decompiled |
-| `0x08002BD4` | `memmove` | 332 | 121 | 35 | 24/0 | `secboot_stdlib.c` | ⬜ Identified |
+| `0x08002BD4` | `memcmp` | 332 | 121 | 35 | 24/0 | `secboot_memory.c` | ✅ Decompiled |
 | `0x08002D20` | `memset` | 92 | 38 | 5 | 2/3 | `secboot_stdlib.c` | ✅ Decompiled |
 | `0x08002D7C` | `strlen` | 304 | 106 | 20 | 13/8 | `secboot_stdlib.c` | ✅ Decompiled |
 | `0x08002EAC` | `strcmp_or_strncpy` | 284 | 105 | 18 | 18/14 | `secboot_stdlib.c` | ✅ Decompiled |
@@ -111,42 +97,42 @@ with instruction statistics and decompilation status.
 | `0x08003744` | `flash_detect` | 48 | 18 | 5 | 3/0 | `secboot_flash.c` | ✅ Decompiled |
 | `0x08003774` | `flash_setup` | 236 | 84 | 14 | 8/8 | `secboot_flash.c` | ✅ Decompiled |
 | `0x08003860` | `flash_capacity_check` | 352 | 122 | 25 | 16/14 | `secboot_flash.c` | ✅ Decompiled |
-| `0x080039C0` | `rsa_core` | 84 | 33 | 8 | 3/1 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003A14` | `rsa_step` | 120 | 48 | 9 | 5/3 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003A8C` | `rsa_modexp` | 92 | 37 | 5 | 3/5 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003AE8` | `rsa_init` | 84 | 34 | 4 | 0/5 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003B3C` | `rsa_process` | 360 | 109 | 17 | 17/12 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003CA4` | `sha_hash_block` | 56 | 19 | 1 | 5/1 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003CDC` | `sha_init` | 20 | 8 | 1 | 0/0 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003CF0` | `sha_update` | 300 | 102 | 17 | 16/14 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08003E1C` | `sha_final` | 1084 | 381 | 85 | 71/46 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004258` | `crc32_table_init` | 132 | 50 | 9 | 8/7 | `secboot_crypto.c` | ⬜ Identified |
-| `0x080042DC` | `crc32_update` | 72 | 30 | 6 | 0/0 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004324` | `crc32_finalize` | 88 | 38 | 2 | 12/14 | `secboot_crypto.c` | ⬜ Identified |
-| `0x0800437C` | `hash_ctx_init` | 136 | 49 | 8 | 3/0 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004404` | `hash_set_mode` | 12 | 6 | 1 | 0/3 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004410` | `hash_update_data` | 168 | 63 | 10 | 10/8 | `secboot_crypto.c` | ⬜ Identified |
-| `0x080044B8` | `hash_compress` | 140 | 52 | 9 | 7/5 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004544` | `hash_finalize` | 88 | 32 | 7 | 7/3 | `secboot_crypto.c` | ⬜ Identified |
-| `0x0800459C` | `hash_get_result` | 8 | 4 | 1 | 1/1 | `secboot_crypto.c` | ⬜ Identified |
-| `0x080045A4` | `hash_get_result2` | 52 | 24 | 2 | 7/9 | `secboot_crypto.c` | ⬜ Identified |
-| `0x080045D8` | `hmac_init` | 100 | 37 | 8 | 4/4 | `secboot_crypto.c` | ⬜ Identified |
-| `0x0800463C` | `hmac_update` | 240 | 91 | 13 | 6/20 | `secboot_crypto.c` | ⬜ Identified |
-| `0x0800472C` | `hmac_final` | 474 | 161 | 33 | 14/8 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004906` | `crypto_subsys_init` | 198 | 70 | 18 | 7/6 | `secboot_crypto.c` | ⬜ Identified |
-| `0x080049CC` | `pkey_setup` | 128 | 43 | 9 | 3/5 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004A4C` | `pkey_verify_step` | 104 | 44 | 10 | 7/2 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004AB4` | `pkey_verify` | 68 | 30 | 5 | 4/2 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004AF8` | `signature_check_init` | 184 | 76 | 12 | 7/11 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004BB0` | `signature_check_data` | 60 | 26 | 3 | 3/3 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004BEC` | `signature_check_final` | 140 | 58 | 9 | 7/4 | `secboot_crypto.c` | ⬜ Identified |
+| `0x080039C0` | `rsa_core` | 84 | 33 | 8 | 3/1 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003A14` | `rsa_step` | 120 | 48 | 9 | 5/3 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003A8C` | `rsa_modexp` | 92 | 37 | 5 | 3/5 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003AE8` | `rsa_init` | 84 | 34 | 4 | 0/5 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003B3C` | `rsa_process` | 360 | 109 | 17 | 17/12 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003CA4` | `sha_hash_block` | 56 | 19 | 1 | 5/1 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003CDC` | `sha_init` | 20 | 8 | 1 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003CF0` | `sha_update` | 300 | 102 | 17 | 16/14 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08003E1C` | `sha_final` | 1084 | 381 | 85 | 71/46 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004258` | `crc32_table_init` | 132 | 50 | 9 | 8/7 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080042DC` | `crc32_update` | 72 | 30 | 6 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004324` | `sha1_transform` | 88 | 38 | 2 | 12/14 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x0800437C` | `hash_ctx_init` | 136 | 49 | 8 | 3/0 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004404` | `hw_crypto_setup` | 12 | 6 | 1 | 0/3 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004410` | `hw_crypto_exec` | 168 | 63 | 10 | 10/8 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080044B8` | `hw_crypto_exec2` | 140 | 52 | 9 | 7/5 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004544` | `hash_finalize` | 88 | 32 | 7 | 7/3 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x0800459C` | `hash_get_result` | 8 | 4 | 1 | 1/1 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080045A4` | `sha1_init` | 52 | 24 | 2 | 7/9 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080045D8` | `sha1_update` | 100 | 37 | 8 | 4/4 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x0800463C` | `sha1_final` | 240 | 91 | 13 | 6/20 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x0800472C` | `sha1_full` | 474 | 161 | 33 | 14/8 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004906` | `crypto_subsys_init` | 198 | 70 | 18 | 7/6 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x080049CC` | `pkey_setup` | 128 | 43 | 9 | 3/5 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004A4C` | `pkey_verify_step` | 104 | 44 | 10 | 7/2 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004AB4` | `pkey_verify` | 68 | 30 | 5 | 4/2 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004AF8` | `signature_check_init` | 184 | 76 | 12 | 7/11 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004BB0` | `signature_check_data` | 60 | 26 | 3 | 3/3 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004BEC` | `signature_check_final` | 140 | 58 | 9 | 7/4 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08004C78` | `cert_parse` | 132 | 48 | 17 | 6/1 | `secboot_crypto.c` | ✅ Decompiled |
-| `0x08004CFC` | `cert_validate` | 48 | 19 | 6 | 0/1 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004D2C` | `cert_get_pubkey` | 36 | 14 | 6 | 2/0 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004D50` | `cert_chain_verify` | 72 | 21 | 9 | 0/0 | `secboot_crypto.c` | ⬜ Identified |
-| `0x08004D98` | `image_decrypt_init` | 256 | 100 | 30 | 6/2 | `secboot_image.c` | ⬜ Identified |
-| `0x08004E98` | `image_decrypt_block` | 136 | 58 | 7 | 12/13 | `secboot_image.c` | ⬜ Identified |
-| `0x08004F20` | `image_decrypt_process` | 228 | 90 | 18 | 9/5 | `secboot_image.c` | ⬜ Identified |
+| `0x08004CFC` | `crc_ctx_alloc` | 48 | 19 | 6 | 0/1 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004D2C` | `crc_ctx_destroy` | 36 | 14 | 6 | 2/0 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004D50` | `crc_ctx_reset` | 72 | 21 | 9 | 0/0 | `secboot_crypto.c` | ✅ Decompiled |
+| `0x08004D98` | `image_decrypt_init` | 256 | 100 | 30 | 6/2 | `secboot_image.c` | ✅ Decompiled |
+| `0x08004E98` | `image_decrypt_block` | 136 | 58 | 7 | 12/13 | `secboot_image.c` | ✅ Decompiled |
+| `0x08004F20` | `image_decrypt_process` | 228 | 90 | 18 | 9/5 | `secboot_image.c` | ✅ Decompiled |
 | `0x08005004` | `firmware_update_init` | 152 | 58 | 4 | 16/9 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x0800509C` | `firmware_update_process` | 332 | 124 | 10 | 36/22 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x080051E8` | `flash_read_page` | 336 | 118 | 18 | 17/10 | `secboot_flash.c` | ✅ Decompiled |
@@ -163,13 +149,13 @@ with instruction statistics and decompilation status.
 | `0x0800588C` | `uart_rx_ready` | 20 | 8 | 2 | 2/0 | `secboot_uart.c` | ✅ Decompiled |
 | `0x080058A0` | `uart_getchar` | 24 | 10 | 3 | 3/0 | `secboot_uart.c` | ✅ Decompiled |
 | `0x080058B8` | `uart_init` | 52 | 23 | 2 | 3/5 | `secboot_uart.c` | ✅ Decompiled |
-| `0x080058EC` | `uart_verify_data` | 156 | 67 | 12 | 14/7 | `secboot_uart.c` | ⬜ Identified |
+| `0x080058EC` | `image_copy_update` | 156 | 67 | 12 | 14/7 | `secboot_image.c` | ✅ Decompiled |
 | `0x08005988` | `validate_image` | 212 | 89 | 19 | 16/1 | `secboot_image.c` | ✅ Decompiled |
 | `0x08005A5C` | `xmodem_recv_init` | 120 | 50 | 9 | 9/1 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x08005AD4` | `xmodem_recv_block` | 180 | 68 | 8 | 20/0 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x08005B88` | `xmodem_recv_data` | 64 | 25 | 7 | 2/0 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x08005BC8` | `xmodem_process` | 308 | 116 | 29 | 1/1 | `secboot_fwup.c` | ✅ Decompiled |
-| `0x08005CFC` | `crc_verify_image` | 244 | 98 | 19 | 6/7 | `secboot_image.c` | ✅ Decompiled |
+| `0x08005CFC` | `crc_verify_image` | 244 | 98 | 19 | 6/7 | `secboot_crypto.c` | ✅ Decompiled |
 | `0x08005DF0` | `firmware_apply` | 132 | 58 | 5 | 21/6 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x08005E74` | `firmware_apply_ext` | 1120 | 394 | 51 | 69/57 | `secboot_fwup.c` | ✅ Decompiled |
 | `0x080062D4` | `ota_process` | 448 | 182 | 44 | 52/18 | `secboot_fwup.c` | ✅ Decompiled |
@@ -208,6 +194,8 @@ with the original binary. A higher match indicates better decompilation.
 | `free` | 58 | 57 | 0.98x | 🔴 37% |
 | `memcmp_or_recv` | 52 | 11 | 0.21x | 🔴 6% |
 | `memcpy` | 45 | 69 | 1.53x | 🔴 23% |
+| `memcmp` | 121 | 96 | 0.79x | 🔴 42% |
+| `memset` | 38 | 38 | 1.00x | 🔴 18% |
 | `strlen` | 106 | 10 | 0.09x | 🔴 9% |
 | `strcmp_or_strncpy` | 105 | 24 | 0.23x | 🔴 11% |
 | `snprintf` | 20 | 32 | 1.60x | 🔴 23% |
@@ -228,8 +216,44 @@ with the original binary. A higher match indicates better decompilation.
 | `flash_detect` | 18 | 26 | 1.44x | 🔴 18% |
 | `flash_setup` | 84 | 46 | 0.55x | 🔴 11% |
 | `flash_capacity_check` | 122 | 6 | 0.05x | 🔴 3% |
+| `rsa_core` | 33 | 32 | 0.97x | 🟢 98% |
+| `rsa_step` | 48 | 48 | 1.00x | 🟢 85% |
+| `rsa_modexp` | 37 | 42 | 1.14x | 🟡 71% |
+| `rsa_init` | 34 | 37 | 1.09x | 🟡 76% |
+| `rsa_process` | 109 | 113 | 1.04x | 🟡 58% |
+| `sha_hash_block` | 19 | 20 | 1.05x | 🔴 41% |
+| `sha_init` | 8 | 9 | 1.12x | 🟢 94% |
+| `sha_update` | 102 | 83 | 0.81x | 🟡 52% |
+| `sha_final` | 381 | 167 | 0.44x | 🔴 38% |
+| `crc32_table_init` | 50 | 54 | 1.08x | 🟢 87% |
+| `crc32_update` | 30 | 30 | 1.00x | 🟡 77% |
+| `sha1_transform` | 38 | 74 | 1.95x | 🟡 66% |
+| `hash_ctx_init` | 49 | 40 | 0.82x | 🟡 76% |
+| `hw_crypto_setup` | 6 | 6 | 1.00x | 🟡 67% |
+| `hw_crypto_exec` | 63 | 58 | 0.92x | 🟢 83% |
+| `hw_crypto_exec2` | 52 | 47 | 0.90x | 🟢 81% |
+| `hash_finalize` | 32 | 23 | 0.72x | 🟡 65% |
+| `hash_get_result` | 4 | 4 | 1.00x | 🟢 100% |
+| `sha1_init` | 24 | 21 | 0.88x | 🟡 67% |
+| `sha1_update` | 37 | 37 | 1.00x | 🟢 97% |
+| `sha1_final` | 91 | 92 | 1.01x | 🟡 67% |
+| `sha1_full` | 161 | 246 | 1.53x | 🔴 18% |
+| `pkey_setup` | 43 | 49 | 1.14x | 🟡 76% |
+| `pkey_verify_step` | 44 | 55 | 1.25x | 🟢 83% |
+| `pkey_verify` | 30 | 31 | 1.03x | 🟢 92% |
+| `signature_check_init` | 76 | 72 | 0.95x | 🟡 80% |
+| `signature_check_data` | 26 | 26 | 1.00x | 🟢 100% |
+| `signature_check_final` | 58 | 81 | 1.40x | 🟡 71% |
+| `cert_parse` | 48 | 54 | 1.12x | 🟡 65% |
+| `crc_ctx_alloc` | 19 | 18 | 0.95x | 🟢 97% |
+| `crc_ctx_destroy` | 14 | 14 | 1.00x | 🟢 86% |
+| `crc_ctx_reset` | 21 | 21 | 1.00x | 🟢 100% |
+| `image_decrypt_init` | 100 | 104 | 1.04x | 🟡 75% |
+| `image_decrypt_block` | 58 | 55 | 0.95x | 🟢 97% |
+| `image_decrypt_process` | 90 | 91 | 1.01x | 🟢 84% |
 | `firmware_update_init` | 58 | 46 | 0.79x | 🔴 19% |
 | `firmware_update_process` | 124 | 77 | 0.62x | 🔴 24% |
+| `flash_read_page` | 118 | 100 | 0.85x | 🔴 44% |
 | `flash_init` | 12 | 11 | 0.92x | 🟢 87% |
 | `flash_read_raw` | 157 | 25 | 0.16x | 🔴 12% |
 | `flash_read` | 27 | 26 | 0.96x | 🟢 87% |
@@ -243,36 +267,36 @@ with the original binary. A higher match indicates better decompilation.
 | `uart_rx_ready` | 8 | 8 | 1.00x | 🟡 75% |
 | `uart_getchar` | 10 | 9 | 0.90x | 🟡 74% |
 | `uart_init` | 23 | 21 | 0.91x | 🟡 77% |
+| `image_copy_update` | 67 | 52 | 0.78x | 🔴 49% |
 | `validate_image` | 89 | 67 | 0.75x | 🟡 63% |
 | `xmodem_recv_init` | 50 | 51 | 1.02x | 🔴 22% |
 | `xmodem_recv_block` | 68 | 68 | 1.00x | 🔴 16% |
 | `xmodem_recv_data` | 25 | 31 | 1.24x | 🔴 29% |
 | `xmodem_process` | 116 | 37 | 0.32x | 🔴 34% |
-| `crc_verify_image` | 98 | 94 | 0.96x | 🟡 66% |
+| `crc_verify_image` | 98 | 91 | 0.93x | 🟡 63% |
 | `firmware_apply` | 58 | 53 | 0.91x | 🔴 23% |
 | `firmware_apply_ext` | 394 | 61 | 0.15x | 🔴 11% |
 | `ota_process` | 182 | 85 | 0.47x | 🔴 16% |
 | `ota_validate` | 65 | 38 | 0.58x | 🔴 19% |
-| `ota_apply` | 328 | 57 | 0.17x | 🔴 15% |
+| `ota_apply` | 328 | 57 | 0.17x | 🔴 14% |
 | `boot_param_setup` | 97 | 41 | 0.42x | 🔴 23% |
 | `boot_param_read` | 447 | 77 | 0.17x | 🔴 15% |
 | `boot_prepare` | 160 | 38 | 0.24x | 🔴 11% |
 | `boot_execute_prep` | 82 | 31 | 0.38x | 🔴 23% |
-| `app_boot_sequence` | 48 | 35 | 0.73x | 🔴 34% |
-| `signature_verify` | 48 | 29 | 0.60x | 🟡 55% |
+| `app_boot_sequence` | 48 | 37 | 0.77x | 🔴 33% |
+| `signature_verify` | 48 | 31 | 0.65x | 🔴 48% |
 | `board_init` | 12 | 11 | 0.92x | 🟡 78% |
-| `tspend_handler` | 21 | 14 | 0.67x | 🔴 46% |
 | `uart_putchar` | 19 | 18 | 0.95x | 🟢 92% |
 | `lock_acquire` | 2 | 2 | 1.00x | 🟢 100% |
 | `lock_release` | 2 | 2 | 1.00x | 🟢 100% |
-| `SystemInit` | 19 | 21 | 1.11x | 🔴 40% |
+| `SystemInit` | 19 | 21 | 1.11x | 🟡 70% |
 | `trap_c` | 2 | 1 | 0.50x | 🟡 67% |
 | `image_header_verify` | 18 | 20 | 1.11x | 🟡 79% |
 | `boot_uart_check` | 40 | 37 | 0.93x | 🔴 34% |
 | `find_valid_image` | 54 | 52 | 0.96x | 🟡 79% |
 | `main` | 528 | 141 | 0.27x | 🔴 33% |
 
-**Average mnemonic similarity: 33.1%** (across 71 compared functions)
+**Average mnemonic similarity: 47.2%** (across 109 compared functions)
 
 ### Side-by-Side Examples / 逐行对比示例
 
@@ -334,25 +358,25 @@ with the original binary. A higher match indicates better decompilation.
 
 | # | Original | Recompiled |
 |---|----------|------------|
-| 0 | `lrw r3, 0x8002400` | `push r15` |
-| 1 | `mtcr r3, cr<1, 0>` | `movi r0, 9216` |
-| 2 | `mfcr r3, cr<31, 0>` | `bseti r0, 27` |
-| 3 | `ori r3, r3, 16` | `bsr 0x0` |
-| 4 | `mtcr r3, cr<31, 0>` | `bsr 0x0` |
-| 5 | `mfcr r3, cr<0, 0>` | `ori r0, r0, 16` |
-| 6 | `ori r3, r3, 512` | `bsr 0x0` |
-| 7 | `mtcr r3, cr<0, 0>` | `bsr 0x0` |
-| 8 | `lrw r2, 0xe000e100` | `ori r0, r0, 512` |
-| 9 | `movi r3, 0` | `bsr 0x0` |
-| 10 | `st.w r3, (r2, 0x200)` | `lrw r3, 0xe000e300` |
-| 11 | `subi r3, 1` | `movi r2, 0` |
-| 12 | `st.w r3, (r2, 0x180)` | `st.w r2, (r3, 0x0)` |
-| 13 | `psrset ee, ie` | `mov r3, r2` |
-| 14 | `jmp r15` | `lrw r2, 0xe000e280` |
-| 15 | `bkpt ` | `subi r3, 1` |
-| 16 | `addi r4, 1` | `st.w r3, (r2, 0x0)` |
-| 17 | `bt 0x80071ea` | `bsr 0x0` |
-| 18 | `bsr 0xa0231ec` | `pop r15` |
+| 0 | `lrw r3, 0x8002400` | `movi r3, 9216` |
+| 1 | `mtcr r3, cr<1, 0>` | `bseti r3, 27` |
+| 2 | `mfcr r3, cr<31, 0>` | `mtcr r3, cr<1, 0>` |
+| 3 | `ori r3, r3, 16` | `mfcr r3, cr<31, 0>` |
+| 4 | `mtcr r3, cr<31, 0>` | `ori r3, r3, 16` |
+| 5 | `mfcr r3, cr<0, 0>` | `mtcr r3, cr<31, 0>` |
+| 6 | `ori r3, r3, 512` | `mfcr r3, cr<0, 0>` |
+| 7 | `mtcr r3, cr<0, 0>` | `ori r3, r3, 512` |
+| 8 | `lrw r2, 0xe000e100` | `mtcr r3, cr<0, 0>` |
+| 9 | `movi r3, 0` | `lrw r3, 0xe000e300` |
+| 10 | `st.w r3, (r2, 0x200)` | `movi r2, 0` |
+| 11 | `subi r3, 1` | `st.w r2, (r3, 0x0)` |
+| 12 | `st.w r3, (r2, 0x180)` | `mov r3, r2` |
+| 13 | `psrset ee, ie` | `lrw r2, 0xe000e280` |
+| 14 | `jmp r15` | `subi r3, 1` |
+| 15 | `bkpt ` | `st.w r3, (r2, 0x0)` |
+| 16 | `addi r4, 1` | `psrset ee, ie` |
+| 17 | `bt 0x80071ea` | `jmp r15` |
+| 18 | `bsr 0xa0231ec` | `.short 0x0000` |
 | 19 |  | `.long 0xe000e300` |
 | 20 |  | `.long 0xe000e280` |
 
@@ -386,32 +410,6 @@ with the original binary. A higher match indicates better decompilation.
 |---|----------|------------|
 | 0 | `movi r0, 0` | `movi r0, 0` |
 | 1 | `jmp r15` | `jmp r15` |
-
-#### `tspend_handler` (0x08007148)
-
-| # | Original | Recompiled |
-|---|----------|------------|
-| 0 | `nie ` | `subi r14, r14, 4` |
-| 1 | `ipush ` | `lrw r3, 0xe000e000` |
-| 2 | `subi r14, r14, 56` | `lrw r2, 0x20011380` |
-| 3 | `stm r18-r31, (r14)` | `ld.w r3, (r3, 0x10)` |
-| 4 | `subi r14, r14, 32` | `st.w r3, (r14, 0x0)` |
-| 5 | `fstms fr16-fr19, (r14)` | `ld.w r3, (r14, 0x0)` |
-| 6 | `lrw r2, 0x200113e4` | `ld.w r3, (r2, 0x64)` |
-| 7 | `lrw r3, 0xe000e000` | `addi r3, 1` |
-| 8 | `ld.w r3, (r3, 0x10)` | `st.w r3, (r2, 0x64)` |
-| 9 | `ld.w r3, (r2, 0x0)` | `addi r14, r14, 4` |
-| 10 | `addi r3, 1` | `jmp r15` |
-| 11 | `st.w r3, (r2, 0x0)` | `.short 0x0000` |
-| 12 | `fldms fr16-fr19, (r14)` | `.long 0xe000e000` |
-| 13 | `addi r14, r14, 32` | `.long 0x20011380` |
-| 14 | `ldm r18-r31, (r14)` |  |
-| 15 | `addi r14, r14, 56` |  |
-| 16 | `ipop ` |  |
-| 17 | `nir ` |  |
-| 18 | `lrw r7, 0x153814d4` |  |
-| 19 | `addi r0, 2` |  |
-| 20 | `bsr 0x8023178` |  |
 
 ## Detailed Disassembly / 详细反汇编
 
@@ -893,7 +891,7 @@ Source: `secboot_memory.c`
   ... (8 more instructions)
 ```
 
-### `hash_get_result2` (0x080045A4) — 24 instructions, 52 bytes
+### `sha1_init` (0x080045A4) — 24 instructions, 52 bytes
 Source: `secboot_crypto.c`
 
 ```asm
@@ -923,7 +921,7 @@ Source: `secboot_crypto.c`
   080045d4:  d2c3f0e1              bsr          0xbe1cd78
 ```
 
-### `hash_set_mode` (0x08004404) — 6 instructions, 12 bytes
+### `hw_crypto_setup` (0x08004404) — 6 instructions, 12 bytes
 Source: `secboot_crypto.c`
 
 ```asm
@@ -936,7 +934,7 @@ Source: `secboot_crypto.c`
 ```
 
 ### `crc_verify_image` (0x08005CFC) — 98 instructions, 244 bytes
-Source: `secboot_image.c`
+Source: `secboot_crypto.c`
 
 ```asm
   08005cfc:  d514                  push         r4-r8, r15
@@ -1137,7 +1135,7 @@ sizes, and decompilation status.
 
 - Code region: `0x08002506` — `0x080077DC`
 - Total function code: 21206 bytes
-- Decompiled code: 15150 bytes (71%)
+- Decompiled code: 21206 bytes (100%)
 
 ## Constant Data / 常量数据
 
