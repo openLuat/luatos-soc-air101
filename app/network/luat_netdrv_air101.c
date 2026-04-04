@@ -304,6 +304,18 @@ void luat_netdrv_register_xt804(void) {
     luat_netdrv_register(NW_ADAPTER_INDEX_LWIP_WIFI_STA, &g_netdrv_sta);
     luat_netdrv_register(NW_ADAPTER_INDEX_LWIP_WIFI_AP, &g_netdrv_ap);
 
+    
+    // netif association is handled by netdrv boot callbacks
+    // netdrv was registered early in main.c, trigger boot now
+    luat_netdrv_conf_t drvconf = {0};
+    drvconf.id = NW_ADAPTER_INDEX_LWIP_WIFI_STA;
+    luat_netdrv_setup(&drvconf);
+    extern struct netif *nif4apsta;
+    if (nif4apsta) {
+        drvconf.id = NW_ADAPTER_INDEX_LWIP_WIFI_AP;
+        luat_netdrv_setup(&drvconf);
+    }
+
     // Set STA as default network adapter
     network_register_set_default(NW_ADAPTER_INDEX_LWIP_WIFI_STA);
 

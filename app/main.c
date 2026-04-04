@@ -253,7 +253,9 @@ void UserMain(void){
 #endif
 	#define VM_SIZE (12*1024)
 
+	extern int luat_wlan_init(void *conf);
 	extern void luat_netdrv_register_xt804(void);
+	luat_wlan_init(NULL);
 	luat_netdrv_register_xt804();
 	LLOGD("netdrv registered (early init)");
 
