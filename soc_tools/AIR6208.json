@@ -12,7 +12,7 @@
         "file" : "AIR6208.fls",
         "fs" : {
             "script" : {
-                "offset" : "0x08430000",
+                "offset" : "8430000",
                 "size" : 512,
                 "type" : "luadb"
             }
@@ -40,11 +40,11 @@
         "log_br" : "2000000"
     },
     "download" : {
-        "core_addr" : "0x08000000",
-        "app_addr" : "0x08210000",
-        "script_addr" : "0x08430000",
-        "user_addr" : "0x00000000",
-        "ota_addr" : "0x08010000",
+        "core_addr" : "8000000",
+        "app_addr" : "8210000",
+        "script_addr" : "8430000",
+        "user_addr" : "0000000",
+        "ota_addr" : "8010000",
         "force_br" : "2M"
     }
 }
