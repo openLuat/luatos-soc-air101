@@ -115,8 +115,8 @@
 // #define LUAT_USE_TLSF 1
 
 // 音频相关
-// #define LUAT_USE_I2S 1
-// #define LUAT_USE_MEDIA  1
+#define LUAT_USE_I2S 1
+#define LUAT_USE_MEDIA  1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
