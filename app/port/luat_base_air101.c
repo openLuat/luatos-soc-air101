@@ -342,6 +342,8 @@ const char* luat_os_bsp(void)
     return "AIR690";
 #elif defined(AIR103)
     return "AIR103";
+#elif defined(AIR6208)
+    return "AIR6208";
 #else
     return "AIR101";
 #endif

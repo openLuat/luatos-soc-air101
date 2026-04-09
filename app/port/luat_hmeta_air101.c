@@ -9,6 +9,8 @@ int luat_hmeta_model_name(char* buff) {
     strcpy(buff, "Air103");
     #elif defined(AIR601)
     strcpy(buff, "Air601");
+    #elif defined(AIR6208)
+    strcpy(buff, "Air6208");
     #else
     strcpy(buff, "XT806");
     #endif
