@@ -117,6 +117,8 @@
 // 音频相关
 #define LUAT_USE_I2S 1
 #define LUAT_USE_MEDIA  1
+#define LUAT_USE_AUDIO_G711 1
+#define LUAT_SUPPORT_AMR 1
 
 //---------------SDIO-FATFS特别配置
 // sdio库对接的是fatfs
@@ -253,3 +255,12 @@
 
 #endif
 
+#define LUAT_USE_MEM_LOGOUT 1
+// 暂时写这里了
+#ifndef LUAT_CONF_FIRMWARE_TYPE_NUM
+#ifdef LUAT_CONF_VM_64bit
+#define LUAT_CONF_FIRMWARE_TYPE_NUM 101
+#else
+#define LUAT_CONF_FIRMWARE_TYPE_NUM 1
+#endif
+#endif

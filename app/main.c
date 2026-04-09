@@ -190,9 +190,9 @@ void UserMain(void){
 
 #ifdef LUAT_USE_WLAN
 	u8 tmpmac[8] = {0};
-	luat_wlan_get_mac(1, tmpmac);
+	luat_wlan_get_mac(1, (char*)tmpmac);
 	LLOGD("AP MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
-	luat_wlan_get_mac(0, tmpmac);
+	luat_wlan_get_mac(0, (char*)tmpmac);
 	LLOGD("STA MAC %02X:%02X:%02X:%02X:%02X:%02X", tmpmac[0], tmpmac[1], tmpmac[2], tmpmac[3], tmpmac[4], tmpmac[5]);
 #endif
 	

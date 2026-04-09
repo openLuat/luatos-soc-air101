@@ -60,21 +60,11 @@ int sendchar(int ch)
 	//tls_reg_write32(HR_UART0_INT_MASK, 0x3);
 	if (printf_port == 0)
 	{
-		if(ch == '\n')
-		{
-			while (tls_reg_read32(HR_UART0_FIFO_STATUS) & 0x3F);
-			tls_reg_write32(HR_UART0_TX_WIN, '\r');
-	    }
-	    while(tls_reg_read32(HR_UART0_FIFO_STATUS) & 0x3F);
-	    tls_reg_write32(HR_UART0_TX_WIN, (char)ch);
+	  while(tls_reg_read32(HR_UART0_FIFO_STATUS) & 0x3F);
+	  tls_reg_write32(HR_UART0_TX_WIN, (char)ch);
 	}
 	else if (printf_port == 1)
 	{
-		if(ch == '\n')
-		{
-			while (tls_reg_read32(HR_UART1_FIFO_STATUS) & 0x3F);
-			tls_reg_write32(HR_UART1_TX_WIN, '\r');
-	    }
 		while(tls_reg_read32(HR_UART1_FIFO_STATUS) & 0x3F);
 		tls_reg_write32(HR_UART1_TX_WIN, (char)ch);
 	}

@@ -143,6 +143,7 @@ add_includedirs(luatos.."components/printf",{public = true})
 add_ldflags(" -Wl,--wrap=localtime ",{force = true})
 add_ldflags(" -Wl,--wrap=gmtime ",{force = true})
 add_ldflags(" -Wl,--wrap=mktime ",{force = true})
+add_ldflags(" -Wl,--wrap=printf ",{force = true})
 
 
 target("app")
@@ -421,6 +422,10 @@ target("network")
     -- hmeta
     add_includedirs(luatos.."components/hmeta",{public = true})
     add_files(luatos.."components/hmeta/**.c")
+
+    -- add soc_service
+    add_includedirs(luatos.."components/soc_service/include",{public = true})
+    add_files(luatos.."components/soc_service/**.c")
 
 target_end()
 
