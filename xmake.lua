@@ -208,10 +208,31 @@ target("blehost")
 
 target_end()
 
+target("hzfont")
+    set_kind("static")
+    set_plat("cross")
+    set_arch("c-sky")
+
+    add_includedirs("app/port",{public = true})
+    add_includedirs("include",{public = true})
+    add_includedirs(luatos.."lua/include",{public = true})
+    add_includedirs(luatos.."luat/include",{public = true})
+    add_includedirs(luatos.."components/lcd",{public = true})
+    add_includedirs(luatos.."components/u8g2",{public = true})
+    add_includedirs(luatos.."components/hzfont/inc",{public = true})
+
+    add_files(luatos.."components/hzfont/binding/*.c")
+    add_files(luatos.."components/hzfont/src/*.c")
+
+    set_targetdir("$(builddir)/lib")
+target_end()
+
 target("u8g2")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
+
+    add_deps("hzfont")
 
     add_files(luatos.."components/u8g2/*.c")
 
@@ -260,6 +281,8 @@ target("eink")
     set_kind("static")
     set_plat("cross")
     set_arch("c-sky")
+
+    add_deps("hzfont")
 
 
     add_files(luatos.."components/eink/*.c")
@@ -447,6 +470,8 @@ target("airui")
     set_plat("cross")
     set_arch("c-sky")
 
+    add_deps("hzfont")
+
     add_includedirs("app/port")
     add_includedirs("include")
     add_includedirs(luatos.."lua/include")
@@ -496,12 +521,6 @@ target("airui")
     add_includedirs(luatos_root.."/components/airui/binding")
     add_files(luatos_root.."/components/airui/binding/*.c")
 
-    
-    -- hzfont
-    add_includedirs(luatos_root.."/components/hzfont/inc",{public = true})
-    add_files(luatos_root.."/components/hzfont/binding/*.c")
-    add_files(luatos_root.."/components/hzfont/src/*.c")
-
     -- pinyin
     add_includedirs(luatos_root.."/components/pinyin/inc",{public = true})
     add_files(luatos_root.."/components/pinyin/binding/*.c")
@@ -546,6 +565,7 @@ target("air10x")
     -- add_deps("opus131")
     -- add_deps("nes")
     add_deps("audio")
+    add_deps("hzfont")
     -- add_deps("luatfonts")
     add_deps("mbedtls")
     add_deps("airui")
