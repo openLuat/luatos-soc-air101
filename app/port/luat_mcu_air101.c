@@ -104,3 +104,7 @@ uint64_t luat_mcu_tick64_ms(void) {
 void luat_mcu_set_clk_source(uint8_t source_main, uint8_t source_32k, uint32_t delay) {
     LLOGE("not support setXTAL");
 }
+
+uint8_t luat_mcu_get_cpu_id(void) {
+    return 255;
+}
