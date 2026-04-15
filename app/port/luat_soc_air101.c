@@ -26,6 +26,7 @@ void am_print_base_info(void)
 	uint8_t power_on_reason = soc_get_power_on_reason();
 	LTIO("soc poweron: %d %s_%s_%s 0", power_on_reason, soc_get_sdk_type(), soc_get_sdk_version(), soc_get_chip_name());
 	LTIO("BASEINFO: %s %s_%s_%s", "0000000000000000", soc_get_sdk_type(), soc_get_sdk_version(), soc_get_chip_name());
+    LTIO("+HW: %s", soc_get_chip_name());
     #ifdef LUAT_CONF_FIRMWARE_TYPE_NUM
     #ifdef LUAT_CONF_VM_64bit
     soc_info("+FW: LuatOS %s %d 64bit", LUAT_BSP_VERSION, LUAT_CONF_FIRMWARE_TYPE_NUM);
