@@ -8,6 +8,8 @@
 
 #include "luat_soc_service.h"
 
+int luat_wlan_get_mac(int id, char* mac);
+
 uint32_t soc_get_power_on_reason(void) {
     return luat_pm_get_poweron_reason();
 }
@@ -24,8 +26,14 @@ const char* soc_get_chip_name(void) {
 void am_print_base_info(void)
 {
 	uint8_t power_on_reason = soc_get_power_on_reason();
+    char mac[6] = {0};
+    luat_wlan_get_mac(0, mac);
 	LTIO("soc poweron: %d %s_%s_%s 0", power_on_reason, soc_get_sdk_type(), soc_get_sdk_version(), soc_get_chip_name());
-	LTIO("BASEINFO: %s %s_%s_%s", "0000000000000000", soc_get_sdk_type(), soc_get_sdk_version(), soc_get_chip_name());
+	char mac_str[13] = {0};
+    for (int i = 0; i < 6; i++) {
+        sprintf(mac_str + i * 2, "%02X", mac[i]);
+    }
+    LTIO("BASEINFO: %s %s_%s_%s", mac_str, soc_get_sdk_type(), soc_get_sdk_version(), soc_get_chip_name());
     LTIO("+HW: %s", soc_get_chip_name());
     #ifdef LUAT_CONF_FIRMWARE_TYPE_NUM
     #ifdef LUAT_CONF_VM_64bit
