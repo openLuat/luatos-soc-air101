@@ -15,6 +15,16 @@
                 "offset" : "8430000",
                 "size" : 512,
                 "type" : "luadb"
+            },
+            "filesystem" : {
+                "offset" : "0x084B0000",
+                "size" : 3328,
+                "type" : "lfs"
+            },
+            "kv" : {
+                "offset" : "0x08420000",
+                "size" : 64,
+                "type" : "fskv"
             }
         },
         "version-core": "v0007",
@@ -43,6 +53,8 @@
         "core_addr" : "8000000",
         "app_addr" : "8210000",
         "script_addr" : "8430000",
+        "fs_addr" : "0x084B0000",
+        "kv_addr" : "0x08420000",
         "user_addr" : "0000000",
         "ota_addr" : "8010000",
         "force_br" : "2M"

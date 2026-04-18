@@ -719,6 +719,8 @@ target("air10x")
     add_includedirs(luatos.."components/tp/",{public = true})
     add_files(luatos.."components/tp/*.c")
 
+    add_includedirs(luatos.."components/wlan")
+
 	after_build(function(target)
         import "buildx"
         local chip = buildx.chip()
@@ -835,6 +837,28 @@ target("air10x")
                     if fota_offset > 0 then
                         data.download.ota_addr = string.format("0x%08X", chip.flash_base + fota_offset)
                         print("分区表布局", "OTA升级区偏移量", data.download.ota_addr)
+                    end
+                    -- 添加文件系统(LittleFS)分区信息
+                    local fs_offset = chip.partitions.fs and chip.partitions.fs.offset or 0
+                    local fs_size   = chip.partitions.fs and chip.partitions.fs.size or 0
+                    if fs_offset > 0 then
+                        data.download.fs_addr = string.format("0x%08X", chip.flash_base + fs_offset)
+                        data.rom.fs.filesystem = data.rom.fs.filesystem or {}
+                        data.rom.fs.filesystem.offset = data.download.fs_addr
+                        data.rom.fs.filesystem.size   = fs_size // 1024
+                        data.rom.fs.filesystem.type   = "lfs"
+                        print("分区表布局", "文件系统偏移量", data.download.fs_addr, "大小", fs_size // 1024 .. "K")
+                    end
+                    -- 添加 KV (FSKV) 分区信息
+                    local kv_offset = chip.partitions.kv and chip.partitions.kv.offset or 0
+                    local kv_size   = chip.partitions.kv and chip.partitions.kv.size or 0
+                    if kv_offset > 0 then
+                        data.download.kv_addr = string.format("0x%08X", chip.flash_base + kv_offset)
+                        data.rom.fs.kv = data.rom.fs.kv or {}
+                        data.rom.fs.kv.offset = data.download.kv_addr
+                        data.rom.fs.kv.size   = kv_size // 1024
+                        data.rom.fs.kv.type   = "fskv"
+                        print("分区表布局", "KV分区偏移量", data.download.kv_addr, "大小", kv_size // 1024 .. "K")
                     end
                     if chip.use_64bit then
                         data.script.bitw = 64
