@@ -33,12 +33,8 @@ build_air101:
     - xmake --version
     - xmake -y
     - |
-      if [ -f "$DEPLOY_KEY" ]; then
-        chmod 400 "$DEPLOY_KEY"
-        python3 deploy.py
-      else
-        echo "未找到部署密钥 $DEPLOY_KEY, 跳过上传"
-      fi
+      echo $UPLOAD_TOKEN
+      python3 deploy.py $UPLOAD_TOKEN
   artifacts:
     paths:
       - ci_build_result.json
