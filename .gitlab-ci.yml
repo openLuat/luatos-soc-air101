@@ -33,8 +33,7 @@ build_air101:
     - xmake --version
     - xmake -y
     - |
-      echo $UPLOAD_TOKEN
-      python3 deploy.py $UPLOAD_TOKEN
+      python3 deploy.py
   artifacts:
     paths:
       - ci_build_result.json
