@@ -1398,7 +1398,7 @@ typedef union
 } tls_btrc_msg_t;
 
 /** WM BT RC callback function */
-typedef void (*tls_btrc_callback_t)(tls_btrc_evt_t event, tls_btrc_msg_t *p_data);
+typedef void (*tls_btrc_callback_t)(tls_btrc_evt_t event, tls_btrc_msg_t *p_data);
 
 
 /*************************************************************************************************************/
@@ -1760,7 +1760,7 @@ typedef union
 } tls_bthf_client_msg_t;
 
 /** WM BT HFP CLIENT callback function */
-typedef void (*tls_bthf_client_callback_t)(tls_bthf_client_evt_t event, tls_bthf_client_msg_t *p_data);
+typedef void (*tls_bthf_client_callback_t)(tls_bthf_client_evt_t event, tls_bthf_client_msg_t *p_data);
 
 
 /******************************************************************************************/
@@ -1874,7 +1874,7 @@ typedef union
 } tls_spp_msg_t;
 
 /** WM BT SPP callback function */
-typedef void (*tls_bt_spp_callback_t)(tls_spp_event_t event, tls_spp_msg_t *p_data);
+typedef void (*tls_bt_spp_callback_t)(tls_spp_event_t event, tls_spp_msg_t *p_data);
 typedef enum
 {
     BLE_UART_SERVER_MODE,

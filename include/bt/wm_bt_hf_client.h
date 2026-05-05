@@ -128,7 +128,7 @@ tls_bt_status_t tls_bt_hf_client_stop_voice_recognition(void);
 /**
  * @brief           volume control
  *
- * @param[in]    type Mic or speaker
+ * @param[in]    type Mic or speaker
  * @param[in]    volume index value
  * 
  * @retval         @ref tls_bt_status_t

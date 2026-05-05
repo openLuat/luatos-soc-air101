@@ -291,7 +291,7 @@ int tls_spifls_drv_install(void)
 {
     int err;
     extern int tls_spifls_probe(void);
-    extern int tls_spifls_drv_register(struct tls_fls_drv *fls_drv);
+    extern int tls_spifls_drv_register(struct tls_fls_drv *fls_drv);
 
     err = tls_spifls_drv_register((struct tls_fls_drv *) &exspi_fls);
     if (err == TLS_FLS_STATUS_EEXIST)
