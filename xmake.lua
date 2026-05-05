@@ -323,6 +323,8 @@ target("audio")
     add_includedirs(luatos.."components/multimedia/amr_decode/oscl")
     add_includedirs(luatos.."components/multimedia/amr_decode/amr_nb/enc/src")
     add_includedirs(luatos.."components/multimedia/vtool/include")
+    add_includedirs(luatos.."components/multimedia/audio/include")
+    add_includedirs(luatos.."components/common_api/include")
     add_files(luatos.."components/multimedia/**.c")
 
     -- exclude all opus files
@@ -449,6 +451,14 @@ target("network")
     -- add soc_service
     add_includedirs(luatos.."components/soc_service/include",{public = true})
     add_files(luatos.."components/soc_service/**.c")
+
+    -- add nanopb
+    add_includedirs(luatos.."components/nanopb/include",{public = true})
+    add_files(luatos.."components/nanopb/src/*.c")
+
+    -- add new ble
+    add_includedirs(luatos.."components/bluetooth/include",{public = true})
+
 
 target_end()
 
