@@ -31,6 +31,7 @@ int luat_i2c_close(int id) {
 }
 
 int luat_i2c_send(int id, int addr, void* buff, size_t len , uint8_t stop) {
+    luat_timer_us_delay(5);
     tls_i2c_write_byte(addr << 1, 1);
     if(WM_FAILED == tls_i2c_wait_ack())
         return -1;
